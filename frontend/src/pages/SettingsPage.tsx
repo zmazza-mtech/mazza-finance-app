@@ -1,6 +1,7 @@
 import { ThemeToggle } from '@/components/settings/ThemeToggle';
 import { ThresholdSettings } from '@/components/settings/ThresholdSettings';
 import { AccountSettings } from '@/components/settings/AccountSettings';
+import { ConnectBankButton } from '@/components/settings/ConnectBankButton';
 import { SyncStatus } from '@/components/settings/SyncStatus';
 import { useSettings, useUpdateSetting, SETTING_KEYS } from '@/hooks/useSettings';
 import { useAccounts, useUpdateAccount } from '@/hooks/useAccounts';
@@ -105,11 +106,19 @@ export function SettingsPage() {
         >
           Accounts
         </h2>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <AccountSettings
-            accounts={accounts}
-            onToggleInclude={handleToggleAccount}
-          />
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="p-4">
+            <AccountSettings
+              accounts={accounts}
+              onToggleInclude={handleToggleAccount}
+            />
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Add another bank account via Teller Connect.
+            </p>
+            <ConnectBankButton />
+          </div>
         </div>
       </section>
     </div>

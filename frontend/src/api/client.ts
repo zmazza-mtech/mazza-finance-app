@@ -26,6 +26,21 @@ async function request<T>(
 }
 
 // ---------------------------------------------------------------------------
+// Enrollment (Teller Connect)
+// ---------------------------------------------------------------------------
+
+export async function enroll(body: {
+  accessToken: string;
+  enrollmentId: string;
+}): Promise<void> {
+  const res = await request<{ enrolled: true }>('/enroll', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (res.error) throw new Error(String(res.error));
+}
+
+// ---------------------------------------------------------------------------
 // Accounts
 // ---------------------------------------------------------------------------
 

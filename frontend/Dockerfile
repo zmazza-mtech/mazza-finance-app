@@ -5,9 +5,15 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Declare build-time env var so Vite embeds it at build time
+# Declare build-time env vars so Vite embeds them at build time
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+ARG VITE_TELLER_APPLICATION_ID
+ENV VITE_TELLER_APPLICATION_ID=$VITE_TELLER_APPLICATION_ID
+
+ARG VITE_TELLER_ENVIRONMENT=production
+ENV VITE_TELLER_ENVIRONMENT=$VITE_TELLER_ENVIRONMENT
 
 # Install dependencies first (layer cache)
 COPY package*.json ./
