@@ -1,0 +1,1 @@
+ALTER TABLE "accounts" ALTER COLUMN "teller_id" DROP NOT NULL;

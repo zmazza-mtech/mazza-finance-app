@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import accountsRouter from './api/accounts';
 import enrollRouter from './api/enroll';
+import importRouter from './api/import';
 import transactionsRouter from './api/transactions';
 import recurringRouter from './api/recurring';
 import forecastRouter from './api/forecast';
@@ -15,8 +16,8 @@ const app = express();
 // Middleware
 // ---------------------------------------------------------------------------
 
-// Body parsing — cap at 100kb to prevent request flooding
-app.use(express.json({ limit: '100kb' }));
+// Body parsing — 2mb to accommodate large CSV import batches
+app.use(express.json({ limit: '2mb' }));
 
 // CORS — explicit allowlist; wildcard prohibited
 const corsOrigin = process.env.CORS_ORIGIN;
@@ -47,6 +48,7 @@ const API_PREFIX = '/api/v1';
 
 app.use(`${API_PREFIX}/accounts`, accountsRouter);
 app.use(`${API_PREFIX}/enroll`, enrollRouter);
+app.use(`${API_PREFIX}/import`, importRouter);
 app.use(`${API_PREFIX}/transactions`, transactionsRouter);
 app.use(`${API_PREFIX}/recurring`, recurringRouter);
 app.use(`${API_PREFIX}/forecast`, forecastRouter);

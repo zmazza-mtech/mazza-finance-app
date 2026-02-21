@@ -20,7 +20,7 @@ export const accounts = pgTable(
   'accounts',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tellerId: text('teller_id').notNull().unique(),
+    tellerId: text('teller_id').unique(), // null for manually created accounts
     institution: text('institution').notNull(),
     name: text('name').notNull(),
     type: text('type').notNull(), // checking | savings | credit

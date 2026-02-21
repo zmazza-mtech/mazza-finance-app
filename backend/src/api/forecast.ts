@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import Decimal from 'decimal.js';
 import { and, eq, gte, lte } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { transactions, recurringTransactions, recurringOverrides, accounts } from '../db/schema';
@@ -38,8 +39,6 @@ router.get('/', async (req: Request, res: Response) => {
       return res.status(404).json({ data: null, error: 'Account not found' });
     }
 
-    const seedBalance = accountRows[0]!.lastBalance ?? '0';
-
     // Fetch actual + manual transactions in range
     const txRows = await db
       .select()
@@ -51,6 +50,21 @@ router.get('/', async (req: Request, res: Response) => {
           lte(transactions.date, endDate)
         )
       );
+
+    // If lastBalance is set and the view starts in the past, back-calculate the
+    // opening balance at startDate so historical running balances are accurate.
+    // seedBalance = lastBalance - sum(all transactions from startDate to today)
+    const lastBalance = accountRows[0]!.lastBalance;
+    const serverToday = new Date().toISOString().slice(0, 10);
+    let seedBalance: string;
+    if (lastBalance && startDate < serverToday) {
+      const historicalSum = txRows
+        .filter((t) => String(t.date) <= serverToday)
+        .reduce((sum, t) => sum.plus(new Decimal(String(t.amount))), new Decimal(0));
+      seedBalance = new Decimal(lastBalance).minus(historicalSum).toFixed(2);
+    } else {
+      seedBalance = lastBalance ?? '0';
+    }
 
     const actuals: ActualTransaction[] = txRows
       .filter((t) => t.type === 'actual')
