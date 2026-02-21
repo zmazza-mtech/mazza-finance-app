@@ -1,0 +1,90 @@
+import { createContext, useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { CalendarPage } from '@/pages/CalendarPage';
+import { RecurringPage } from '@/pages/RecurringPage';
+import { SettingsPage } from '@/pages/SettingsPage';
+import { getAccounts } from '@/api/client';
+
+// ---------------------------------------------------------------------------
+// Account context — selected account persisted to localStorage
+// ---------------------------------------------------------------------------
+
+const ACCOUNT_KEY = 'mazza-selected-account';
+
+interface AccountContextValue {
+  selectedAccountId: string;
+  setSelectedAccountId: (id: string) => void;
+}
+
+export const AccountContext = createContext<AccountContextValue>({
+  selectedAccountId: '',
+  setSelectedAccountId: () => {},
+});
+
+// ---------------------------------------------------------------------------
+// Query client
+// ---------------------------------------------------------------------------
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// ---------------------------------------------------------------------------
+// App root
+// ---------------------------------------------------------------------------
+
+export function App() {
+  const [selectedAccountId, setSelectedAccountIdState] = useState<string>(() => {
+    try {
+      return localStorage.getItem(ACCOUNT_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  });
+
+  // On first load, if nothing is stored, pick the first available account
+  useEffect(() => {
+    if (selectedAccountId) return;
+    getAccounts()
+      .then((accounts) => {
+        const first = accounts.find(
+          (a) => (a.type === 'checking' || a.type === 'savings') && a.isActive,
+        );
+        if (first) {
+          setSelectedAccountId(first.id);
+        }
+      })
+      .catch(() => {/* silent — user can select manually */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function setSelectedAccountId(id: string) {
+    setSelectedAccountIdState(id);
+    try {
+      localStorage.setItem(ACCOUNT_KEY, id);
+    } catch { /* noop */ }
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AccountContext.Provider value={{ selectedAccountId, setSelectedAccountId }}>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route index element={<CalendarPage />} />
+              <Route path="recurring" element={<RecurringPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AccountContext.Provider>
+    </QueryClientProvider>
+  );
+}

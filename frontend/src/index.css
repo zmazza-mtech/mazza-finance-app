@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth scrolling for jump-to-today */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure body fills the viewport in dark mode without flash */
+body {
+  @apply bg-gray-50 dark:bg-gray-950;
+}
