@@ -1,29 +1,34 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { CalendarTimeline } from '@/components/calendar/CalendarTimeline';
 import { BalanceAlertBanner } from '@/components/layout/BalanceAlertBanner';
 import { useForecast, useAddTransaction } from '@/hooks/useForecast';
 import { useThresholds } from '@/hooks/useSettings';
 import { AccountContext } from '@/App';
 
+const HISTORY_STEP = 90; // days per "load more" increment
+const FUTURE_DAYS = 90;
+
 /**
- * Calendar page — the main forecast view.
- * Loads 90 days of forecast data starting from today.
+ * Calendar page — shows history (default 90 days back) plus 90 days forward.
+ * "Load more history" extends the lookback by 90-day increments.
  */
 export function CalendarPage() {
   const { selectedAccountId } = useContext(AccountContext);
+  const [historyDays, setHistoryDays] = useState(HISTORY_STEP);
 
   const today = todayIso();
-  const endDate = addDays(today, 90);
+  const startDate = addDays(today, -historyDays);
+  const endDate = addDays(today, FUTURE_DAYS);
 
   const { greenThreshold, yellowThreshold: criticalThreshold } = useThresholds();
 
   const { data: forecastDays = [], isLoading, isError } = useForecast(
     selectedAccountId,
-    today,
+    startDate,
     endDate,
   );
 
-  const addTransaction = useAddTransaction(selectedAccountId, today, endDate);
+  const addTransaction = useAddTransaction(selectedAccountId, startDate, endDate);
 
   function handleAddTransaction(data: {
     accountId: string;
@@ -79,6 +84,16 @@ export function CalendarPage() {
           // TODO: scroll calendar to the target date
         }}
       />
+
+      {/* Load more history */}
+      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setHistoryDays((d) => d + HISTORY_STEP)}
+          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          ← Load 3 more months of history
+        </button>
+      </div>
 
       <CalendarTimeline
         days={forecastDays}

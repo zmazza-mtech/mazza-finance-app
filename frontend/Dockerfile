@@ -23,6 +23,11 @@ RUN npm ci --ignore-scripts
 COPY . .
 RUN npm run build
 
+# Run the build at container start so docker compose up --build always
+# writes fresh output into the frontend_build named volume. Without a CMD
+# the builder stage exits immediately and the volume retains stale content.
+CMD ["npm", "run", "build"]
+
 # ---------------------------------------------------------------------------
 # Stage 2: Static file server (nginx)
 # ---------------------------------------------------------------------------

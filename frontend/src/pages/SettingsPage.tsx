@@ -3,6 +3,8 @@ import { ThresholdSettings } from '@/components/settings/ThresholdSettings';
 import { AccountSettings } from '@/components/settings/AccountSettings';
 import { ConnectBankButton } from '@/components/settings/ConnectBankButton';
 import { SyncStatus } from '@/components/settings/SyncStatus';
+import { CsvImportSection } from '@/components/settings/CsvImportSection';
+import { AddAccountForm } from '@/components/settings/AddAccountForm';
 import { useSettings, useUpdateSetting, SETTING_KEYS } from '@/hooks/useSettings';
 import { useAccounts, useUpdateAccount } from '@/hooks/useAccounts';
 import { useSyncStatus, useTriggerSync } from '@/hooks/useSync';
@@ -98,6 +100,19 @@ export function SettingsPage() {
         </div>
       </section>
 
+      {/* CSV Import */}
+      <section aria-labelledby="import-section">
+        <h2
+          id="import-section"
+          className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4"
+        >
+          Import Transactions
+        </h2>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <CsvImportSection />
+        </div>
+      </section>
+
       {/* Accounts */}
       <section aria-labelledby="accounts-section">
         <h2
@@ -113,9 +128,10 @@ export function SettingsPage() {
               onToggleInclude={handleToggleAccount}
             />
           </div>
-          <div className="p-4">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              Add another bank account via Teller Connect.
+          <div className="p-4 space-y-3">
+            <AddAccountForm />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Or connect via Teller:
             </p>
             <ConnectBankButton />
           </div>

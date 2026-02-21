@@ -44,7 +44,7 @@ export async function enroll(body: {
 // Accounts
 // ---------------------------------------------------------------------------
 
-import type { Account } from './types';
+import type { Account, CreateAccountBody } from './types';
 
 export async function getAccounts(): Promise<Account[]> {
   const res = await request<Account[]>('/accounts');
@@ -52,9 +52,19 @@ export async function getAccounts(): Promise<Account[]> {
   return res.data ?? [];
 }
 
+export async function createAccount(body: CreateAccountBody): Promise<Account> {
+  const res = await request<Account>('/accounts', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (res.error) throw new Error(String(res.error));
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
 export async function updateAccount(
   id: string,
-  body: Partial<Pick<Account, 'includeInView' | 'isActive'>>,
+  body: Partial<Pick<Account, 'includeInView' | 'isActive' | 'lastBalance'>>,
 ): Promise<Account> {
   const res = await request<Account>(`/accounts/${id}`, {
     method: 'PATCH',
@@ -227,6 +237,22 @@ export async function getSyncStatus(): Promise<SyncLog | null> {
   const res = await request<SyncLog | null>('/sync/status');
   if (res.error) throw new Error(res.error);
   return res.data ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// CSV Import
+// ---------------------------------------------------------------------------
+
+import type { ImportBody, ImportResult } from './types';
+
+export async function importTransactions(body: ImportBody): Promise<ImportResult> {
+  const res = await request<ImportResult>('/import/csv', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (res.error) throw new Error(String(res.error));
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
 }
 
 // ---------------------------------------------------------------------------

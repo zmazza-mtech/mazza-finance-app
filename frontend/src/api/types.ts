@@ -84,6 +84,12 @@ export interface Setting {
 }
 
 // Request body types
+export interface CreateAccountBody {
+  institution: string;
+  name: string;
+  type: AccountType;
+}
+
 export interface CreateTransactionBody {
   accountId: string;
   date: string;
@@ -120,4 +126,15 @@ export interface CreateOverrideBody {
   overrideDate?: string;
   overrideAmount?: string;
   overrideName?: string;
+}
+
+export interface ImportBody {
+  accountId: string;
+  transactions: Array<{ date: string; description: string; amount: string }>;
+}
+
+export interface ImportResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
 }

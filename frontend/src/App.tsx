@@ -49,16 +49,17 @@ export function App() {
     }
   });
 
-  // On first load, if nothing is stored, pick the first available account
+  // On first load, pick the first available account if nothing is stored or the
+  // stored ID no longer exists (e.g. after a database reset).
   useEffect(() => {
-    if (selectedAccountId) return;
     getAccounts()
       .then((accounts) => {
-        const first = accounts.find(
+        const bankAccounts = accounts.filter(
           (a) => (a.type === 'checking' || a.type === 'savings') && a.isActive,
         );
-        if (first) {
-          setSelectedAccountId(first.id);
+        const storedIsValid = bankAccounts.some((a) => a.id === selectedAccountId);
+        if (!storedIsValid && bankAccounts.length > 0) {
+          setSelectedAccountId(bankAccounts[0]!.id);
         }
       })
       .catch(() => {/* silent — user can select manually */});

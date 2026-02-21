@@ -57,6 +57,14 @@ export function CalendarTimeline({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days.length]);
 
+  // Scroll to today whenever the days list loads or changes
+  useEffect(() => {
+    if (days.length > 0) {
+      scrollToDate(todayDate);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days.length, todayDate]);
+
   // Group days by month label
   const months = groupByMonth(days);
 
