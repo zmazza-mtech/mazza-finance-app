@@ -32,8 +32,8 @@ const MIN_OCCURRENCES = 3;
 // Allowable variance in days when detecting interval (± days around ideal)
 const INTERVAL_TOLERANCE: Record<Frequency, number> = {
   weekly: 2,
-  biweekly: 3,
-  monthly: 6,  // widened from 4 to handle calendar drift (28-36 day months)
+  biweekly: 5,  // widened from 3 to handle 18-19 day pay cycles (weekends/holidays)
+  monthly: 6,   // widened from 4 to handle calendar drift (28-36 day months)
   yearly: 10,
 };
 
@@ -204,17 +204,25 @@ export function detectFrequency(dates: string[]): Frequency | null {
 function isAmountConsistent(amounts: string[]): boolean {
   if (amounts.length === 0) return false;
 
-  const decimals = amounts.map((a) => new Decimal(a).abs());
-  const mean = decimals
+  // Sort by absolute value and trim the top/bottom 5% before computing CV.
+  // This makes detection robust to one-off outliers (e.g. a year-end bonus
+  // posting alongside normal biweekly pay, or a partial first paycheck).
+  const sorted = amounts.map((a) => new Decimal(a).abs()).sort((a, b) => a.cmp(b));
+  const trimCount = Math.floor(sorted.length * 0.05);
+  const trimmed = trimCount > 0 ? sorted.slice(trimCount, sorted.length - trimCount) : sorted;
+
+  if (trimmed.length === 0) return true;
+
+  const mean = trimmed
     .reduce((sum, v) => sum.plus(v), new Decimal(0))
-    .div(decimals.length);
+    .div(trimmed.length);
 
   if (mean.isZero()) return true;
 
-  const variance = decimals
+  const variance = trimmed
     .map((v) => v.minus(mean).pow(2))
     .reduce((sum, v) => sum.plus(v), new Decimal(0))
-    .div(decimals.length);
+    .div(trimmed.length);
 
   const stddev = variance.sqrt();
   const cv = stddev.div(mean).toNumber();
@@ -280,19 +288,25 @@ export function detectRecurring(
 
     // Deduplicate by date: when multiple transactions share the same date
     // (e.g. several ACH credits from the same source posting on the same
-    // business day), treat them as a single occurrence. This prevents
-    // 0-day intervals from breaking frequency detection.
-    const uniqueByDate = new Map<string, RawTransaction>();
+    // business day), treat them as a single occurrence. Amounts are summed
+    // so the recurring series reflects the total per-period value (e.g.
+    // SSA pays multiple benefit amounts on the same date each month).
+    const dateMap = new Map<string, { amount: Decimal; tx: RawTransaction }>();
     for (const t of sorted) {
-      if (!uniqueByDate.has(t.date)) uniqueByDate.set(t.date, t);
+      const existing = dateMap.get(t.date);
+      if (existing) {
+        existing.amount = existing.amount.plus(new Decimal(t.amount));
+      } else {
+        dateMap.set(t.date, { amount: new Decimal(t.amount), tx: t });
+      }
     }
-    const deduped = [...uniqueByDate.values()]; // preserves date-sort order
+    const deduped = [...dateMap.values()]; // preserves date-sort order
 
     // Need minimum unique occurrence dates
     if (deduped.length < MIN_OCCURRENCES) continue;
 
-    const dates = deduped.map((t) => t.date);
-    const amounts = deduped.map((t) => t.amount);
+    const dates = deduped.map((d) => d.tx.date);
+    const amounts = deduped.map((d) => d.amount.toFixed(2));
 
     // Check frequency pattern
     const frequency = detectFrequency(dates);
@@ -302,7 +316,7 @@ export function detectRecurring(
     if (!isAmountConsistent(amounts)) continue;
 
     const amount = mostCommonAmount(amounts);
-    const lastDate = deduped[deduped.length - 1]!.date;
+    const lastDate = deduped[deduped.length - 1]!.tx.date;
     const nextDate = projectNext(lastDate, frequency);
 
     // Use original casing from first occurrence for the name

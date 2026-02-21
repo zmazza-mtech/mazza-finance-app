@@ -174,6 +174,13 @@ describe('detectFrequency', () => {
     expect(detectFrequency(dates)).toBe('biweekly');
   });
 
+  it('detects biweekly with real-world pay cycle drift (18-19 day intervals)', () => {
+    // Pay periods shift around weekends/holidays; actual gaps can be 18-19 days
+    const dates = ['2024-01-03', '2024-01-21', '2024-02-08', '2024-02-27'];
+    // gaps: 18, 18, 19 — all within ±5 of 14
+    expect(detectFrequency(dates)).toBe('biweekly');
+  });
+
   it('detects monthly frequency (~30-day intervals)', () => {
     const dates = ['2024-01-15', '2024-02-15', '2024-03-15', '2024-04-15'];
     expect(detectFrequency(dates)).toBe('monthly');
@@ -332,11 +339,11 @@ describe('detectRecurring', () => {
     expect(results).toHaveLength(0);
   });
 
-  it('deduplicates same-date transactions before frequency detection', () => {
+  it('deduplicates same-date transactions and sums their amounts', () => {
     // Multiple postings on the same date (e.g. ACH batch from same source)
-    // should be counted as one occurrence so 0-day intervals are not created
+    // collapse to one occurrence; amounts are summed to reflect true total.
+    // 3 postings × $246.00 = $738.00 per month.
     const transactions = [
-      // 4 postings on Jan 15, 4 on Feb 15, etc. — same as monthly SSA pattern
       tx({ tellerId: 'a1', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
       tx({ tellerId: 'a2', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
       tx({ tellerId: 'a3', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
@@ -351,7 +358,30 @@ describe('detectRecurring', () => {
     const results = detectRecurring(transactions, '2024-03-31');
     expect(results).toHaveLength(1);
     expect(results[0]!.frequency).toBe('monthly');
-    expect(results[0]!.amount).toBe('246.00');
+    expect(results[0]!.amount).toBe('738.00');
+  });
+
+  it('detects biweekly payroll despite a single bonus outlier (5% trimming)', () => {
+    // 20 normal biweekly pays at ~$6502, one bonus at $22622.50, one partial at $5382.
+    // The outlier trimming (5% each side = 1 entry) removes both extremes,
+    // leaving the consistent core salary pattern detectable.
+    const base = [
+      '2025-03-05', '2025-03-19', '2025-04-02', '2025-04-16', '2025-04-30',
+      '2025-05-14', '2025-05-28', '2025-06-11', '2025-06-25', '2025-07-09',
+      '2025-07-23', '2025-08-06', '2025-08-20', '2025-09-03', '2025-09-17',
+      '2025-10-01', '2025-10-15', '2025-10-29', '2025-11-12', '2025-11-26',
+    ];
+    const normalTxs = base.map((date, i) =>
+      tx({ tellerId: `p${i}`, date, description: 'PAYROLL EMPLOYER', amount: '6502.28' })
+    );
+    // Outliers: first partial pay + one bonus
+    const partial = tx({ tellerId: 'p_partial', date: '2025-02-19', description: 'PAYROLL EMPLOYER', amount: '5382.07' });
+    const bonus   = tx({ tellerId: 'p_bonus',   date: '2025-12-10', description: 'PAYROLL EMPLOYER', amount: '22622.50' });
+
+    const results = detectRecurring([partial, ...normalTxs, bonus], '2025-12-15');
+    expect(results).toHaveLength(1);
+    expect(results[0]!.frequency).toBe('biweekly');
+    expect(results[0]!.amount).toBe('6502.28');
   });
 
   it('detects monthly recurring with COLA-style amount increase (CV within 15%)', () => {
