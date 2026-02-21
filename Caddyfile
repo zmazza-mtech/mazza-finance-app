@@ -1,0 +1,59 @@
+# Mazza Finance — Caddy Reverse Proxy Configuration
+#
+# HTTPS CERTIFICATE SETUP (choose one):
+#
+# Option A — mkcert (recommended for home network):
+#   1. Install mkcert: brew install mkcert
+#   2. mkcert -install
+#   3. mkcert localhost 127.0.0.1
+#   4. Update the tls block below to reference the generated files
+#   5. Install the mkcert CA on Mrs. Mazza's devices (see README)
+#
+# Option B — Let's Encrypt (requires a real domain with public DNS):
+#   Replace the tls block with: tls your@email.com
+#
+# After changing the TLS strategy, run: docker compose restart caddy
+
+# HTTP → HTTPS redirect
+http:// {
+    redir https://{host}{uri} permanent
+}
+
+# Main HTTPS site
+{$CADDY_DOMAIN} {
+
+    # TLS — update to Option A or B per README before first deployment
+    tls internal
+
+    # Enforce TLS 1.2 minimum
+    protocols tls1.2 tls1.3
+
+    # HTTP Basic Auth on all routes
+    # Credentials set in .env as CADDY_BASIC_AUTH_HASH
+    # Generate hash: caddy hash-password --plaintext <yourpassword>
+    basicauth * {
+        mazza {$CADDY_BASIC_AUTH_HASH}
+    }
+
+    # Security headers
+    header {
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        -Server
+    }
+
+    # API reverse proxy
+    handle /api/* {
+        reverse_proxy backend:3001
+    }
+
+    # Frontend SPA — all other routes serve index.html
+    handle {
+        root * /usr/share/caddy
+        try_files {path} /index.html
+        file_server
+    }
+}
