@@ -26,14 +26,14 @@ type Frequency = 'weekly' | 'biweekly' | 'monthly' | 'yearly';
 // Constants
 // ---------------------------------------------------------------------------
 
-// Minimum occurrences to consider a pattern recurring
+// Minimum unique occurrence dates to consider a pattern recurring
 const MIN_OCCURRENCES = 3;
 
 // Allowable variance in days when detecting interval (± days around ideal)
 const INTERVAL_TOLERANCE: Record<Frequency, number> = {
   weekly: 2,
   biweekly: 3,
-  monthly: 4,
+  monthly: 6,  // widened from 4 to handle calendar drift (28-36 day months)
   yearly: 10,
 };
 
@@ -45,9 +45,10 @@ const IDEAL_INTERVAL: Record<Frequency, number> = {
   yearly: 365,
 };
 
-// Maximum coefficient of variation for amounts to be considered consistent
-// CV = stddev / mean — 0.05 = 5% variance allowed
-const AMOUNT_CV_THRESHOLD = 0.05;
+// Maximum coefficient of variation for amounts to be considered consistent.
+// 0.15 (15%) allows for annual cost-of-living adjustments and minor payroll
+// fluctuations while still filtering genuinely variable/ad-hoc amounts.
+const AMOUNT_CV_THRESHOLD = 0.15;
 
 // ---------------------------------------------------------------------------
 // Date helpers
@@ -88,12 +89,63 @@ function projectNext(lastDate: string, frequency: Frequency): string {
 }
 
 // ---------------------------------------------------------------------------
+// normalizeForGrouping
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalizes a transaction description for grouping purposes.
+ *
+ * Bank descriptions frequently embed variable identifiers that change per
+ * occurrence: pay-period dates, ACH reference numbers, account numbers, and
+ * phone numbers prepended by the originating institution. Stripping these
+ * lets us group transactions from the same payee even when the suffix varies.
+ *
+ * Rules applied in order:
+ * 1. Trim whitespace and lowercase.
+ * 2. Strip a leading 10-digit phone/reference block (e.g. "8885214089 …").
+ * 3. Iteratively strip trailing tokens that look like identifiers:
+ *    - Alphanumeric tokens that start with a digit and are ≥6 chars
+ *      (catches dates like "022125", reference codes like "0131000570270O",
+ *       and long account numbers like "603459008368611").
+ *    - Pure-numeric tokens of any length (catches short numeric IDs).
+ * 4. Collapse internal whitespace.
+ *
+ * The original trimmed description (not this normalized form) is stored as
+ * the canonical series name so the UI shows a readable label.
+ */
+export function normalizeForGrouping(description: string): string {
+  let s = description.trim().toLowerCase();
+
+  // Strip leading 10-digit phone/reference block
+  s = s.replace(/^[0-9]{10}\s+/, '');
+
+  // Iteratively strip trailing identifier tokens until stable.
+  // Two patterns are tried on each pass:
+  //   (a) token starting with a digit, ≥6 chars (alphanumeric) — catches dates
+  //       and reference codes that may end with a letter (e.g. "0131000570270O")
+  //   (b) pure-numeric trailing token of any length
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/\s+[0-9][a-z0-9]{5,}$/, ''); // long identifier starting with digit
+    s = s.replace(/\s+[0-9]+$/, '');              // pure digits (any length)
+  } while (s !== prev);
+
+  // Collapse internal whitespace (some ACH descriptions have double-spaces)
+  s = s.replace(/\s+/g, ' ').trim();
+
+  // Guard: if everything was stripped return the original lowercased description
+  return s || description.trim().toLowerCase();
+}
+
+// ---------------------------------------------------------------------------
 // groupByDescription
 // ---------------------------------------------------------------------------
 
 /**
- * Groups transactions by normalized description (trimmed, lowercased).
- * Keys are the normalized form; values are the original transaction objects.
+ * Groups transactions by normalized description.
+ * Keys are the normalized form (via normalizeForGrouping); values are the
+ * original transaction objects so callers can recover the canonical name.
  */
 export function groupByDescription(
   transactions: RawTransaction[]
@@ -101,7 +153,7 @@ export function groupByDescription(
   const groups = new Map<string, RawTransaction[]>();
 
   for (const tx of transactions) {
-    const key = tx.description.trim().toLowerCase();
+    const key = normalizeForGrouping(tx.description);
     const existing = groups.get(key);
     if (existing) {
       existing.push(tx);
@@ -200,7 +252,9 @@ function mostCommonAmount(amounts: string[]): string {
  * @param transactions    All historical transactions for an account
  * @param asOfDate        The "today" date used to compute nextDate
  * @param existingNames   Normalized names of recurring series already in DB
- *                        (prevents re-detecting already-known series)
+ *                        (prevents re-detecting already-known series).
+ *                        May be raw canonical names; they are normalized
+ *                        internally before comparison.
  */
 export function detectRecurring(
   transactions: RawTransaction[],
@@ -209,19 +263,36 @@ export function detectRecurring(
 ): DetectedRecurring[] {
   if (transactions.length === 0) return [];
 
+  // Normalize existing names the same way so descriptions with stripped
+  // identifiers correctly match their stored canonical counterparts.
+  const normalizedExisting = new Set(
+    [...existingNames].map(normalizeForGrouping)
+  );
+
   const groups = groupByDescription(transactions);
   const results: DetectedRecurring[] = [];
 
   for (const [normalizedKey, group] of groups) {
     // Skip if already known
-    if (existingNames.has(normalizedKey)) continue;
-
-    // Need minimum occurrences
-    if (group.length < MIN_OCCURRENCES) continue;
+    if (normalizedExisting.has(normalizedKey)) continue;
 
     const sorted = [...group].sort((a, b) => a.date.localeCompare(b.date));
-    const dates = sorted.map((t) => t.date);
-    const amounts = sorted.map((t) => t.amount);
+
+    // Deduplicate by date: when multiple transactions share the same date
+    // (e.g. several ACH credits from the same source posting on the same
+    // business day), treat them as a single occurrence. This prevents
+    // 0-day intervals from breaking frequency detection.
+    const uniqueByDate = new Map<string, RawTransaction>();
+    for (const t of sorted) {
+      if (!uniqueByDate.has(t.date)) uniqueByDate.set(t.date, t);
+    }
+    const deduped = [...uniqueByDate.values()]; // preserves date-sort order
+
+    // Need minimum unique occurrence dates
+    if (deduped.length < MIN_OCCURRENCES) continue;
+
+    const dates = deduped.map((t) => t.date);
+    const amounts = deduped.map((t) => t.amount);
 
     // Check frequency pattern
     const frequency = detectFrequency(dates);
@@ -231,7 +302,7 @@ export function detectRecurring(
     if (!isAmountConsistent(amounts)) continue;
 
     const amount = mostCommonAmount(amounts);
-    const lastDate = sorted[sorted.length - 1]!.date;
+    const lastDate = deduped[deduped.length - 1]!.date;
     const nextDate = projectNext(lastDate, frequency);
 
     // Use original casing from first occurrence for the name

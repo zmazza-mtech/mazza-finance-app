@@ -141,4 +141,5 @@ export interface ImportResult {
 
 export interface DetectResult {
   detected: number;
+  expired: number;
 }

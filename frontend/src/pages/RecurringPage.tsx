@@ -24,6 +24,7 @@ export function RecurringPage() {
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [detectStatus, setDetectStatus] = useState<DetectStatus>('idle');
   const [detectCount, setDetectCount] = useState(0);
+  const [expiredCount, setExpiredCount] = useState(0);
 
   const { data: allRecurring = [], isLoading, isError } = useRecurring(selectedAccountId);
   const { data: pending = [] } = usePendingReview(selectedAccountId);
@@ -66,7 +67,8 @@ export function RecurringPage() {
     detectMutation.mutate(undefined, {
       onSuccess: (result) => {
         setDetectCount(result.detected);
-        setDetectStatus(result.detected > 0 ? 'success' : 'none');
+        setExpiredCount(result.expired);
+        setDetectStatus(result.detected > 0 || result.expired > 0 ? 'success' : 'none');
       },
       onError: () => {
         setDetectStatus('error');
@@ -146,7 +148,9 @@ export function RecurringPage() {
       {/* Scan result feedback */}
       {detectStatus === 'success' && (
         <p className="mb-4 text-sm text-green-700 dark:text-green-400">
-          Found {detectCount} new pattern{detectCount !== 1 ? 's' : ''} — review them below.
+          {detectCount > 0 && `Found ${detectCount} new pattern${detectCount !== 1 ? 's' : ''}.`}
+          {detectCount > 0 && expiredCount > 0 && ' '}
+          {expiredCount > 0 && `Ended ${expiredCount} stale series.`}
         </p>
       )}
       {detectStatus === 'none' && (

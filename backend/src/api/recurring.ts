@@ -78,7 +78,23 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// POST /recurring/detect — analyze existing transactions and create pending_review rows
+// Grace period (in days) after nextDate before an active recurring is considered stale.
+// Using 3× the expected interval gives one full missed period of buffer.
+const STALE_GRACE_DAYS: Record<string, number> = {
+  weekly: 21,
+  biweekly: 42,
+  monthly: 90,
+  yearly: 400,
+};
+
+function addDaysToDateStr(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+// POST /recurring/detect — analyze existing transactions and create pending_review rows,
+// then expire any active recurring series whose nextDate is stale.
 router.post('/detect', async (req: Request, res: Response) => {
   const parsed = z.object({ accountId: z.string().uuid() }).safeParse(req.body);
   if (!parsed.success) {
@@ -101,23 +117,28 @@ router.post('/detect', async (req: Request, res: Response) => {
       return res.status(404).json({ data: null, error: 'Account not found' });
     }
 
+    const serverToday = new Date().toISOString().slice(0, 10);
+
     // Fetch all transactions for this account (full history for best pattern detection)
     const txRows = await db
       .select()
       .from(transactions)
       .where(eq(transactions.accountId, accountId));
 
-    // Fetch existing recurring names to avoid re-detecting known series
-    const existingRows = await db
-      .select({ name: recurringTransactions.name })
+    // Fetch all recurring series for this account
+    const allRecurring = await db
+      .select()
       .from(recurringTransactions)
       .where(eq(recurringTransactions.accountId, accountId));
 
     const existingNames = new Set(
-      existingRows.map((r) => r.name.trim().toLowerCase()),
+      allRecurring.map((r) => r.name.trim().toLowerCase()),
     );
 
-    // Adapt DB rows to the shape detectRecurring expects
+    // ---------------------------------------------------------------------------
+    // Step 1: Detect new patterns
+    // ---------------------------------------------------------------------------
+
     const rawTxs: RawTransaction[] = txRows.map((t) => ({
       tellerId: t.id,
       accountId: t.accountId,
@@ -126,30 +147,63 @@ router.post('/detect', async (req: Request, res: Response) => {
       amount: String(t.amount),
     }));
 
-    const serverToday = new Date().toISOString().slice(0, 10);
     const detected = detectRecurring(rawTxs, serverToday, existingNames);
 
-    if (detected.length === 0) {
-      return res.json({ data: { detected: 0 }, error: null });
+    let insertedCount = 0;
+    if (detected.length > 0) {
+      const inserted = await db
+        .insert(recurringTransactions)
+        .values(
+          detected.map((d) => ({
+            accountId: d.accountId,
+            name: d.name,
+            amount: d.amount,
+            frequency: d.frequency,
+            nextDate: d.nextDate,
+            source: 'auto_detected' as const,
+            status: 'pending_review' as const,
+          })),
+        )
+        .returning();
+      insertedCount = inserted.length;
     }
 
-    const inserted = await db
-      .insert(recurringTransactions)
-      .values(
-        detected.map((d) => ({
-          accountId: d.accountId,
-          name: d.name,
-          amount: d.amount,
-          frequency: d.frequency,
-          nextDate: d.nextDate,
-          source: 'auto_detected' as const,
-          status: 'pending_review' as const,
-        })),
-      )
-      .returning();
+    // ---------------------------------------------------------------------------
+    // Step 2: Expire stale active recurring series
+    // A series is stale when its nextDate + grace period is still in the past,
+    // meaning no occurrence has been seen for longer than the grace window.
+    // ---------------------------------------------------------------------------
 
-    logger.info('POST /recurring/detect completed', { accountId, detected: inserted.length });
-    res.json({ data: { detected: inserted.length }, error: null });
+    const staleIds: string[] = [];
+    const staleEndDates: Record<string, string> = {};
+
+    for (const r of allRecurring) {
+      if (r.status !== 'active') continue;
+      const graceDays = STALE_GRACE_DAYS[r.frequency] ?? 90;
+      const cutoff = addDaysToDateStr(String(r.nextDate), graceDays);
+      if (cutoff < serverToday) {
+        staleIds.push(r.id);
+        staleEndDates[r.id] = String(r.nextDate);
+      }
+    }
+
+    if (staleIds.length > 0) {
+      // Update each stale series individually to set the correct endDate per row
+      for (const id of staleIds) {
+        await db
+          .update(recurringTransactions)
+          .set({ status: 'ended', endDate: staleEndDates[id]!, updatedAt: new Date() })
+          .where(eq(recurringTransactions.id, id));
+      }
+    }
+
+    logger.info('POST /recurring/detect completed', {
+      accountId,
+      detected: insertedCount,
+      expired: staleIds.length,
+    });
+
+    res.json({ data: { detected: insertedCount, expired: staleIds.length }, error: null });
   } catch (err) {
     logger.error('POST /recurring/detect failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
