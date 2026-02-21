@@ -13,8 +13,9 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 EOSQL
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "mazza_finance" <<-EOSQL
-    -- Grant connection access
-    GRANT CONNECT ON DATABASE mazza_finance TO mazza_app;
+    -- Grant connection access and schema creation (Drizzle migrator needs
+    -- CREATE ON DATABASE to create its internal 'drizzle' tracking schema)
+    GRANT CONNECT, CREATE ON DATABASE mazza_finance TO mazza_app;
 
     -- Grant schema usage and DDL (CREATE required for Drizzle migrations)
     GRANT USAGE, CREATE ON SCHEMA public TO mazza_app;
