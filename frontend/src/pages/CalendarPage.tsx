@@ -5,20 +5,16 @@ import { useForecast, useAddTransaction } from '@/hooks/useForecast';
 import { useThresholds } from '@/hooks/useSettings';
 import { AccountContext } from '@/App';
 
-const HISTORY_STEP = 90; // days per "load more" increment
-const FUTURE_DAYS = 90;
-
 /**
- * Calendar page — shows history (default 90 days back) plus 90 days forward.
- * "Load more history" extends the lookback by 90-day increments.
+ * Calendar page — shows a monthly grid view centered on currentMonth.
+ * Loads a ±3-month window around the visible month for smooth navigation.
  */
 export function CalendarPage() {
   const { selectedAccountId } = useContext(AccountContext);
-  const [historyDays, setHistoryDays] = useState(HISTORY_STEP);
+  const [currentMonth, setCurrentMonth] = useState(() => todayIso().slice(0, 7));
 
-  const today = todayIso();
-  const startDate = addDays(today, -historyDays);
-  const endDate = addDays(today, FUTURE_DAYS);
+  const startDate = firstDayOfMonth(addMonths(currentMonth, -3));
+  const endDate = lastDayOfMonth(addMonths(currentMonth, 3));
 
   const { greenThreshold, yellowThreshold: criticalThreshold } = useThresholds();
 
@@ -81,27 +77,21 @@ export function CalendarPage() {
         greenThreshold={greenThreshold}
         criticalThreshold={criticalThreshold}
         onViewDate={() => {
-          // TODO: scroll calendar to the target date
+          // TODO: navigate calendar to target date
         }}
       />
-
-      {/* Load more history */}
-      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-        <button
-          onClick={() => setHistoryDays((d) => d + HISTORY_STEP)}
-          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          ← Load 3 more months of history
-        </button>
-      </div>
 
       <CalendarTimeline
         days={forecastDays}
         accountId={selectedAccountId}
-        todayDate={today}
+        todayDate={todayIso()}
+        currentMonth={currentMonth}
         greenThreshold={greenThreshold}
         criticalThreshold={criticalThreshold}
         onAddTransaction={handleAddTransaction}
+        onPrevMonth={() => setCurrentMonth((m) => addMonths(m, -1))}
+        onNextMonth={() => setCurrentMonth((m) => addMonths(m, 1))}
+        onToday={() => setCurrentMonth(todayIso().slice(0, 7))}
       />
     </>
   );
@@ -115,8 +105,17 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+function firstDayOfMonth(yearMonth: string): string {
+  return yearMonth + '-01';
+}
+
+function lastDayOfMonth(yearMonth: string): string {
+  const [y, m] = yearMonth.split('-').map(Number) as [number, number];
+  return new Date(y, m, 0).toISOString().slice(0, 10);
+}
+
+function addMonths(yearMonth: string, n: number): string {
+  const [y, m] = yearMonth.split('-').map(Number) as [number, number];
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }

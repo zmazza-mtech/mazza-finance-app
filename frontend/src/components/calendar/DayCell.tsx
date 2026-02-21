@@ -1,15 +1,13 @@
-import { useRef } from 'react';
 import { TransactionItem } from './TransactionItem';
 import { formatCurrency, getBalanceHealth, getBalanceHealthClasses } from '@/lib/balance';
 import type { ForecastTransaction } from '@/api/types';
 
-const MAX_VISIBLE = 3;
+const MAX_VISIBLE = 2;
 
 interface DayCellProps {
   date: string; // YYYY-MM-DD
   transactions: ForecastTransaction[];
-  dailyNet: string;
-  runningBalance: string;
+  runningBalance: string; // empty string if no data for this day
   isToday: boolean;
   isFocused: boolean;
   greenThreshold: string;
@@ -17,20 +15,19 @@ interface DayCellProps {
   onFocus: (date: string) => void;
   onActivate: (date: string) => void;
   onAddTransaction: (date: string) => void;
-  onShowMore?: (date: string) => void;
+  onShowMore: (date: string, anchor: HTMLElement) => void;
 }
 
 /**
- * A single day cell in the calendar timeline.
- * - Participates in the roving tabindex pattern (tabIndex controlled by parent)
- * - Shows first 3 transactions; "N more..." for overflow
- * - Running balance colored by health thresholds
- * - Today's cell shows "Today" pill + left-border accent
+ * A single day cell in the monthly calendar grid.
+ * - Participates in roving tabindex (tabIndex controlled by parent)
+ * - Date number top-left; running balance bottom-right with health color
+ * - Shows first 2 transactions; "N more" button triggers a positioned popover
+ * - Today's cell has a blue ring inset and blue date number
  */
 export function DayCell({
   date,
   transactions,
-  dailyNet: _dailyNet,
   runningBalance,
   isToday,
   isFocused,
@@ -41,17 +38,18 @@ export function DayCell({
   onAddTransaction,
   onShowMore,
 }: DayCellProps) {
-  const cellRef = useRef<HTMLDivElement>(null);
-  const dayOfMonth = new Date(date + 'T00:00:00').getDate();
+  const dayOfMonth = parseInt(date.split('-')[2]!, 10);
   const visible = transactions.slice(0, MAX_VISIBLE);
   const overflowCount = transactions.length - MAX_VISIBLE;
 
-  const health = getBalanceHealth(runningBalance, greenThreshold, criticalThreshold);
-  const balanceClasses = getBalanceHealthClasses(health);
+  const health = runningBalance
+    ? getBalanceHealth(runningBalance, greenThreshold, criticalThreshold)
+    : null;
+  const balanceClasses = health ? getBalanceHealthClasses(health) : 'text-gray-400 dark:text-gray-600';
 
   return (
     <div
-      ref={cellRef}
+      data-date={date}
       role="gridcell"
       aria-label={`${date}${isToday ? ', today' : ''}`}
       tabIndex={isFocused ? 0 : -1}
@@ -62,25 +60,30 @@ export function DayCell({
           onActivate(date);
         }
       }}
-      className={`relative p-2 border-b border-gray-100 dark:border-gray-800 min-h-[80px] ${
+      className={[
+        'group relative flex flex-col border-r border-b border-gray-200 dark:border-gray-700',
+        'min-h-[100px] p-1.5 focus:outline-none',
         isToday
-          ? 'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-950/20'
-          : 'border-l-4 border-l-transparent'
-      } focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
+          ? 'ring-2 ring-inset ring-blue-500 bg-blue-50/20 dark:bg-blue-950/10'
+          : 'hover:bg-gray-50/60 dark:hover:bg-gray-800/40',
+        isFocused && !isToday
+          ? 'ring-2 ring-inset ring-blue-400'
+          : '',
+      ].join(' ')}
     >
-      {/* Date header */}
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            {dayOfMonth}
-          </span>
-          {isToday && (
-            <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-500 text-white rounded-full">
-              Today
-            </span>
-          )}
-        </div>
-        {/* Add transaction button — always visible on touch */}
+      {/* Top row: date number + add button */}
+      <div className="flex items-start justify-between mb-1">
+        <span
+          className={[
+            'text-sm font-semibold leading-none',
+            isToday
+              ? 'text-blue-600 dark:text-blue-400'
+              : 'text-gray-800 dark:text-gray-200',
+          ].join(' ')}
+        >
+          {dayOfMonth}
+        </span>
+
         <button
           type="button"
           aria-label={`Add transaction for ${date}`}
@@ -88,36 +91,44 @@ export function DayCell({
             e.stopPropagation();
             onAddTransaction(date);
           }}
-          className="flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center w-5 h-5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition-all focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <span aria-hidden="true">+</span>
+          <span aria-hidden="true" className="text-xs leading-none">+</span>
         </button>
       </div>
 
       {/* Transaction list */}
       {visible.length > 0 && (
-        <ul className="space-y-0.5">
+        <ul className="space-y-0.5 flex-1 min-w-0">
           {visible.map((tx) => (
             <TransactionItem key={tx.id} transaction={tx} />
           ))}
         </ul>
       )}
 
-      {/* Overflow indicator */}
-      {overflowCount > 0 && (
-        <button
-          type="button"
-          onClick={() => onShowMore?.(date)}
-          className="mt-0.5 text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label={`Show ${overflowCount} more transactions for ${date}`}
-        >
-          {overflowCount} more...
-        </button>
-      )}
+      {/* Bottom row: overflow button + running balance */}
+      <div className="flex items-end justify-between mt-auto pt-1">
+        {overflowCount > 0 ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowMore(date, e.currentTarget.closest('[role="gridcell"]') as HTMLElement);
+            }}
+            className="text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-1 focus:ring-blue-500 rounded leading-none"
+            aria-label={`Show ${overflowCount} more transactions for ${date}`}
+          >
+            {overflowCount} more...
+          </button>
+        ) : (
+          <span />
+        )}
 
-      {/* Running balance */}
-      <div className={`mt-1 text-xs font-medium text-right ${balanceClasses}`}>
-        {formatCurrency(runningBalance)}
+        {runningBalance && (
+          <span className={`text-xs font-medium leading-none ${balanceClasses}`}>
+            {formatCurrency(runningBalance)}
+          </span>
+        )}
       </div>
     </div>
   );

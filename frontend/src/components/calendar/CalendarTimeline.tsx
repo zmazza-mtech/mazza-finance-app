@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { MonthSection } from './MonthSection';
-import { ShowMoreDrawer } from './ShowMoreDrawer';
+import { useState, useCallback, useEffect } from 'react';
+import { MonthCalendarGrid } from './MonthCalendarGrid';
+import { ShowMorePopover } from './ShowMorePopover';
 import { TransactionModal } from './TransactionModal';
 import {
   createRovingState,
@@ -13,8 +13,12 @@ interface CalendarTimelineProps {
   days: ForecastDay[];
   accountId: string;
   todayDate: string;
+  currentMonth: string; // 'YYYY-MM'
   greenThreshold: string;
   criticalThreshold: string;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  onToday: () => void;
   onAddTransaction: (data: {
     accountId: string;
     date: string;
@@ -24,49 +28,45 @@ interface CalendarTimelineProps {
 }
 
 /**
- * Groups forecast days by month, handles roving tabindex keyboard nav,
- * and orchestrates ShowMoreDrawer + TransactionModal.
+ * Manages roving tabindex keyboard nav, ShowMorePopover, and TransactionModal.
+ * Renders a single MonthCalendarGrid for the active month.
  *
  * Keyboard shortcuts:
  * - Arrow keys: navigate day cells
- * - T: jump to today
- * - Enter: activate focused cell (open add transaction)
- * - Escape: close open drawer/modal
+ * - T: jump to today (and navigate to today's month)
+ * - Enter / Space: open add transaction modal
+ * - Escape: close open popover / modal
  */
 export function CalendarTimeline({
   days,
   accountId,
   todayDate,
+  currentMonth,
   greenThreshold,
   criticalThreshold,
+  onPrevMonth,
+  onNextMonth,
+  onToday,
   onAddTransaction,
 }: CalendarTimelineProps) {
-  const allIds = days.map((d) => d.date);
+  // Only include days in the currently visible month for roving tabindex
+  const monthDays = days.filter((d) => d.date.slice(0, 7) === currentMonth);
+  const allIds = monthDays.map((d) => d.date);
+
   const [rovingState, setRovingState] = useState(() =>
     createRovingState(allIds, todayDate),
   );
 
   const [showMoreDate, setShowMoreDate] = useState<string | null>(null);
+  const [showMoreAnchor, setShowMoreAnchor] = useState<HTMLElement | null>(null);
   const [modalDate, setModalDate] = useState<string | null>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Sync roving state when days list changes
+  // Sync roving state when the visible month changes
   useEffect(() => {
-    setRovingState((prev) => createRovingState(allIds, prev.focusedId ?? todayDate));
+    const preferredFocus = todayDate.slice(0, 7) === currentMonth ? todayDate : null;
+    setRovingState(createRovingState(allIds, preferredFocus ?? allIds[0] ?? todayDate));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [days.length]);
-
-  // Scroll to today whenever the days list loads or changes
-  useEffect(() => {
-    if (days.length > 0) {
-      scrollToDate(todayDate);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [days.length, todayDate]);
-
-  // Group days by month label
-  const months = groupByMonth(days);
+  }, [currentMonth]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -78,9 +78,8 @@ export function CalendarTimeline({
       }
 
       if (e.key === 'T' || e.key === 't') {
-        // Jump to today
         setRovingState((prev) => ({ ...prev, focusedId: todayDate }));
-        scrollToDate(todayDate);
+        onToday();
         return;
       }
 
@@ -89,15 +88,20 @@ export function CalendarTimeline({
         if (rovingState.focusedId) {
           setModalDate(rovingState.focusedId);
         }
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        if (showMoreDate) {
+          setShowMoreDate(null);
+          setShowMoreAnchor(null);
+        } else if (modalDate) {
+          setModalDate(null);
+        }
       }
     },
-    [rovingState.focusedId, todayDate],
+    [rovingState.focusedId, todayDate, onToday, showMoreDate, modalDate],
   );
-
-  function scrollToDate(date: string) {
-    const el = containerRef.current?.querySelector(`[data-date="${date}"]`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
 
   const showMoreTransactions =
     showMoreDate != null
@@ -105,39 +109,42 @@ export function CalendarTimeline({
       : [];
 
   return (
-    <>
-      <div
-        ref={containerRef}
-        role="grid"
-        aria-label="Cash flow calendar"
-        aria-rowcount={days.length}
-        onKeyDown={handleKeyDown}
-        className="outline-none"
-      >
-        {months.map(({ label, days: monthDays }) => (
-          <MonthSection
-            key={label}
-            month={label}
-            days={monthDays}
-            focusedDate={rovingState.focusedId}
-            todayDate={todayDate}
-            greenThreshold={greenThreshold}
-            criticalThreshold={criticalThreshold}
-            onFocusDate={(date) =>
-              setRovingState((prev) => ({ ...prev, focusedId: date }))
-            }
-            onActivateDate={(date) => setModalDate(date)}
-            onAddTransaction={(date) => setModalDate(date)}
-            onShowMore={(date) => setShowMoreDate(date)}
-          />
-        ))}
-      </div>
+    <div
+      role="grid"
+      aria-label="Cash flow calendar"
+      onKeyDown={handleKeyDown}
+      className="outline-none"
+    >
+      <MonthCalendarGrid
+        yearMonth={currentMonth}
+        days={days}
+        focusedDate={rovingState.focusedId}
+        todayDate={todayDate}
+        greenThreshold={greenThreshold}
+        criticalThreshold={criticalThreshold}
+        onPrevMonth={onPrevMonth}
+        onNextMonth={onNextMonth}
+        onToday={onToday}
+        onFocusDate={(date) =>
+          setRovingState((prev) => ({ ...prev, focusedId: date }))
+        }
+        onActivateDate={(date) => setModalDate(date)}
+        onAddTransaction={(date) => setModalDate(date)}
+        onShowMore={(date, anchor) => {
+          setShowMoreDate(date);
+          setShowMoreAnchor(anchor);
+        }}
+      />
 
-      <ShowMoreDrawer
+      <ShowMorePopover
         date={showMoreDate ?? ''}
         transactions={showMoreTransactions}
+        anchorEl={showMoreAnchor}
         isOpen={showMoreDate !== null}
-        onClose={() => setShowMoreDate(null)}
+        onClose={() => {
+          setShowMoreDate(null);
+          setShowMoreAnchor(null);
+        }}
       />
 
       <TransactionModal
@@ -151,36 +158,6 @@ export function CalendarTimeline({
         }}
         onClose={() => setModalDate(null)}
       />
-    </>
+    </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-interface MonthGroup {
-  label: string;
-  days: ForecastDay[];
-}
-
-function groupByMonth(days: ForecastDay[]): MonthGroup[] {
-  const map = new Map<string, ForecastDay[]>();
-
-  for (const day of days) {
-    const label = monthLabel(day.date);
-    const existing = map.get(label);
-    if (existing) {
-      existing.push(day);
-    } else {
-      map.set(label, [day]);
-    }
-  }
-
-  return Array.from(map.entries()).map(([label, days]) => ({ label, days }));
-}
-
-function monthLabel(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
