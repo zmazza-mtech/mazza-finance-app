@@ -59,9 +59,14 @@ router.post('/', async (req: Request, res: Response) => {
     const rows = await db
       .insert(recurringTransactions)
       .values({
-        ...parsed.data,
+        accountId: parsed.data.accountId,
+        name: parsed.data.name,
+        amount: parsed.data.amount,
+        frequency: parsed.data.frequency,
+        nextDate: parsed.data.nextDate,
         source: 'manual',
         status: 'active',
+        ...(parsed.data.endDate !== undefined ? { endDate: parsed.data.endDate } : {}),
       })
       .returning();
 
@@ -101,9 +106,18 @@ router.patch('/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ data: null, error: 'Recurring transaction not found' });
     }
 
+    const setFields = { updatedAt: new Date() } as Record<string, unknown>;
+    if (bodyParsed.data.name !== undefined) setFields['name'] = bodyParsed.data.name;
+    if (bodyParsed.data.amount !== undefined) setFields['amount'] = bodyParsed.data.amount;
+    if (bodyParsed.data.frequency !== undefined) setFields['frequency'] = bodyParsed.data.frequency;
+    if (bodyParsed.data.nextDate !== undefined) setFields['nextDate'] = bodyParsed.data.nextDate;
+    if (bodyParsed.data.endDate !== undefined) setFields['endDate'] = bodyParsed.data.endDate;
+    if (bodyParsed.data.status !== undefined) setFields['status'] = bodyParsed.data.status;
+
     const rows = await db
       .update(recurringTransactions)
-      .set({ ...bodyParsed.data, updatedAt: new Date() })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .set(setFields as any)
       .where(eq(recurringTransactions.id, paramParsed.data.id))
       .returning();
 
@@ -206,7 +220,10 @@ router.post('/:id/overrides/:originalDate', async (req: Request, res: Response) 
       .values({
         recurringTransactionId: id,
         originalDate,
-        ...bodyParsed.data,
+        overrideType: bodyParsed.data.overrideType,
+        ...(bodyParsed.data.overrideDate !== undefined ? { overrideDate: bodyParsed.data.overrideDate } : {}),
+        ...(bodyParsed.data.overrideAmount !== undefined ? { overrideAmount: bodyParsed.data.overrideAmount } : {}),
+        ...(bodyParsed.data.overrideName !== undefined ? { overrideName: bodyParsed.data.overrideName } : {}),
       })
       .onConflictDoNothing();
 

@@ -99,9 +99,15 @@ router.patch('/:id', async (req: Request, res: Response) => {
       return res.status(403).json({ data: null, error: 'Only manual transactions can be edited' });
     }
 
+    const setFields = { updatedAt: new Date() } as Record<string, unknown>;
+    if (parsed.data.date !== undefined) setFields['date'] = parsed.data.date;
+    if (parsed.data.description !== undefined) setFields['description'] = parsed.data.description;
+    if (parsed.data.amount !== undefined) setFields['amount'] = parsed.data.amount;
+
     const rows = await db
       .update(transactions)
-      .set({ ...parsed.data, updatedAt: new Date() })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .set(setFields as any)
       .where(eq(transactions.id, paramParsed.data.id))
       .returning();
 

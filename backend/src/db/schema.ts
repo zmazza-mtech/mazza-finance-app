@@ -38,7 +38,9 @@ export const accounts = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [check('accounts_type_check', sql`${t.type} IN ('checking', 'savings', 'credit')`)]
+  (t) => ({
+    accountsTypeCheck: check('accounts_type_check', sql`${t.type} IN ('checking', 'savings', 'credit')`),
+  })
 );
 
 // ---------------------------------------------------------------------------
@@ -82,14 +84,11 @@ export const transactions = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [
-    index('idx_transactions_account_date').on(t.accountId, t.date),
-    check('transactions_type_check', sql`${t.type} IN ('actual', 'manual')`),
-    check(
-      'transactions_status_check',
-      sql`${t.status} IN ('posted', 'pending')`
-    ),
-  ]
+  (t) => ({
+    idxTransactionsAccountDate: index('idx_transactions_account_date').on(t.accountId, t.date),
+    transactionsTypeCheck: check('transactions_type_check', sql`${t.type} IN ('actual', 'manual')`),
+    transactionsStatusCheck: check('transactions_status_check', sql`${t.status} IN ('posted', 'pending')`),
+  })
 );
 
 // ---------------------------------------------------------------------------
@@ -118,21 +117,12 @@ export const recurringTransactions = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [
-    index('idx_recurring_account').on(t.accountId),
-    check(
-      'recurring_frequency_check',
-      sql`${t.frequency} IN ('weekly', 'biweekly', 'monthly', 'yearly')`
-    ),
-    check(
-      'recurring_source_check',
-      sql`${t.source} IN ('auto_detected', 'manual')`
-    ),
-    check(
-      'recurring_status_check',
-      sql`${t.status} IN ('active', 'disabled', 'pending_review', 'ended')`
-    ),
-  ]
+  (t) => ({
+    idxRecurringAccount: index('idx_recurring_account').on(t.accountId),
+    recurringFrequencyCheck: check('recurring_frequency_check', sql`${t.frequency} IN ('weekly', 'biweekly', 'monthly', 'yearly')`),
+    recurringSourceCheck: check('recurring_source_check', sql`${t.source} IN ('auto_detected', 'manual')`),
+    recurringStatusCheck: check('recurring_status_check', sql`${t.status} IN ('active', 'disabled', 'pending_review', 'ended')`),
+  })
 );
 
 // ---------------------------------------------------------------------------
@@ -155,13 +145,10 @@ export const recurringOverrides = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [
-    index('idx_overrides_recurring').on(t.recurringTransactionId),
-    check(
-      'override_type_check',
-      sql`${t.overrideType} IN ('modified', 'deleted')`
-    ),
-  ]
+  (t) => ({
+    idxOverridesRecurring: index('idx_overrides_recurring').on(t.recurringTransactionId),
+    overrideTypeCheck: check('override_type_check', sql`${t.overrideType} IN ('modified', 'deleted')`),
+  })
 );
 
 // ---------------------------------------------------------------------------
