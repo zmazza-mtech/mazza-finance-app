@@ -138,3 +138,7 @@ export interface ImportResult {
   skipped: number;
   errors: string[];
 }
+
+export interface DetectResult {
+  detected: number;
+}

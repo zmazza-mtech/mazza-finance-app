@@ -136,6 +136,7 @@ import type {
   CreateRecurringBody,
   UpdateRecurringBody,
   CreateOverrideBody,
+  DetectResult,
 } from './types';
 
 export async function getRecurring(accountId: string): Promise<Recurring[]> {
@@ -172,6 +173,18 @@ export async function updateRecurring(
 export async function deleteRecurring(id: string): Promise<void> {
   const res = await request<null>(`/recurring/${id}`, { method: 'DELETE' });
   if (res.error) throw new Error(res.error);
+}
+
+export async function detectRecurringPatterns(
+  accountId: string,
+): Promise<DetectResult> {
+  const res = await request<DetectResult>('/recurring/detect', {
+    method: 'POST',
+    body: JSON.stringify({ accountId }),
+  });
+  if (res.error) throw new Error(String(res.error));
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
 }
 
 export async function getOverrides(recurringId: string): Promise<Override[]> {

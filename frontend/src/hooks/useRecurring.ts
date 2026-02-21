@@ -4,6 +4,7 @@ import {
   createRecurring,
   updateRecurring,
   deleteRecurring,
+  detectRecurringPatterns,
   getOverrides,
   createOverride,
   deleteOverride,
@@ -62,6 +63,16 @@ export function useUpdateRecurring(accountId: string) {
       void queryClient.invalidateQueries({ queryKey: recurringKey(accountId) });
       // Also invalidate forecast since recurring changes affect it
       void queryClient.invalidateQueries({ queryKey: ['forecast'] });
+    },
+  });
+}
+
+export function useDetectRecurring(accountId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => detectRecurringPatterns(accountId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: recurringKey(accountId) });
     },
   });
 }

@@ -2,7 +2,8 @@ import { Router, Request, Response } from 'express';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../db/client';
-import { recurringTransactions, recurringOverrides } from '../db/schema';
+import { recurringTransactions, recurringOverrides, transactions, accounts } from '../db/schema';
+import { detectRecurring, type RawTransaction } from '../services/detection';
 import {
   CreateRecurringSchema,
   UpdateRecurringSchema,
@@ -73,6 +74,84 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(201).json({ data: rows[0], error: null });
   } catch (err) {
     logger.error('POST /recurring failed', { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ data: null, error: 'Internal server error' });
+  }
+});
+
+// POST /recurring/detect — analyze existing transactions and create pending_review rows
+router.post('/detect', async (req: Request, res: Response) => {
+  const parsed = z.object({ accountId: z.string().uuid() }).safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ data: null, error: parsed.error.flatten() });
+  }
+
+  const { accountId } = parsed.data;
+
+  try {
+    const db = getDb();
+
+    // Verify account exists
+    const accountRows = await db
+      .select({ id: accounts.id })
+      .from(accounts)
+      .where(eq(accounts.id, accountId))
+      .limit(1);
+
+    if (accountRows.length === 0) {
+      return res.status(404).json({ data: null, error: 'Account not found' });
+    }
+
+    // Fetch all transactions for this account (full history for best pattern detection)
+    const txRows = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.accountId, accountId));
+
+    // Fetch existing recurring names to avoid re-detecting known series
+    const existingRows = await db
+      .select({ name: recurringTransactions.name })
+      .from(recurringTransactions)
+      .where(eq(recurringTransactions.accountId, accountId));
+
+    const existingNames = new Set(
+      existingRows.map((r) => r.name.trim().toLowerCase()),
+    );
+
+    // Adapt DB rows to the shape detectRecurring expects
+    const rawTxs: RawTransaction[] = txRows.map((t) => ({
+      tellerId: t.id,
+      accountId: t.accountId,
+      date: String(t.date),
+      description: t.description,
+      amount: String(t.amount),
+    }));
+
+    const serverToday = new Date().toISOString().slice(0, 10);
+    const detected = detectRecurring(rawTxs, serverToday, existingNames);
+
+    if (detected.length === 0) {
+      return res.json({ data: { detected: 0 }, error: null });
+    }
+
+    const inserted = await db
+      .insert(recurringTransactions)
+      .values(
+        detected.map((d) => ({
+          accountId: d.accountId,
+          name: d.name,
+          amount: d.amount,
+          frequency: d.frequency,
+          nextDate: d.nextDate,
+          source: 'auto_detected' as const,
+          status: 'pending_review' as const,
+        })),
+      )
+      .returning();
+
+    logger.info('POST /recurring/detect completed', { accountId, detected: inserted.length });
+    res.json({ data: { detected: inserted.length }, error: null });
+  } catch (err) {
+    logger.error('POST /recurring/detect failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

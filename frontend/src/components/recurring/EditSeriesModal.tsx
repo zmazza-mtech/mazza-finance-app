@@ -6,7 +6,9 @@ import Decimal from 'decimal.js';
 interface EditSeriesModalProps {
   recurring: Recurring | null;
   isOpen: boolean;
-  onSave: (id: string, body: UpdateRecurringBody) => void;
+  isCreating?: boolean;
+  accountId?: string;
+  onSave: (id: string | null, body: UpdateRecurringBody) => void;
   onClose: () => void;
 }
 
@@ -18,11 +20,13 @@ const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
 ];
 
 /**
- * Modal form for editing a recurring transaction series.
+ * Modal form for editing or creating a recurring transaction series.
+ * When isCreating=true, recurring may be null; onSave receives id=null.
  */
 export function EditSeriesModal({
   recurring,
   isOpen,
+  isCreating = false,
   onSave,
   onClose,
 }: EditSeriesModalProps) {
@@ -35,7 +39,8 @@ export function EditSeriesModal({
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && recurring) {
+    if (!isOpen) return;
+    if (recurring) {
       setName(recurring.name);
       // Amount stored as signed decimal; show absolute value in field
       const abs = new Decimal(recurring.amount).abs().toFixed(2);
@@ -43,9 +48,15 @@ export function EditSeriesModal({
       setFrequency(recurring.frequency);
       setNextDate(recurring.nextDate);
       setEndDate(recurring.endDate ?? '');
-      setTimeout(() => nameRef.current?.focus(), 0);
+    } else if (isCreating) {
+      setName('');
+      setAmount('');
+      setFrequency('monthly');
+      setNextDate(new Date().toISOString().slice(0, 10));
+      setEndDate('');
     }
-  }, [isOpen, recurring]);
+    setTimeout(() => nameRef.current?.focus(), 0);
+  }, [isOpen, recurring, isCreating]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -70,7 +81,7 @@ export function EditSeriesModal({
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !recurring) return null;
+  if (!isOpen || (!recurring && !isCreating)) return null;
 
   function isAmountValid(): boolean {
     try {
@@ -84,11 +95,17 @@ export function EditSeriesModal({
     e.preventDefault();
     if (!name.trim() || !isAmountValid()) return;
 
-    // Preserve sign: negative amounts are debits
-    const originalIsNegative = new Decimal(recurring!.amount).isNegative();
-    const signed = originalIsNegative
-      ? new Decimal(amount).negated().toFixed(2)
-      : new Decimal(amount).toFixed(2);
+    let signed: string;
+    if (recurring) {
+      // Preserve original sign when editing
+      const originalIsNegative = new Decimal(recurring.amount).isNegative();
+      signed = originalIsNegative
+        ? new Decimal(amount).negated().toFixed(2)
+        : new Decimal(amount).toFixed(2);
+    } else {
+      // New series: default to expense (negative)
+      signed = new Decimal(amount).negated().toFixed(2);
+    }
 
     const body: UpdateRecurringBody = {
       name: name.trim(),
@@ -98,9 +115,12 @@ export function EditSeriesModal({
       endDate: endDate || null,
     };
 
-    onSave(recurring!.id, body);
+    onSave(recurring?.id ?? null, body);
     onClose();
   }
+
+  const title = isCreating && !recurring ? 'Add Recurring Series' : 'Edit Recurring Series';
+  const submitLabel = isCreating && !recurring ? 'Add' : 'Save Changes';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -120,7 +140,7 @@ export function EditSeriesModal({
           id="edit-series-title"
           className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
         >
-          Edit Recurring Series
+          {title}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -223,7 +243,7 @@ export function EditSeriesModal({
               disabled={!name.trim() || !isAmountValid()}
               className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Save Changes
+              {submitLabel}
             </button>
           </div>
         </form>

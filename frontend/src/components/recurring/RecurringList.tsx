@@ -135,7 +135,7 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
       <EditSeriesModal
         recurring={editTarget}
         isOpen={editTarget !== null}
-        onSave={onUpdate}
+        onSave={(id, body) => { if (id) onUpdate(id, body); }}
         onClose={() => setEditTarget(null)}
       />
 
