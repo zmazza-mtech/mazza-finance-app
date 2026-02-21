@@ -11,10 +11,10 @@ const router = Router();
 router.post('/', async (_req: Request, res: Response) => {
   try {
     // Fire and forget — return immediately; client polls /sync/status
-    runSync().catch((err) => logger.error('On-demand sync failed', { err }));
+    runSync().catch((err) => logger.error('On-demand sync failed', { message: err instanceof Error ? err.message : String(err) }));
     res.status(202).json({ data: { accepted: true }, error: null });
   } catch (err) {
-    logger.error('POST /sync failed', { err });
+    logger.error('POST /sync failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });
@@ -31,7 +31,7 @@ router.get('/status', async (_req: Request, res: Response) => {
 
     res.json({ data: rows[0] ?? null, error: null });
   } catch (err) {
-    logger.error('GET /sync/status failed', { err });
+    logger.error('GET /sync/status failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

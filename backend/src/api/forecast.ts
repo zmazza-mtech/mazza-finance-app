@@ -137,7 +137,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json({ data: days, error: null });
   } catch (err) {
-    logger.error('GET /forecast failed', { err });
+    logger.error('GET /forecast failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

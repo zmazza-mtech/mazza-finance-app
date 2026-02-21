@@ -5,6 +5,8 @@ import { transactions } from '../db/schema';
 import {
   CreateManualTransactionSchema,
   UpdateManualTransactionSchema,
+  TransactionsQuerySchema,
+  UuidParamSchema,
 } from '../lib/validate';
 import { logger } from '../lib/logger';
 
@@ -12,11 +14,12 @@ const router = Router();
 
 // GET /transactions?accountId=&startDate=&endDate=
 router.get('/', async (req: Request, res: Response) => {
-  const { accountId, startDate, endDate } = req.query as Record<string, string | undefined>;
-
-  if (!accountId) {
-    return res.status(400).json({ data: null, error: 'accountId is required' });
+  const parsed = TransactionsQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({ data: null, error: parsed.error.flatten() });
   }
+
+  const { accountId, startDate, endDate } = parsed.data;
 
   try {
     const db = getDb();
@@ -32,7 +35,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json({ data: rows, error: null });
   } catch (err) {
-    logger.error('GET /transactions failed', { err });
+    logger.error('GET /transactions failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });
@@ -57,13 +60,18 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json({ data: rows[0], error: null });
   } catch (err) {
-    logger.error('POST /transactions failed', { err });
+    logger.error('POST /transactions failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });
 
 // PATCH /transactions/:id (manual entries only)
 router.patch('/:id', async (req: Request, res: Response) => {
+  const paramParsed = UuidParamSchema.safeParse(req.params);
+  if (!paramParsed.success) {
+    return res.status(400).json({ data: null, error: 'Invalid transaction id' });
+  }
+
   const parsed = UpdateManualTransactionSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ data: null, error: parsed.error.flatten() });
@@ -80,7 +88,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
     const existing = await db
       .select()
       .from(transactions)
-      .where(eq(transactions.id, req.params.id!))
+      .where(eq(transactions.id, paramParsed.data.id))
       .limit(1);
 
     if (existing.length === 0) {
@@ -94,25 +102,30 @@ router.patch('/:id', async (req: Request, res: Response) => {
     const rows = await db
       .update(transactions)
       .set({ ...parsed.data, updatedAt: new Date() })
-      .where(eq(transactions.id, req.params.id!))
+      .where(eq(transactions.id, paramParsed.data.id))
       .returning();
 
     res.json({ data: rows[0], error: null });
   } catch (err) {
-    logger.error('PATCH /transactions/:id failed', { err });
+    logger.error('PATCH /transactions/:id failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });
 
 // DELETE /transactions/:id (manual entries only)
 router.delete('/:id', async (req: Request, res: Response) => {
+  const paramParsed = UuidParamSchema.safeParse(req.params);
+  if (!paramParsed.success) {
+    return res.status(400).json({ data: null, error: 'Invalid transaction id' });
+  }
+
   try {
     const db = getDb();
 
     const existing = await db
       .select()
       .from(transactions)
-      .where(eq(transactions.id, req.params.id!))
+      .where(eq(transactions.id, paramParsed.data.id))
       .limit(1);
 
     if (existing.length === 0) {
@@ -123,10 +136,10 @@ router.delete('/:id', async (req: Request, res: Response) => {
       return res.status(403).json({ data: null, error: 'Only manual transactions can be deleted' });
     }
 
-    await db.delete(transactions).where(eq(transactions.id, req.params.id!));
+    await db.delete(transactions).where(eq(transactions.id, paramParsed.data.id));
     res.status(204).send();
   } catch (err) {
-    logger.error('DELETE /transactions/:id failed', { err });
+    logger.error('DELETE /transactions/:id failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

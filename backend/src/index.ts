@@ -23,6 +23,12 @@ for (const key of required) {
   }
 }
 
+// Validate ENCRYPTION_KEY is exactly 64 hex characters (32 bytes for AES-256)
+if (!/^[0-9a-fA-F]{64}$/.test(process.env.ENCRYPTION_KEY ?? '')) {
+  logger.error('ENCRYPTION_KEY must be a 64-character hex string (generate with: openssl rand -hex 32)');
+  process.exit(1);
+}
+
 const PORT = parseInt(process.env.PORT ?? '3001', 10);
 
 // ---------------------------------------------------------------------------

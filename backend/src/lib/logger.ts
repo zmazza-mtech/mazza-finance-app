@@ -8,6 +8,8 @@ const SENSITIVE_PATTERNS = [
   /Authorization:\s*Bearer\s+\S+/gi,
   /access_token\s*[:=]\s*\S+/gi,
   /Bearer\s+[A-Za-z0-9\-._~+/]+=*/g,
+  // AES-256-GCM stored token format: <24-hex>:<hex>:<32-hex>
+  /[0-9a-f]{24}:[0-9a-f]+:[0-9a-f]{32}/gi,
 ];
 
 function sanitize(value: unknown): unknown {

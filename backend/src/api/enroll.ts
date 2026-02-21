@@ -61,7 +61,7 @@ router.post('/', async (req: Request, res: Response) => {
     logger.info('Enrollment complete', { enrollmentId, accountCount: tellerAccounts.length });
     res.status(201).json({ data: { enrolled: true }, error: null });
   } catch (err) {
-    logger.error('Enrollment failed', { err });
+    logger.error('Enrollment failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Enrollment failed' });
   }
 });

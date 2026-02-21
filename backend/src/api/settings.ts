@@ -14,7 +14,7 @@ router.get('/', async (_req: Request, res: Response) => {
     const rows = await db.select().from(appSettings);
     res.json({ data: rows, error: null });
   } catch (err) {
-    logger.error('GET /settings failed', { err });
+    logger.error('GET /settings failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });
@@ -51,7 +51,7 @@ router.put('/:key', async (req: Request, res: Response) => {
 
     res.json({ data: rows[0], error: null });
   } catch (err) {
-    logger.error('PUT /settings/:key failed', { err });
+    logger.error('PUT /settings/:key failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

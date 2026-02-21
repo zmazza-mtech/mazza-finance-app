@@ -22,8 +22,8 @@ http:// {
 # Main HTTPS site
 {$CADDY_DOMAIN} {
 
-    # TLS — update to Option A or B per README before first deployment
-    tls internal
+    # TLS — mkcert certificates bind-mounted via docker-compose.yml volumes
+    tls /certs/localhost.pem /certs/localhost-key.pem
 
     # Enforce TLS 1.2 minimum
     protocols tls1.2 tls1.3
@@ -37,7 +37,7 @@ http:// {
 
     # Security headers
     header {
-        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-yEEXl9HDMsJ4Ql6k8z8LV0ixwFiQCQXFxBjZie/zWdo='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
         X-Frame-Options "DENY"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "strict-origin-when-cross-origin"

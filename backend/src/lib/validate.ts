@@ -93,6 +93,16 @@ export const SettingKeyParamSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Path parameters
+// ---------------------------------------------------------------------------
+
+/** Validates a single :id path param as UUID. */
+export const UuidParamSchema = z.object({ id: uuid });
+
+/** Validates a YYYY-MM-DD :originalDate path param. */
+export const OriginalDateParamSchema = z.object({ originalDate: dateString });
+
+// ---------------------------------------------------------------------------
 // Query params
 // ---------------------------------------------------------------------------
 
@@ -121,3 +131,5 @@ export type CreateOverrideInput = z.infer<typeof CreateOverrideSchema>;
 export type UpdateSettingInput = z.infer<typeof UpdateSettingSchema>;
 export type ForecastQuery = z.infer<typeof ForecastQuerySchema>;
 export type TransactionsQuery = z.infer<typeof TransactionsQuerySchema>;
+export type UuidParam = z.infer<typeof UuidParamSchema>;
+export type OriginalDateParam = z.infer<typeof OriginalDateParamSchema>;

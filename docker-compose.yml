@@ -10,6 +10,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - frontend_build:/usr/share/caddy:ro
+      - ./localhost+2.pem:/certs/localhost.pem:ro
+      - ./localhost+2-key.pem:/certs/localhost-key.pem:ro
     environment:
       - CADDY_DOMAIN=${CADDY_DOMAIN:-localhost}
       - CADDY_BASIC_AUTH_HASH=${CADDY_BASIC_AUTH_HASH}
