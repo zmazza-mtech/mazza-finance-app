@@ -23,10 +23,8 @@ http:// {
 {$CADDY_DOMAIN} {
 
     # TLS — mkcert certificates bind-mounted via docker-compose.yml volumes
+    # Caddy enforces TLS 1.2+ by default; no extra protocols directive needed
     tls /certs/localhost.pem /certs/localhost-key.pem
-
-    # Enforce TLS 1.2 minimum
-    protocols tls1.2 tls1.3
 
     # HTTP Basic Auth on all routes
     # Credentials set in .env as CADDY_BASIC_AUTH_HASH
