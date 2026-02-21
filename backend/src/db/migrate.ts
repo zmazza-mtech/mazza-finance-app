@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { join } from 'path';
 import pg from 'pg';
 import 'dotenv/config';
 
@@ -13,7 +14,8 @@ export async function runMigrations(): Promise<void> {
   const db = drizzle(pool);
 
   console.log('Running migrations...');
-  await migrate(db, { migrationsFolder: './src/db/migrations' });
+  // __dirname resolves to src/db/ in dev (tsx) and dist/db/ in production (node)
+  await migrate(db, { migrationsFolder: join(__dirname, 'migrations') });
   console.log('Migrations complete.');
 
   await pool.end();

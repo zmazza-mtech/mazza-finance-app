@@ -13,6 +13,8 @@ RUN npm ci --ignore-scripts
 COPY tsconfig.json ./
 COPY src/ ./src/
 RUN npm run build
+# Copy migration SQL files into dist so the runtime image has them
+RUN cp -r src/db/migrations dist/db/
 
 # ---------------------------------------------------------------------------
 # Stage 2: Production runtime
