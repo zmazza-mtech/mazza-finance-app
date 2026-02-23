@@ -38,16 +38,10 @@ services:
     cpus: 0.5
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - TELLER_CERT_PATH=/certs/teller_public_certificate.pem
-      - TELLER_KEY_PATH=/certs/teller_private_key.pem
-      - TELLER_ENVIRONMENT=${TELLER_ENVIRONMENT:-sandbox}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - PORT=3001
       - NODE_ENV=${NODE_ENV:-production}
       - CORS_ORIGIN=${CORS_ORIGIN:-https://localhost}
-    volumes:
-      - ${TELLER_CERT_PATH}:/certs/teller_public_certificate.pem:ro
-      - ${TELLER_KEY_PATH}:/certs/teller_private_key.pem:ro
     expose:
       - "3001"
     depends_on:
@@ -66,8 +60,6 @@ services:
       target: builder
       args:
         - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://localhost/api/v1}
-        - VITE_TELLER_APPLICATION_ID=${VITE_TELLER_APPLICATION_ID}
-        - VITE_TELLER_ENVIRONMENT=${VITE_TELLER_ENVIRONMENT:-production}
     volumes:
       - frontend_build:/app/dist
     restart: "no"

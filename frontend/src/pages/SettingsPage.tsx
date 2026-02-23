@@ -1,7 +1,6 @@
 import { ThemeToggle } from '@/components/settings/ThemeToggle';
 import { ThresholdSettings } from '@/components/settings/ThresholdSettings';
 import { AccountSettings } from '@/components/settings/AccountSettings';
-import { ConnectBankButton } from '@/components/settings/ConnectBankButton';
 import { SyncStatus } from '@/components/settings/SyncStatus';
 import { CsvImportSection } from '@/components/settings/CsvImportSection';
 import { AddAccountForm } from '@/components/settings/AddAccountForm';
@@ -130,11 +129,8 @@ export function SettingsPage() {
           </div>
           <div className="p-4 space-y-3">
             <AddAccountForm />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Or connect via Teller:
-            </p>
-            <ConnectBankButton />
           </div>
+          {/* Bank provider TBD — Teller Connect disabled */}
         </div>
       </section>
     </div>

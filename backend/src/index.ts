@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { runMigrations } from './db/migrate';
-import { startHourlySyncJob } from './jobs/hourly-sync';
 import { logger } from './lib/logger';
 import app from './app';
 
@@ -12,8 +11,6 @@ const required = [
   'DATABASE_URL',
   'ENCRYPTION_KEY',
   'CORS_ORIGIN',
-  'TELLER_CERT_PATH',
-  'TELLER_KEY_PATH',
 ];
 
 for (const key of required) {
@@ -46,12 +43,14 @@ async function main(): Promise<void> {
     logger.info(`Backend listening on port ${PORT}`);
   });
 
-  // 3. Schedule hourly sync
-  startHourlySyncJob();
-
-  // 4. Run an initial sync on startup
-  const { runSync } = await import('./jobs/sync');
-  runSync().catch((err) => logger.error('Initial sync failed', { err }));
+  // Teller sync disabled — bank provider TBD
+  // To re-enable, uncomment these lines and add TELLER_CERT_PATH / TELLER_KEY_PATH
+  // to the required env vars above.
+  //
+  // const { startHourlySyncJob } = await import('./jobs/hourly-sync');
+  // startHourlySyncJob();
+  // const { runSync } = await import('./jobs/sync');
+  // runSync().catch((err) => logger.error('Initial sync failed', { err }));
 }
 
 main().catch((err) => {
