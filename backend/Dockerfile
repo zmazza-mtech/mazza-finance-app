@@ -33,7 +33,7 @@ RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 # Copy compiled output
 COPY --from=builder /app/dist ./dist
 
-# Teller certs are bind-mounted at runtime — ensure dir exists
+# Docker Compose secrets are mounted at /run/secrets — ensure dir exists
 RUN mkdir -p /run/secrets && chown mazza:mazza /run/secrets
 
 USER mazza
