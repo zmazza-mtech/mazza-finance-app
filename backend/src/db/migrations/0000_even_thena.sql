@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "accounts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"teller_id" text NOT NULL,
+	"simplefin_id" text,
 	"institution" text NOT NULL,
 	"name" text NOT NULL,
 	"type" text NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "accounts" (
 	"include_in_view" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "accounts_teller_id_unique" UNIQUE("teller_id")
+	CONSTRAINT "accounts_simplefin_id_unique" UNIQUE("simplefin_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "app_settings" (
@@ -58,18 +58,9 @@ CREATE TABLE IF NOT EXISTS "sync_log" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "teller_credentials" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"access_token" text NOT NULL,
-	"enrollment_id" text NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "teller_credentials_enrollment_id_unique" UNIQUE("enrollment_id")
-);
---> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "transactions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"teller_id" text,
+	"simplefin_id" text,
 	"account_id" uuid NOT NULL,
 	"date" date NOT NULL,
 	"description" text NOT NULL,
@@ -78,7 +69,7 @@ CREATE TABLE IF NOT EXISTS "transactions" (
 	"status" text DEFAULT 'posted' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "transactions_teller_id_unique" UNIQUE("teller_id")
+	CONSTRAINT "transactions_simplefin_id_unique" UNIQUE("simplefin_id")
 );
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_overrides_recurring" ON "recurring_overrides" ("recurring_transaction_id");--> statement-breakpoint

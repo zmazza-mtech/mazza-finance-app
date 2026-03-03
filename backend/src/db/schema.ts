@@ -20,7 +20,7 @@ export const accounts = pgTable(
   'accounts',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tellerId: text('teller_id').unique(), // null for manually created accounts
+    simplefinId: text('simplefin_id').unique(), // null for manually created accounts
     institution: text('institution').notNull(),
     name: text('name').notNull(),
     type: text('type').notNull(), // checking | savings | credit
@@ -44,29 +44,13 @@ export const accounts = pgTable(
 );
 
 // ---------------------------------------------------------------------------
-// teller_credentials
-// ---------------------------------------------------------------------------
-export const tellerCredentials = pgTable('teller_credentials', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  // Encrypted: "nonce_hex:ciphertext_hex:auth_tag_hex"
-  accessToken: text('access_token').notNull(),
-  enrollmentId: text('enrollment_id').notNull().unique(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
-
-// ---------------------------------------------------------------------------
 // transactions
 // ---------------------------------------------------------------------------
 export const transactions = pgTable(
   'transactions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    tellerId: text('teller_id').unique(), // null for manual entries
+    simplefinId: text('simplefin_id').unique(), // null for manual entries
     accountId: uuid('account_id')
       .notNull()
       .references(() => accounts.id),

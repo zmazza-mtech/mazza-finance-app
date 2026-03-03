@@ -1,5 +1,5 @@
 {
-  "id": "a2d6b7d2-1d5c-4d77-b696-97af6b23c708",
+  "id": "62386a21-95ad-4e62-80b2-61a7304c8171",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -15,11 +15,11 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "teller_id": {
-          "name": "teller_id",
+        "simplefin_id": {
+          "name": "simplefin_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "institution": {
           "name": "institution",
@@ -97,11 +97,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "accounts_teller_id_unique": {
-          "name": "accounts_teller_id_unique",
+        "accounts_simplefin_id_unique": {
+          "name": "accounts_simplefin_id_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "teller_id"
+            "simplefin_id"
           ]
         }
       }
@@ -388,57 +388,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "teller_credentials": {
-      "name": "teller_credentials",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "access_token": {
-          "name": "access_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "enrollment_id": {
-          "name": "enrollment_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "teller_credentials_enrollment_id_unique": {
-          "name": "teller_credentials_enrollment_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "enrollment_id"
-          ]
-        }
-      }
-    },
     "transactions": {
       "name": "transactions",
       "schema": "",
@@ -450,8 +399,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "teller_id": {
-          "name": "teller_id",
+        "simplefin_id": {
+          "name": "simplefin_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -535,11 +484,11 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "transactions_teller_id_unique": {
-          "name": "transactions_teller_id_unique",
+        "transactions_simplefin_id_unique": {
+          "name": "transactions_simplefin_id_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "teller_id"
+            "simplefin_id"
           ]
         }
       }
