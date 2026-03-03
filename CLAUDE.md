@@ -9,7 +9,8 @@ Full specification: [`docs/PRD.md`](docs/PRD.md)
 
 A self-hosted SPA that shows a vertical calendar timeline of actual and
 forecasted bank transactions with a cumulative running balance. Connects to
-bank accounts via teller.io. Deployed via Docker Compose on a home server.
+bank accounts via SimpleFIN ($1.50/month). Deployed via Docker Compose on a
+home server.
 
 ---
 
@@ -26,7 +27,7 @@ bank accounts via teller.io. Deployed via Docker Compose on a home server.
 | Validation  | Zod — ALL request validation                    |
 | ORM         | Drizzle ORM                                     |
 | Database    | PostgreSQL 16                                   |
-| Scheduler   | node-cron                                       |
+| Bank Data   | SimpleFIN Bridge (24 polls/day limit)           |
 | Proxy       | Caddy (HTTPS, Basic Auth, CSP headers)          |
 | Testing     | Vitest (backend) + Playwright (E2E)             |
 | Containers  | Docker + Docker Compose                         |
@@ -42,8 +43,8 @@ mazza-finance/
 │   │   ├── api/          # Express route handlers
 │   │   ├── db/           # Drizzle schema, migrations, client
 │   │   ├── services/     # Business logic (forecast, sync, detection)
-│   │   ├── jobs/         # node-cron scheduled jobs
-│   │   └── lib/          # Shared utilities (crypto, logger, decimal)
+│   │   ├── jobs/         # Demand-driven sync job
+│   │   └── lib/          # Shared utilities (simplefin client, logger, decimal)
 │   ├── tests/
 │   │   ├── unit/
 │   │   └── integration/
@@ -87,7 +88,8 @@ mazza-finance/
 
 ### Security
 - `dangerouslySetInnerHTML` is **prohibited** for any user or bank data
-- All teller.io API response strings must be HTML-sanitized before DB insertion
+- All SimpleFIN API response strings must be HTML-sanitized before DB insertion
+- SimpleFIN `errors` array must be logged and surfaced to user
 - CORS must use explicit origin allowlist — never `cors({ origin: '*' })`
 - Drizzle raw SQL (`.execute()`) requires explicit security justification
 - Zod validation is **required** on every write endpoint — no exceptions
@@ -96,11 +98,10 @@ mazza-finance/
 - Caddy HTTP Basic Auth gates all routes (configured in Caddyfile)
 - Credentials set via Caddy's `caddy hash-password` utility (see README)
 
-### Token Encryption
-- Algorithm: AES-256-GCM
-- Per-operation random 96-bit nonce via `crypto.randomBytes(12)`
-- Storage format: `nonce_hex:ciphertext_hex:auth_tag_hex`
-- Decryption auth tag failure = hard error; never swallow silently
+### SimpleFIN Access URL
+- Stored as a Docker Compose secret at `/run/secrets/simplefin_access_url`
+- Read via `readSecret('SIMPLEFIN_ACCESS_URL')` helper (checks `_FILE` env var first)
+- Never stored in the database — env/secret only
 
 ### Containers
 - Backend runs as `USER node` (UID 1001) — never root
@@ -110,15 +111,15 @@ mazza-finance/
 
 ---
 
-## Certificate Paths (on this host)
+## SimpleFIN Setup
 
-```
-TELLER_CERT_PATH=~/.ssh/teller_public_certificate.pem
-TELLER_KEY_PATH=~/.ssh/teller_private_key.pem
-```
+1. Create `secrets/simplefin_access_url.txt` with your SimpleFIN Access URL
+2. `chmod 600 secrets/simplefin_access_url.txt`
+3. Docker Compose mounts it as a secret at `/run/secrets/simplefin_access_url`
 
-These are bind-mounted into the backend container at runtime. Never copy them
-into the project directory. They are `chmod 600` / `chmod 644` as required.
+Rate limit: 24 polls per day (rolling, resets at midnight UTC). Exceeding the
+limit permanently disables the token. Syncs are demand-driven — auto on first
+page load of the day, then manual "Sync Now" button.
 
 ---
 
@@ -127,8 +128,6 @@ into the project directory. They are `chmod 600` / `chmod 644` as required.
 Copy `.env.example` to `.env` and fill in values:
 ```bash
 cp .env.example .env
-# Generate encryption key:
-openssl rand -hex 32
 ```
 
 See `README.md` for full setup instructions including Caddy Basic Auth setup.

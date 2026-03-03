@@ -17,7 +17,7 @@ design review (3 Critical, 6 High, 8 Medium resolved) incorporated prior to deve
 4. [Goals and Non-Goals](#4-goals-and-non-goals)
 5. [Core Features](#5-core-features)
 6. [Data Model](#6-data-model)
-7. [API Integration — teller.io](#7-api-integration--tellerio)
+7. [API Integration — SimpleFIN](#7-api-integration--simplefin)
 8. [Tech Stack and Architecture](#8-tech-stack-and-architecture)
 9. [Technical Requirements](#9-technical-requirements)
 10. [Task Breakdown](#10-task-breakdown)
@@ -47,7 +47,7 @@ balance. The current approach is ad hoc — mental math or occasional spreadshee
 ### Desired State
 
 A self-hosted web application with a calendar-based cash flow forecasting interface. Past days
-reflect real bank transactions pulled from teller.io. Future days reflect detected recurring
+reflect real bank transactions pulled from SimpleFIN. Future days reflect detected recurring
 charges and manually added one-off transactions. The running balance flows continuously from
 day to day, giving a clear picture of account health at any point in the next year.
 
@@ -103,12 +103,12 @@ is defined by daily usefulness and accuracy of the forecast.
 
 - Display a vertical, scrollable calendar timeline showing daily transactions and a cumulative
   running balance
-- Pull actual transaction data from teller.io for past and current days
+- Pull actual transaction data from SimpleFIN for past and current days
 - Auto-detect recurring transactions from transaction history
 - Support manually defined recurring transactions
 - Support manually added one-off future transactions (persisted to database)
 - Provide a dedicated Recurring Transactions management page
-- Sync with teller.io on an hourly schedule and on-demand
+- Sync with SimpleFIN on demand (auto on first page load, manual thereafter; 24/day limit)
 - Auto-reconcile incoming actual transactions against forecasted recurring entries
 - Color-code running balance by health (green / yellow / red thresholds, WCAG-compliant tokens)
 - Non-intrusive balance health notifications (dismissible banner with 7-day re-appearance logic)
@@ -122,7 +122,7 @@ is defined by daily usefulness and accuracy of the forecast.
 
 - Mobile native apps (iOS/Android)
 - Application-layer authentication with sessions, JWT, or user accounts
-- Credit card balance forecasting on the calendar (credit cards are connected via teller.io for
+- Credit card balance forecasting on the calendar (credit cards are connected via SimpleFIN for
   data completeness but excluded from the calendar view)
 - Reconciliation mismatch indicator (Phase 2)
 - P&L reporting or spending category analysis (Phase 2)
@@ -179,7 +179,7 @@ Each day on the calendar renders a cell containing:
 
 **Running Balance Logic**
 
-- Seed balance: the most recent actual bank balance from teller.io for the selected account
+- Seed balance: the most recent actual bank balance from SimpleFIN for the selected account
 - Past and current days: running balance calculated from actual transaction data
 - Future days: running balance calculated from seed balance plus all forecasted and manually
   added transactions
@@ -367,28 +367,26 @@ A dedicated page for viewing and managing all recurring transactions.
 
 ---
 
-### 5.4 teller.io Sync
+### 5.4 SimpleFIN Sync
 
 **Connection Setup**
 
-- One-time setup via teller.io's Teller Connect widget
-- After connection, access tokens are stored encrypted (AES-256-GCM) in the database
-- `POST /setup/connect` returns `409 Conflict` if credentials already exist; requires explicit
-  credential deletion before re-enrollment
+- Access URL configured server-side via Docker Compose secret
+- No client-side enrollment flow needed — bank accounts connected on SimpleFIN Bridge
 
 **Sync Schedule**
 
-- Automatic background sync every hour via a scheduled job on the backend
-- Manual "Sync Now" button in the navigation header; "Last synced N min ago" timestamp adjacent
+- Demand-driven: auto-sync on first page load of the day, manual "Sync Now" thereafter
+- 24 API calls per day maximum (shared across all users; exceeding permanently disables token)
+- "Sync Now" button in the navigation header shows remaining syncs (X/24)
 - Frontend displays a stale-data warning when last successful sync is older than 2 hours:
   "Data may be outdated — last synced [timestamp]"
 
 **Sync Rate Limiting and Concurrency**
 
-- `POST /sync` rate-limited to once per 5 minutes; returns `429 Too Many Requests` with
-  `Retry-After` header if called sooner
+- `POST /sync` returns `429 Too Many Requests` when daily limit (24) is reached
 - Returns `409 Conflict` if a sync is currently in progress
-- Hourly cron checks for an in-progress sync before starting; skips if one is active
+- Auto-sync on first page load of the day; manual "Sync Now" thereafter
 
 **Auto-Reconciliation**
 
@@ -422,34 +420,16 @@ All tables use Postgres. UUIDs for primary keys throughout.
 ```sql
 CREATE TABLE accounts (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    teller_id       TEXT NOT NULL UNIQUE,       -- teller.io account ID
+    simplefin_id       TEXT UNIQUE,                -- SimpleFIN account ID; null for manual
     institution     TEXT NOT NULL,              -- e.g., "Chase"
     name            TEXT NOT NULL,              -- e.g., "Checking ...1234"
     type            TEXT NOT NULL,              -- "checking" | "savings" | "credit"
-    subtype         TEXT,                       -- teller.io subtype if available
+    subtype         TEXT,                       -- SimpleFIN subtype if available
     currency        TEXT NOT NULL DEFAULT 'USD',
-    last_balance    NUMERIC(12, 2),             -- most recent balance from teller.io
+    last_balance    NUMERIC(12, 2),             -- most recent balance from SimpleFIN
     last_synced_at  TIMESTAMPTZ,
     is_active       BOOLEAN NOT NULL DEFAULT TRUE,
     include_in_view BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-```
-
-### `teller_credentials`
-
-Access tokens encrypted at rest using AES-256-GCM with a cryptographically random 96-bit nonce
-per operation. Storage format: `nonce_hex:ciphertext_hex:auth_tag_hex`. Auth tag MUST be
-verified on every decryption; failed verification is an error — never proceed with corrupted
-plaintext.
-
-```sql
-CREATE TABLE teller_credentials (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    -- AES-256-GCM encrypted: "nonce_hex:ciphertext_hex:auth_tag_hex"
-    access_token    TEXT NOT NULL,
-    enrollment_id   TEXT NOT NULL UNIQUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -460,7 +440,7 @@ CREATE TABLE teller_credentials (
 ```sql
 CREATE TABLE transactions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    teller_id       TEXT UNIQUE,                -- null for manual entries
+    simplefin_id       TEXT UNIQUE,                -- null for manual entries
     account_id      UUID NOT NULL REFERENCES accounts(id),
     date            DATE NOT NULL,
     description     TEXT NOT NULL,              -- max 500 chars enforced at API layer
@@ -524,7 +504,7 @@ CREATE TABLE sync_log (
     transactions_fetched    INT DEFAULT 0,
     transactions_reconciled INT DEFAULT 0,
     -- Fixed-vocabulary only. Allowed values:
-    --   "TELLER_API_TIMEOUT" | "TELLER_API_ERROR" | "TELLER_RATE_LIMITED"
+    --   "SIMPLEFIN_402" | "SIMPLEFIN_403" | "SIMPLEFIN_RATE_LIMITED"
     --   "DB_CONNECTION_FAILED" | "SYNC_ALREADY_IN_PROGRESS" | "UNKNOWN"
     -- Full exception details go to stdout ONLY — never stored here.
     error_code              TEXT,
@@ -556,42 +536,48 @@ CREATE TABLE app_settings (
 
 ---
 
-## 7. API Integration — teller.io
+## 7. API Integration — SimpleFIN
 
 ### Authentication
 
-- Certificate-based mutual TLS; all API calls are server-side only — never from the browser
-- `POST /setup/connect` returns `409 Conflict` if credentials already exist; explicit deletion
-  required before re-enrollment
+- HTTP Basic Auth credentials embedded in Access URL
+- Access URL stored as Docker Compose secret, read at runtime
+- All API calls are server-side only — never from the browser
 
 ### Key Endpoints Used
 
 | Endpoint                              | Purpose                                      |
 |---------------------------------------|----------------------------------------------|
-| `GET /accounts`                       | List all connected accounts                  |
-| `GET /accounts/{id}/balances`         | Get current balance for an account           |
-| `GET /accounts/{id}/transactions`     | Fetch transactions (paginated, date-filtered) |
+| `GET /accounts`                       | List all accounts + transactions             |
 
-### Sync Flow (Hourly + On-Demand)
+### Rate Limit
+
+- 24 API calls per day (rolling window, resets at midnight UTC)
+- Exceeding the limit permanently disables the token
+- Server-side tracking via `sync_log` table prevents overuse
+
+### Sync Flow (Demand-Driven)
 
 ```
-1. Check for in-progress sync; abort with 409 if found
-2. For each active account:
-   a. Fetch current balance → update accounts.last_balance
-   b. Fetch transactions since last_synced_at
-   c. Upsert into transactions table (deduplicate by teller_id)
+1. Check daily sync count; reject with 429 if >= 24
+2. Check for in-progress sync; skip if found
+3. Call GET /accounts with start-date (90 days ago) and pending=1
+4. For each SimpleFIN account:
+   a. Match to local account by simplefin_id (auto-create if new)
+   b. Update balance from account data
+   c. Map transactions and run reconciliation (deduplicate by simplefin_id)
    d. Run auto-reconciliation against recurring_transactions
    e. Update accounts.last_synced_at
-3. Run recurring transaction auto-detection on updated history
-4. Write entry to sync_log (fixed-vocabulary error codes only)
+5. Run recurring transaction auto-detection on updated history
+6. Write entry to sync_log (fixed-vocabulary error codes only)
 ```
 
 ### Log Sanitization Requirement
 
 All logs and database-stored error data MUST NOT include:
 - `Authorization` headers or access tokens
-- Encryption keys or key material
-- Raw HTTP response bodies from teller.io
+- SimpleFIN Access URL or credentials
+- Raw HTTP response bodies from SimpleFIN
 - Full database query text
 
 Express error handler middleware must sanitize all unhandled exceptions before logging.
@@ -648,10 +634,10 @@ No LIKE or ILIKE patterns (avoids accidental wildcard matching).
 | Frontend       | React + TypeScript (Vite)      | Fast SPA development, strong ecosystem, easy to maintain     |
 | Styling        | Tailwind CSS                   | Utility-first, dark/light mode trivial with CSS variables    |
 | State Mgmt     | React Query (TanStack Query)   | Server state management, background refetch, cache           |
-| Backend        | Node.js + Express (TypeScript) | Lightweight API server, easy teller.io integration           |
+| Backend        | Node.js + Express (TypeScript) | Lightweight API server, easy SimpleFIN integration           |
 | Database       | PostgreSQL 16                  | Robust, proven, handles numeric precision for finance        |
 | ORM            | Drizzle ORM                    | Lightweight, type-safe, pairs well with TypeScript           |
-| Job Scheduler  | node-cron                      | Simple in-process cron for hourly sync job                   |
+| Bank Data      | SimpleFIN Bridge               | $1.50/month, 24 polls/day, covers all linked bank accounts  |
 | Reverse Proxy  | Caddy                          | Automatic HTTPS, HTTP Basic Auth, HTTP security headers      |
 | Containerization | Docker + Docker Compose      | Per requirements; clean separation of concerns               |
 
@@ -698,8 +684,8 @@ Docker Compose Services:
     │  cap_drop: ALL  │    │   files, served by │
     │  mem_limit:512m │    │   Caddy)           │
     │  - REST API     │    └───────────────────┘
-    │  - cron sync    │
-    │  - teller.io    │
+    │  - sync job     │
+    │  - SimpleFIN    │
     └─────────┬───────┘
               │
     ┌─────────▼──────┐
@@ -747,7 +733,7 @@ Base path: `/api/v1`
 | GET    | `/sync/status`                                    | Get last sync status and timestamp               |
 | GET    | `/settings`                                       | Get all app settings                             |
 | PATCH  | `/settings`                                       | Update app settings (thresholds, theme, etc.)    |
-| POST   | `/setup/connect`                                  | Initiate teller.io Teller Connect (one-time)     |
+| POST   | `/import/csv`                                     | Import transactions from CSV file                |
 
 ### Forecast Computation
 
@@ -849,14 +835,13 @@ Algorithm:
 - Financial amounts as strings or NUMERIC in JSON — never floating point
 
 **Sync Job**
-- Idempotent hourly cron; deduplicates by `teller_id`
+- Demand-driven sync; deduplicates by `simplefin_id`; daily limit of 24 calls
 - Fixed-vocabulary error codes in sync_log; full exception details to stdout only
-- Concurrency guard; 5-minute rate limit on `POST /sync`
+- Concurrency guard; `POST /sync` returns 429 when daily limit reached
 - `restart: unless-stopped` provides crash recovery
 
 **Security**
-- AES-256-GCM encryption for access tokens; random 96-bit nonce per operation; auth tag
-  verified on every decryption; storage format: `nonce_hex:ciphertext_hex:auth_tag_hex`
+- SimpleFIN Access URL stored as Docker Compose secret (not in DB)
 - Backend runs as `USER node`; `cap_drop: [ALL]`
 - Postgres internal-only via `expose:` (never `ports:`)
 - Caddy Basic Auth + HTTPS + HTTP security headers
@@ -864,7 +849,7 @@ Algorithm:
 - Log sanitization middleware strips credentials, headers, API responses from all logs
 
 **Error Handling**
-- teller.io errors: caught, sanitized, logged to stdout; sync records fixed-vocabulary code
+- SimpleFIN errors: caught, sanitized, logged to stdout; sync records fixed-vocabulary code
 - Database errors: caught; return 503
 - Unhandled exceptions: sanitized stack traces to stdout only
 
@@ -883,11 +868,7 @@ Algorithm:
 **Environment Variables (backend)**
 ```
 DATABASE_URL=postgresql://mazza_app:<password>@postgres:5432/mazza_finance
-TELLER_CERT_PATH=/certs/teller.pem
-TELLER_KEY_PATH=/certs/teller.key
-TELLER_ENVIRONMENT=sandbox|production
-# Generate with: openssl rand -hex 32
-ENCRYPTION_KEY=<32-byte hex key>
+SIMPLEFIN_ACCESS_URL_FILE=/run/secrets/simplefin_access_url
 PORT=3001
 CADDY_BASIC_AUTH_USER=<username>
 CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
@@ -895,14 +876,12 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 
 **Data Persistence**
 - Postgres data: named Docker volume (`postgres_data`)
-- teller.io certs: bind-mounted from outside project directory (e.g.,
-  `~/.mazza-finance/certs/`); `chmod 600 teller.key`; owner: backend container UID
 
 **Secret Management**
+- SimpleFIN Access URL: stored as Docker Compose secret in `secrets/simplefin_access_url.txt`
 - `.gitignore` created FIRST (before any other setup): excludes `.env`, `.env.*` (except
-  `.env.example`), `*.pem`, `*.key`, `*.p12`, `*.p8`
+  `.env.example`), `secrets/*.txt`, `*.pem`, `*.key`, `*.p12`, `*.p8`
 - `.dockerignore` excludes the same patterns
-- Cert files stored outside project root — never in `./certs/` within the project directory
 
 **Logging**
 - Structured JSON logs to stdout; Docker captures them
@@ -946,20 +925,19 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
       auth tag verification on decrypt
 - [ ] Implement CORS middleware (explicit allowed origin, Origin header validation on mutations)
 
-**teller.io Integration**
-- [ ] Implement teller.io API client (mutual TLS, sanitized error handling)
-- [ ] Implement `GET /accounts` sync — fetch and upsert accounts
-- [ ] Implement `GET /accounts/:id/balances` — update `last_balance`
-- [ ] Implement `GET /accounts/:id/transactions` — paginated fetch, upsert by `teller_id`
-- [ ] Implement `POST /setup/connect` — 409 if credentials already exist
+**SimpleFIN Integration**
+- [ ] Implement SimpleFIN API client (HTTP Basic Auth, sanitized error handling)
+- [ ] Implement `GET /accounts` sync — fetch accounts + transactions in single call
+- [ ] Handle 402 (payment required) and 403 (auth revoked) errors
+- [ ] Surface `errors` array from SimpleFIN response
 
 **Sync Engine**
 - [ ] Implement main sync orchestrator with concurrency guard (409 if in progress)
 - [ ] Implement auto-reconciliation logic
 - [ ] Implement recurring auto-detection heuristics (exact equality grouping, no LIKE)
-- [ ] Implement node-cron hourly job with concurrency guard
-- [ ] Implement `POST /sync` with 5-minute rate limiting (check sync_log); 202 Accepted async
-- [ ] Implement `GET /sync/status`
+- [ ] Implement demand-driven sync (auto on first page load, manual thereafter)
+- [ ] Implement `POST /sync` with daily limit (24/day); 429 when limit reached
+- [ ] Implement `GET /sync/status` returning `{ lastSync, syncsToday, dailyLimit }`
 - [ ] Write to `sync_log` using fixed-vocabulary error codes only
 
 **Forecast Engine**
@@ -996,7 +974,7 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 - [ ] Unit tests: auto-reconciliation logic
 - [ ] Unit tests: input validation rules for all write endpoints
 - [ ] Integration tests: all API endpoints (happy path + error cases + validation rejection)
-- [ ] Integration tests: sync flow with controlled teller.io responses
+- [ ] Integration tests: sync flow with controlled SimpleFIN responses
 - [ ] Integration tests: rate limiting on `POST /sync`
 - [ ] Integration tests: 409 on `POST /setup/connect` when credentials exist
 - [ ] E2E test: full sync → forecast → manual transaction → updated forecast
@@ -1077,7 +1055,7 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 | Feature                                             | Priority |
 |-----------------------------------------------------|----------|
 | Calendar forecast view (vertical timeline)          | P0       |
-| teller.io sync (hourly + on-demand)                 | P0       |
+| SimpleFIN sync (demand-driven, 24/day limit)        | P0       |
 | Actual transaction display (past/current days)      | P0       |
 | Recurring transaction auto-detection                | P0       |
 | Recurring transaction management page               | P0       |
@@ -1108,7 +1086,7 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 | Mobile native apps                   | iOS / Android                                       |
 | Multiple user profiles / auth        | Application-layer auth if opened to more users      |
 | Notification integrations            | Email or SMS low-balance alerts                     |
-| teller.io webhooks                   | Replace polling with real-time event-driven sync    |
+| Real-time sync                       | Event-driven sync if SimpleFIN adds webhook support |
 | Backup strategy automation           | pg_dump with encrypted storage                      |
 
 ---
@@ -1125,7 +1103,7 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 
 ### Reliability
 
-- teller.io sync failures must not crash the app or corrupt data
+- SimpleFIN API failures must not crash the app or corrupt data
 - Database writes are transactional where multiple records are modified together
 - Sync job is idempotent — no duplicate records from running twice
 - `restart: unless-stopped` on all containers; stale-data warning in UI at > 2 hours
@@ -1169,7 +1147,7 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 
 | # | Question                                                             | Resolution                                                  |
 |---|----------------------------------------------------------------------|-------------------------------------------------------------|
-| 1 | teller.io sandbox history sufficient for auto-detection testing?      | Seed test data manually if insufficient                     |
+| 1 | SimpleFIN transaction history sufficient for auto-detection testing?  | Seed test data manually if insufficient                     |
 | 2 | Balance threshold defaults?                                           | Warning = $500, Critical = $100 (configurable)              |
 | 3 | "Show more" truncation threshold?                                     | 3 visible items                                             |
 | 4 | Multi-select or single-select account toggle?                         | Single-select — one account at a time                       |
@@ -1181,11 +1159,11 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 1. **Caddy HTTP Basic Auth is the access boundary.** If the app is ever exposed to the public
    internet, application-layer authentication must be added before any Phase 2 deployment.
 
-2. **Single teller.io enrollment.** One enrollment covers all accounts. Multiple institutions
+2. **Single SimpleFIN Access URL.** One URL covers all connected accounts. Multiple institutions
    requiring multiple enrollments is a Phase 2 consideration.
 
 3. **Amounts sign convention.** Debits stored as negative; deposits as positive. Enforced from
-   teller.io ingestion through forecast display. Amount field accepts positive numbers only;
+   SimpleFIN sync through forecast display. Amount field accepts positive numbers only;
    debit/deposit control determines sign.
 
 4. **Seed balance source.** Running balance seeded from `accounts.last_balance`. May lag up to

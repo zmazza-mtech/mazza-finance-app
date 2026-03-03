@@ -1,7 +1,7 @@
 # Mazza Finance
 
 Personal cash flow forecasting app for the Mazza household. Connects to bank
-accounts via teller.io and displays a day-by-day calendar of actual and
+accounts via SimpleFIN and displays a day-by-day calendar of actual and
 forecasted transactions with a running balance.
 
 ---
@@ -11,6 +11,7 @@ forecasted transactions with a running balance.
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose v2)
 - [mkcert](https://github.com/FiloSottile/mkcert) — for trusted local HTTPS
 - [Caddy](https://caddyserver.com/docs/install) — for generating the Basic Auth hash (or use Docker)
+- A [SimpleFIN Bridge](https://beta-bridge.simplefin.org/) account ($1.50/month) with bank accounts connected
 
 ---
 
@@ -18,49 +19,36 @@ forecasted transactions with a running balance.
 
 Follow these steps in order.
 
-### 1. Verify teller.io certificates are in place
-
-The teller.io client certificates must be stored **outside** the project
-directory and have correct permissions:
-
-```bash
-ls -la ~/.ssh/teller_public_certificate.pem ~/.ssh/teller_private_key.pem
-```
-
-Expected output:
-```
--rw-r--r--  ...  teller_public_certificate.pem   (644)
--rw-------  ...  teller_private_key.pem           (600)
-```
-
-If permissions are wrong, fix them:
-```bash
-chmod 600 ~/.ssh/teller_private_key.pem
-chmod 644 ~/.ssh/teller_public_certificate.pem
-```
-
-### 2. Copy the environment file
+### 1. Copy the environment file
 
 ```bash
 cp .env.example .env
 ```
 
-### 3. Generate the encryption key
-
-```bash
-openssl rand -hex 32
-```
-
-Paste the output into `.env` as the value for `ENCRYPTION_KEY`.
-
-### 4. Set strong database passwords
+### 2. Set strong database passwords
 
 Edit `.env` and set unique values for:
 - `POSTGRES_PASSWORD` — Postgres superuser (init only)
 - `POSTGRES_APP_PASSWORD` — application runtime user
 - Update `DATABASE_URL` to match `POSTGRES_APP_PASSWORD`
 
-### 5. Set up HTTPS with mkcert
+### 3. Configure SimpleFIN
+
+Place your SimpleFIN Access URL in the secrets file:
+
+```bash
+mkdir -p secrets
+echo "YOUR_ACCESS_URL_HERE" > secrets/simplefin_access_url.txt
+chmod 600 secrets/simplefin_access_url.txt
+```
+
+The Access URL looks like `https://user:pass@beta-bridge.simplefin.org/simplefin`.
+Get it from the SimpleFIN Bridge setup page after connecting your bank accounts.
+
+**Rate limit**: SimpleFIN allows 24 API calls per day. Exceeding this limit
+permanently disables your token. The app enforces this limit server-side.
+
+### 4. Set up HTTPS with mkcert
 
 ```bash
 # Install mkcert and the local CA
@@ -71,14 +59,8 @@ mkcert -install
 mkcert localhost 127.0.0.1 ::1
 ```
 
-This creates `localhost+2.pem` and `localhost+2-key.pem`. Update `Caddyfile`
-to use these:
-
-```caddyfile
-# Replace: tls internal
-# With:
-tls /path/to/localhost+2.pem /path/to/localhost+2-key.pem
-```
+This creates `localhost+2.pem` and `localhost+2-key.pem` in the project root,
+which are mounted into Caddy via `docker-compose.yml`.
 
 **For other household devices (e.g., Mrs. Mazza's phone):**
 
@@ -91,7 +73,7 @@ mkcert -CAROOT
 # - Android: Settings → Security → Install certificate
 ```
 
-### 6. Generate the Caddy Basic Auth password hash
+### 5. Generate the Caddy Basic Auth password hash
 
 ```bash
 # If Caddy is installed locally:
@@ -105,7 +87,7 @@ Paste the resulting `$2a$...` hash into `.env` as `CADDY_BASIC_AUTH_HASH`.
 Keep the plaintext password somewhere safe — you'll need it to log in from
 every browser and device.
 
-### 7. Start the application
+### 6. Start the application
 
 ```bash
 docker compose up --build
@@ -114,20 +96,20 @@ docker compose up --build
 First start takes a few minutes while Docker builds the images. Subsequent
 starts are much faster.
 
-### 8. Connect your bank account (one-time)
+### 7. First sync
 
 1. Open `https://localhost` in your browser
 2. Enter the Basic Auth credentials when prompted
-3. Follow the on-screen bank connection flow (teller.io Teller Connect)
-4. After connection, the first sync runs automatically
+3. The app auto-syncs on first page load — your accounts and transactions
+   will appear within a few seconds
 
 ---
 
 ## Daily Usage
 
 - **URL**: `https://localhost` (or your configured `CADDY_DOMAIN`)
-- **Sync**: Runs automatically every hour. Use "Sync Now" in the header for
-  an immediate refresh.
+- **Sync**: Auto-syncs on the first page load each day. Use "Sync Now" in the
+  header for additional refreshes. The header shows remaining syncs (X/24).
 - **Add future transaction**: Click "+" on any future day cell
 - **Manage recurring transactions**: Navigate to `/recurring`
 
@@ -164,12 +146,6 @@ docker compose down -v
 docker compose up --build
 ```
 
-**Container won't start — permission error on certs:**
-```bash
-chmod 600 ~/.ssh/teller_private_key.pem
-chmod 644 ~/.ssh/teller_public_certificate.pem
-```
-
 ---
 
 ## Security Notes
@@ -178,8 +154,8 @@ chmod 644 ~/.ssh/teller_public_certificate.pem
   password out of browser autofill on shared devices.
 - **`.env` file** contains secrets — it is blocked by `.gitignore` and must
   never be committed.
-- **teller.io certificates** live at `~/.ssh/` outside the project directory.
-  Never copy them into the project folder.
+- **SimpleFIN Access URL** is stored as a Docker Compose secret, mounted at
+  `/run/secrets/simplefin_access_url`. It is not visible via `docker inspect`.
 - **Postgres** is not exposed outside the Docker network — no ports are
   mapped to the host.
 - If this app is ever exposed to the public internet, a full

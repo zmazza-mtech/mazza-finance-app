@@ -38,10 +38,12 @@ services:
     cpus: 0.5
     environment:
       - DATABASE_URL=${DATABASE_URL}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - SIMPLEFIN_ACCESS_URL_FILE=/run/secrets/simplefin_access_url
       - PORT=3001
       - NODE_ENV=${NODE_ENV:-production}
       - CORS_ORIGIN=${CORS_ORIGIN:-https://localhost}
+    secrets:
+      - simplefin_access_url
     expose:
       - "3001"
     depends_on:
@@ -88,6 +90,10 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+secrets:
+  simplefin_access_url:
+    file: ./secrets/simplefin_access_url.txt
 
 volumes:
   postgres_data:

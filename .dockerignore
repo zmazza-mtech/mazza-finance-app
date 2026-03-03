@@ -9,7 +9,7 @@ dist
 *.key
 *.p12
 *.p8
-teller-certificates/
+secrets/
 .git
 .claude
 docs

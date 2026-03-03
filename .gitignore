@@ -1,5 +1,5 @@
 # Secrets and credentials — NEVER commit these
-teller-certificates/
+secrets/*.txt
 *.pem
 *.key
 *.p12
