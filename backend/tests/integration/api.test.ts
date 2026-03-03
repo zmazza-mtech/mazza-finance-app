@@ -47,27 +47,6 @@ describe('Unknown routes', () => {
 // Input validation — no DB required
 // ---------------------------------------------------------------------------
 
-describe('POST /api/v1/enroll — input validation', () => {
-  it('returns 400 when accessToken is missing', async () => {
-    const res = await request
-      .post('/api/v1/enroll')
-      .send({ enrollmentId: 'enr_123' });
-
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBeTruthy();
-    expect(res.body.data).toBeNull();
-  });
-
-  it('returns 400 when enrollmentId is missing', async () => {
-    const res = await request
-      .post('/api/v1/enroll')
-      .send({ accessToken: 'tok_abc' });
-
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBeTruthy();
-  });
-});
-
 describe('POST /api/v1/transactions — input validation', () => {
   it('returns 400 when accountId is missing', async () => {
     const res = await request
@@ -166,8 +145,8 @@ describe('PUT /api/v1/settings/:key — input validation', () => {
 // ---------------------------------------------------------------------------
 
 describe('HTTP method enforcement', () => {
-  it('GET /api/v1/enroll returns 404 (POST only)', async () => {
-    const res = await request.get('/api/v1/enroll');
+  it('GET /api/v1/sync returns 404 (POST only)', async () => {
+    const res = await request.get('/api/v1/sync');
     expect(res.status).toBe(404);
   });
 });

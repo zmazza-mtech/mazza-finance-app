@@ -13,7 +13,7 @@ import {
 
 function tx(overrides: Partial<RawTransaction> = {}): RawTransaction {
   return {
-    tellerId: 'teller_001',
+    externalId: 'ext_001',
     accountId: 'acct_001',
     date: '2024-01-01',
     description: 'Netflix',
@@ -95,9 +95,9 @@ describe('normalizeForGrouping', () => {
 describe('groupByDescription', () => {
   it('groups identical descriptions together', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-01', description: 'Netflix' }),
-      tx({ tellerId: 'b', date: '2024-02-01', description: 'Netflix' }),
-      tx({ tellerId: 'c', date: '2024-03-01', description: 'Netflix' }),
+      tx({ externalId: 'a', date: '2024-01-01', description: 'Netflix' }),
+      tx({ externalId: 'b', date: '2024-02-01', description: 'Netflix' }),
+      tx({ externalId: 'c', date: '2024-03-01', description: 'Netflix' }),
     ];
 
     const groups = groupByDescription(transactions);
@@ -106,9 +106,9 @@ describe('groupByDescription', () => {
 
   it('normalizes description for grouping (trims whitespace, lowercases)', () => {
     const transactions = [
-      tx({ tellerId: 'a', description: '  Netflix  ' }),
-      tx({ tellerId: 'b', description: 'NETFLIX' }),
-      tx({ tellerId: 'c', description: 'netflix' }),
+      tx({ externalId: 'a', description: '  Netflix  ' }),
+      tx({ externalId: 'b', description: 'NETFLIX' }),
+      tx({ externalId: 'c', description: 'netflix' }),
     ];
 
     const groups = groupByDescription(transactions);
@@ -119,9 +119,9 @@ describe('groupByDescription', () => {
 
   it('keeps distinct descriptions in separate groups', () => {
     const transactions = [
-      tx({ tellerId: 'a', description: 'Netflix' }),
-      tx({ tellerId: 'b', description: 'Spotify' }),
-      tx({ tellerId: 'c', description: 'Netflix' }),
+      tx({ externalId: 'a', description: 'Netflix' }),
+      tx({ externalId: 'b', description: 'Spotify' }),
+      tx({ externalId: 'c', description: 'Netflix' }),
     ];
 
     const groups = groupByDescription(transactions);
@@ -135,9 +135,9 @@ describe('groupByDescription', () => {
   it('groups descriptions that differ only in trailing reference numbers', () => {
     // Same payee, varying ACH reference each month
     const transactions = [
-      tx({ tellerId: 'a', description: 'DIRECT DEP EMPLOYER 012125' }),
-      tx({ tellerId: 'b', description: 'DIRECT DEP EMPLOYER 022125' }),
-      tx({ tellerId: 'c', description: 'DIRECT DEP EMPLOYER 030725' }),
+      tx({ externalId: 'a', description: 'DIRECT DEP EMPLOYER 012125' }),
+      tx({ externalId: 'b', description: 'DIRECT DEP EMPLOYER 022125' }),
+      tx({ externalId: 'c', description: 'DIRECT DEP EMPLOYER 030725' }),
     ];
 
     const groups = groupByDescription(transactions);
@@ -150,8 +150,8 @@ describe('groupByDescription', () => {
     // "PAYMENT SYNCHRONY BANK WEB 603..." and "PAYMENT SUPERIOR SANITAT ZAC MAZZA"
     // normalize to different keys — they must NOT collapse into one group
     const transactions = [
-      tx({ tellerId: 'a', description: 'PAYMENT SYNCHRONY BANK WEB 603459008368611' }),
-      tx({ tellerId: 'b', description: 'PAYMENT SUPERIOR SANITAT ZAC MAZZA' }),
+      tx({ externalId: 'a', description: 'PAYMENT SYNCHRONY BANK WEB 603459008368611' }),
+      tx({ externalId: 'b', description: 'PAYMENT SUPERIOR SANITAT ZAC MAZZA' }),
     ];
 
     const groups = groupByDescription(transactions);
@@ -222,10 +222,10 @@ describe('detectFrequency', () => {
 describe('detectRecurring', () => {
   it('detects a monthly recurring subscription', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'Spotify', amount: '-9.99' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'Spotify', amount: '-9.99' }),
-      tx({ tellerId: 'c', date: '2024-03-15', description: 'Spotify', amount: '-9.99' }),
-      tx({ tellerId: 'd', date: '2024-04-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'd', date: '2024-04-15', description: 'Spotify', amount: '-9.99' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-30');
@@ -238,8 +238,8 @@ describe('detectRecurring', () => {
 
   it('does not detect recurring with fewer than 3 unique occurrence dates', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'Spotify' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'Spotify' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'Spotify' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'Spotify' }),
     ];
 
     const results = detectRecurring(transactions, '2024-02-28');
@@ -249,10 +249,10 @@ describe('detectRecurring', () => {
   it('does not detect recurring for highly inconsistent amounts (CV > 15%)', () => {
     // $120, $87, $210, $95 — CV ~34%, well above threshold
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'Electric Bill', amount: '-120.00' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'Electric Bill', amount: '-87.00' }),
-      tx({ tellerId: 'c', date: '2024-03-15', description: 'Electric Bill', amount: '-210.00' }),
-      tx({ tellerId: 'd', date: '2024-04-15', description: 'Electric Bill', amount: '-95.00' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'Electric Bill', amount: '-120.00' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'Electric Bill', amount: '-87.00' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'Electric Bill', amount: '-210.00' }),
+      tx({ externalId: 'd', date: '2024-04-15', description: 'Electric Bill', amount: '-95.00' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-30');
@@ -261,9 +261,9 @@ describe('detectRecurring', () => {
 
   it('does not detect recurring for inconsistent intervals', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-01', description: 'Random' }),
-      tx({ tellerId: 'b', date: '2024-01-10', description: 'Random' }),
-      tx({ tellerId: 'c', date: '2024-02-20', description: 'Random' }),
+      tx({ externalId: 'a', date: '2024-01-01', description: 'Random' }),
+      tx({ externalId: 'b', date: '2024-01-10', description: 'Random' }),
+      tx({ externalId: 'c', date: '2024-02-20', description: 'Random' }),
     ];
 
     const results = detectRecurring(transactions, '2024-03-01');
@@ -272,10 +272,10 @@ describe('detectRecurring', () => {
 
   it('uses the most common amount when amounts are consistent', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'Netflix', amount: '-15.49' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'Netflix', amount: '-15.49' }),
-      tx({ tellerId: 'c', date: '2024-03-15', description: 'Netflix', amount: '-15.49' }),
-      tx({ tellerId: 'd', date: '2024-04-15', description: 'Netflix', amount: '-15.49' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'Netflix', amount: '-15.49' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'Netflix', amount: '-15.49' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'Netflix', amount: '-15.49' }),
+      tx({ externalId: 'd', date: '2024-04-15', description: 'Netflix', amount: '-15.49' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-30');
@@ -285,9 +285,9 @@ describe('detectRecurring', () => {
 
   it('correctly computes nextDate for weekly recurring', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-04-01', description: 'Gym', amount: '-10.00' }),
-      tx({ tellerId: 'b', date: '2024-04-08', description: 'Gym', amount: '-10.00' }),
-      tx({ tellerId: 'c', date: '2024-04-15', description: 'Gym', amount: '-10.00' }),
+      tx({ externalId: 'a', date: '2024-04-01', description: 'Gym', amount: '-10.00' }),
+      tx({ externalId: 'b', date: '2024-04-08', description: 'Gym', amount: '-10.00' }),
+      tx({ externalId: 'c', date: '2024-04-15', description: 'Gym', amount: '-10.00' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-20');
@@ -302,10 +302,10 @@ describe('detectRecurring', () => {
 
   it('does not produce duplicate detections for transactions already known', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'Spotify', amount: '-9.99' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'Spotify', amount: '-9.99' }),
-      tx({ tellerId: 'c', date: '2024-03-15', description: 'Spotify', amount: '-9.99' }),
-      tx({ tellerId: 'd', date: '2024-04-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'Spotify', amount: '-9.99' }),
+      tx({ externalId: 'd', date: '2024-04-15', description: 'Spotify', amount: '-9.99' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-30', new Set(['spotify']));
@@ -314,10 +314,10 @@ describe('detectRecurring', () => {
 
   it('detects recurring when descriptions have varying trailing reference numbers', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'DIRECT DEP EMPLOYER 011525', amount: '2100.00' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'DIRECT DEP EMPLOYER 021525', amount: '2100.00' }),
-      tx({ tellerId: 'c', date: '2024-03-15', description: 'DIRECT DEP EMPLOYER 031525', amount: '2100.00' }),
-      tx({ tellerId: 'd', date: '2024-04-15', description: 'DIRECT DEP EMPLOYER 041525', amount: '2100.00' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'DIRECT DEP EMPLOYER 011525', amount: '2100.00' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'DIRECT DEP EMPLOYER 021525', amount: '2100.00' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'DIRECT DEP EMPLOYER 031525', amount: '2100.00' }),
+      tx({ externalId: 'd', date: '2024-04-15', description: 'DIRECT DEP EMPLOYER 041525', amount: '2100.00' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-30');
@@ -329,9 +329,9 @@ describe('detectRecurring', () => {
 
   it('excludes already-known series even when stored name contains the identifier that would be stripped', () => {
     const transactions = [
-      tx({ tellerId: 'a', date: '2024-01-15', description: 'DIRECT DEP EMPLOYER 011525', amount: '2100.00' }),
-      tx({ tellerId: 'b', date: '2024-02-15', description: 'DIRECT DEP EMPLOYER 021525', amount: '2100.00' }),
-      tx({ tellerId: 'c', date: '2024-03-15', description: 'DIRECT DEP EMPLOYER 031525', amount: '2100.00' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'DIRECT DEP EMPLOYER 011525', amount: '2100.00' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'DIRECT DEP EMPLOYER 021525', amount: '2100.00' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'DIRECT DEP EMPLOYER 031525', amount: '2100.00' }),
     ];
 
     const existingNames = new Set(['DIRECT DEP EMPLOYER 011525']);
@@ -344,15 +344,15 @@ describe('detectRecurring', () => {
     // collapse to one occurrence; amounts are summed to reflect true total.
     // 3 postings × $246.00 = $738.00 per month.
     const transactions = [
-      tx({ tellerId: 'a1', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'a2', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'a3', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'b1', date: '2024-02-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'b2', date: '2024-02-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'b3', date: '2024-02-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'c1', date: '2024-03-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'c2', date: '2024-03-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'c3', date: '2024-03-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'a1', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'a2', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'a3', date: '2024-01-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'b1', date: '2024-02-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'b2', date: '2024-02-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'b3', date: '2024-02-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'c1', date: '2024-03-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'c2', date: '2024-03-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'c3', date: '2024-03-15', description: 'BENEFIT PAYMENT', amount: '246.00' }),
     ];
 
     const results = detectRecurring(transactions, '2024-03-31');
@@ -372,11 +372,11 @@ describe('detectRecurring', () => {
       '2025-10-01', '2025-10-15', '2025-10-29', '2025-11-12', '2025-11-26',
     ];
     const normalTxs = base.map((date, i) =>
-      tx({ tellerId: `p${i}`, date, description: 'PAYROLL EMPLOYER', amount: '6502.28' })
+      tx({ externalId: `p${i}`, date, description: 'PAYROLL EMPLOYER', amount: '6502.28' })
     );
     // Outliers: first partial pay + one bonus
-    const partial = tx({ tellerId: 'p_partial', date: '2025-02-19', description: 'PAYROLL EMPLOYER', amount: '5382.07' });
-    const bonus   = tx({ tellerId: 'p_bonus',   date: '2025-12-10', description: 'PAYROLL EMPLOYER', amount: '22622.50' });
+    const partial = tx({ externalId: 'p_partial', date: '2025-02-19', description: 'PAYROLL EMPLOYER', amount: '5382.07' });
+    const bonus   = tx({ externalId: 'p_bonus',   date: '2025-12-10', description: 'PAYROLL EMPLOYER', amount: '22622.50' });
 
     const results = detectRecurring([partial, ...normalTxs, bonus], '2025-12-15');
     expect(results).toHaveLength(1);
@@ -387,16 +387,16 @@ describe('detectRecurring', () => {
   it('detects monthly recurring with COLA-style amount increase (CV within 15%)', () => {
     // Benefit amount increases mid-year — still a recurring pattern
     const transactions = [
-      tx({ tellerId: 'a', date: '2025-02-10', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'b', date: '2025-03-10', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'c', date: '2025-04-07', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'd', date: '2025-05-12', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'e', date: '2025-06-09', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'f', date: '2025-07-07', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'g', date: '2025-08-11', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'h', date: '2025-09-08', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'i', date: '2025-10-06', description: 'BENEFIT PAYMENT', amount: '246.00' }),
-      tx({ tellerId: 'j', date: '2025-11-07', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'a', date: '2025-02-10', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'b', date: '2025-03-10', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'c', date: '2025-04-07', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'd', date: '2025-05-12', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'e', date: '2025-06-09', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'f', date: '2025-07-07', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'g', date: '2025-08-11', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'h', date: '2025-09-08', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'i', date: '2025-10-06', description: 'BENEFIT PAYMENT', amount: '246.00' }),
+      tx({ externalId: 'j', date: '2025-11-07', description: 'BENEFIT PAYMENT', amount: '246.00' }),
     ];
 
     const results = detectRecurring(transactions, '2025-11-30');

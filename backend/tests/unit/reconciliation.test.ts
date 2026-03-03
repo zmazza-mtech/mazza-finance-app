@@ -2,16 +2,16 @@ import { describe, it, expect } from 'vitest';
 import {
   reconcileTransactions,
   type StoredTransaction,
-  type TellerTransaction,
+  type IncomingTransaction,
 } from '../../src/services/reconciliation';
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
-function teller(overrides: Partial<TellerTransaction> = {}): TellerTransaction {
+function makeIncoming(overrides: Partial<IncomingTransaction> = {}): IncomingTransaction {
   return {
-    id: 'teller_001',
+    id: 'sfin_001',
     accountId: 'acct_001',
     date: '2024-01-15',
     description: 'Netflix',
@@ -24,7 +24,7 @@ function teller(overrides: Partial<TellerTransaction> = {}): TellerTransaction {
 function stored(overrides: Partial<StoredTransaction> = {}): StoredTransaction {
   return {
     id: 'uuid_001',
-    tellerId: 'teller_001',
+    simplefinId: 'sfin_001',
     accountId: 'acct_001',
     date: '2024-01-15',
     description: 'Netflix',
@@ -40,23 +40,23 @@ function stored(overrides: Partial<StoredTransaction> = {}): StoredTransaction {
 // ---------------------------------------------------------------------------
 
 describe('reconcileTransactions', () => {
-  it('returns toInsert for new teller transactions not in DB', () => {
-    const incoming = [teller({ id: 'teller_new' })];
+  it('returns toInsert for new incoming transactions not in DB', () => {
+    const incomingTxs = [makeIncoming({ id: 'sfin_new' })];
     const existing: StoredTransaction[] = [];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toInsert).toHaveLength(1);
-    expect(result.toInsert[0]!.id).toBe('teller_new'); // TellerTransaction uses .id
+    expect(result.toInsert[0]!.id).toBe('sfin_new'); // IncomingTransaction uses .id
     expect(result.toUpdate).toHaveLength(0);
     expect(result.unchanged).toHaveLength(0);
   });
 
-  it('returns unchanged when teller transaction matches stored exactly', () => {
-    const incoming = [teller()];
+  it('returns unchanged when incoming transaction matches stored exactly', () => {
+    const incomingTxs = [makeIncoming()];
     const existing = [stored()];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toInsert).toHaveLength(0);
     expect(result.toUpdate).toHaveLength(0);
@@ -64,44 +64,44 @@ describe('reconcileTransactions', () => {
   });
 
   it('returns toUpdate when amount differs from stored', () => {
-    const incoming = [teller({ amount: '-16.99' })];
+    const incomingTxs = [makeIncoming({ amount: '-16.99' })];
     const existing = [stored({ amount: '-15.99' })];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toUpdate).toHaveLength(1);
     expect(result.toUpdate[0]!.updates.amount).toBe('-16.99');
   });
 
   it('returns toUpdate when status changes from pending to posted', () => {
-    const incoming = [teller({ status: 'posted' })];
+    const incomingTxs = [makeIncoming({ status: 'posted' })];
     const existing = [stored({ status: 'pending' })];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toUpdate).toHaveLength(1);
     expect(result.toUpdate[0]!.updates.status).toBe('posted');
   });
 
   it('returns toUpdate when description changes', () => {
-    const incoming = [teller({ description: 'NETFLIX.COM' })];
+    const incomingTxs = [makeIncoming({ description: 'NETFLIX.COM' })];
     const existing = [stored({ description: 'Netflix' })];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toUpdate).toHaveLength(1);
     expect(result.toUpdate[0]!.updates.description).toBe('NETFLIX.COM');
   });
 
   it('does not include manual transactions in toUpdate or toInsert', () => {
-    // Manual transactions (no tellerId) are ignored by reconciliation
-    const incoming = [teller()];
+    // Manual transactions (no simplefinId) are ignored by reconciliation
+    const incomingTxs = [makeIncoming()];
     const existing = [
       stored(),
-      stored({ id: 'manual_uuid', tellerId: null, type: 'manual', date: '2024-01-20' }),
+      stored({ id: 'manual_uuid', simplefinId: null, type: 'manual', date: '2024-01-20' }),
     ];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toInsert).toHaveLength(0);
     expect(result.toUpdate).toHaveLength(0);
@@ -109,31 +109,31 @@ describe('reconcileTransactions', () => {
   });
 
   it('handles multiple transactions in a single call', () => {
-    const incoming = [
-      teller({ id: 't1', description: 'Netflix', amount: '-15.99' }),
-      teller({ id: 't2', description: 'Spotify', amount: '-9.99' }),
-      teller({ id: 't3', description: 'New charge', amount: '-25.00' }),
+    const incomingTxs = [
+      makeIncoming({ id: 't1', description: 'Netflix', amount: '-15.99' }),
+      makeIncoming({ id: 't2', description: 'Spotify', amount: '-9.99' }),
+      makeIncoming({ id: 't3', description: 'New charge', amount: '-25.00' }),
     ];
     const existing = [
-      stored({ tellerId: 't1', description: 'Netflix', amount: '-15.99' }),
-      stored({ tellerId: 't2', description: 'Spotify', amount: '-10.99' }), // amount changed
+      stored({ simplefinId: 't1', description: 'Netflix', amount: '-15.99' }),
+      stored({ simplefinId: 't2', description: 'Spotify', amount: '-10.99' }), // amount changed
     ];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toInsert).toHaveLength(1);
-    expect(result.toInsert[0]!.id).toBe('t3'); // TellerTransaction uses .id
+    expect(result.toInsert[0]!.id).toBe('t3'); // IncomingTransaction uses .id
     expect(result.toUpdate).toHaveLength(1);
-    expect(result.toUpdate[0]!.tellerId).toBe('t2'); // TransactionUpdate uses .tellerId
+    expect(result.toUpdate[0]!.simplefinId).toBe('t2'); // TransactionUpdate uses .simplefinId
     expect(result.unchanged).toHaveLength(1);
-    expect(result.unchanged[0]!.tellerId).toBe('t1'); // StoredTransaction uses .tellerId
+    expect(result.unchanged[0]!.simplefinId).toBe('t1'); // StoredTransaction uses .simplefinId
   });
 
   it('preserves the existing row id in toUpdate results', () => {
-    const incoming = [teller({ amount: '-20.00' })];
+    const incomingTxs = [makeIncoming({ amount: '-20.00' })];
     const existing = [stored({ id: 'my-uuid', amount: '-15.99' })];
 
-    const result = reconcileTransactions(incoming, existing);
+    const result = reconcileTransactions(incomingTxs, existing);
 
     expect(result.toUpdate[0]!.id).toBe('my-uuid');
   });
