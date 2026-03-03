@@ -18,7 +18,7 @@ export function SettingsPage() {
   const { data: accounts = [], isLoading: accountsLoading } = useAccounts();
   const updateAccount = useUpdateAccount();
 
-  const { data: syncLog } = useSyncStatus();
+  const { data: syncStatus } = useSyncStatus();
   const triggerSync = useTriggerSync();
 
   const greenThreshold = settingsMap[SETTING_KEYS.GREEN_THRESHOLD] ?? '1000';
@@ -74,7 +74,7 @@ export function SettingsPage() {
         </h2>
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <SyncStatus
-            syncLog={syncLog ?? null}
+            syncStatus={syncStatus ?? null}
             isSyncing={triggerSync.isPending}
             onSync={() => triggerSync.mutate()}
           />
@@ -130,7 +130,6 @@ export function SettingsPage() {
           <div className="p-4 space-y-3">
             <AddAccountForm />
           </div>
-          {/* Bank provider TBD — Teller Connect disabled */}
         </div>
       </section>
     </div>

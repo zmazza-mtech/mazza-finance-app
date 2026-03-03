@@ -4,7 +4,7 @@ import type { AccountType } from '@/api/types';
 
 /**
  * Inline form to create a manual account (no bank connection required).
- * The account can be linked to SimpleFin/Teller later via a future sync.
+ * The account can be linked to SimpleFIN later via a sync.
  */
 export function AddAccountForm() {
   const createAccount = useCreateAccount();

@@ -13,7 +13,7 @@ export interface ApiResponse<T> {
 
 export interface Account {
   id: string;
-  tellerId: string;
+  simplefinId: string | null;
   institution: string;
   name: string;
   type: AccountType;
@@ -76,6 +76,12 @@ export interface SyncLog {
   completedAt: string | null;
   status: 'running' | 'success' | 'error';
   message: string | null;
+}
+
+export interface SyncStatusResponse {
+  lastSync: SyncLog | null;
+  syncsToday: number;
+  dailyLimit: number;
 }
 
 export interface Setting {

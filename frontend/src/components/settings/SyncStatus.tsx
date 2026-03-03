@@ -1,16 +1,22 @@
-import type { SyncLog } from '@/api/types';
+import type { SyncStatusResponse } from '@/api/types';
 
 interface SyncStatusProps {
-  syncLog: SyncLog | null;
+  syncStatus: SyncStatusResponse | null;
   isSyncing: boolean;
   onSync: () => void;
 }
 
 /**
- * Displays last sync status and a "Sync Now" button.
+ * Displays last sync status, remaining daily syncs, and a "Sync Now" button.
  */
-export function SyncStatus({ syncLog, isSyncing, onSync }: SyncStatusProps) {
+export function SyncStatus({ syncStatus, isSyncing, onSync }: SyncStatusProps) {
+  const syncLog = syncStatus?.lastSync ?? null;
+  const syncsToday = syncStatus?.syncsToday ?? 0;
+  const dailyLimit = syncStatus?.dailyLimit ?? 24;
+  const remaining = Math.max(0, dailyLimit - syncsToday);
+
   const isRunning = syncLog?.status === 'running' || isSyncing;
+  const limitReached = remaining <= 0;
 
   let statusText = 'Never synced';
   let statusClass = 'text-gray-500 dark:text-gray-400';
@@ -35,15 +41,24 @@ export function SyncStatus({ syncLog, isSyncing, onSync }: SyncStatusProps) {
           Bank sync
         </p>
         <p className={`text-sm ${statusClass}`}>{statusText}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+          {remaining} of {dailyLimit} syncs remaining today
+        </p>
       </div>
       <button
         type="button"
         onClick={onSync}
-        disabled={isRunning}
-        aria-label={isRunning ? 'Sync in progress' : 'Sync now'}
+        disabled={isRunning || limitReached}
+        aria-label={
+          limitReached
+            ? 'Daily sync limit reached'
+            : isRunning
+              ? 'Sync in progress'
+              : 'Sync now'
+        }
         className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        {isRunning ? 'Syncing...' : 'Sync Now'}
+        {isRunning ? 'Syncing...' : limitReached ? 'Limit Reached' : 'Sync Now'}
       </button>
     </div>
   );

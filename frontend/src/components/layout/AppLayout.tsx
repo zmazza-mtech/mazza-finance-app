@@ -2,7 +2,7 @@ import { useContext, useRef } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { ThemeToggle } from '@/components/settings/ThemeToggle';
 import { useBankAccounts } from '@/hooks/useAccounts';
-import { useSyncStatus, useTriggerSync } from '@/hooks/useSync';
+import { useSyncStatus, useTriggerSync, useAutoSync } from '@/hooks/useSync';
 import { AccountContext } from '@/App';
 
 /**
@@ -11,14 +11,20 @@ import { AccountContext } from '@/App';
 export function AppLayout() {
   const { selectedAccountId, setSelectedAccountId } = useContext(AccountContext);
   const { data: accounts = [] } = useBankAccounts();
-  const { data: syncLog } = useSyncStatus();
+  const { data: syncStatus } = useSyncStatus();
   const triggerSync = useTriggerSync();
+  useAutoSync();
   const mainRef = useRef<HTMLElement>(null);
 
-  const isSyncing = triggerSync.isPending || syncLog?.status === 'running';
+  const lastSync = syncStatus?.lastSync ?? null;
+  const syncsToday = syncStatus?.syncsToday ?? 0;
+  const dailyLimit = syncStatus?.dailyLimit ?? 24;
+  const remaining = Math.max(0, dailyLimit - syncsToday);
+  const isSyncing = triggerSync.isPending || lastSync?.status === 'running';
+  const limitReached = remaining <= 0;
 
-  const lastSynced = syncLog?.completedAt
-    ? new Date(syncLog.completedAt).toLocaleTimeString(undefined, {
+  const lastSynced = lastSync?.completedAt
+    ? new Date(lastSync.completedAt).toLocaleTimeString(undefined, {
         hour: '2-digit',
         minute: '2-digit',
       })
@@ -109,19 +115,24 @@ export function AppLayout() {
             </select>
           )}
 
-          {/* Last synced */}
-          {lastSynced && (
-            <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-500 shrink-0">
-              Synced {lastSynced}
-            </span>
-          )}
+          {/* Last synced + remaining count */}
+          <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-500 shrink-0">
+            {lastSynced ? `Synced ${lastSynced}` : ''}{' '}
+            ({remaining}/{dailyLimit})
+          </span>
 
           {/* Sync Now button */}
           <button
             type="button"
             onClick={() => triggerSync.mutate()}
-            disabled={isSyncing}
-            aria-label={isSyncing ? 'Syncing...' : 'Sync now'}
+            disabled={isSyncing || limitReached}
+            aria-label={
+              limitReached
+                ? 'Daily sync limit reached'
+                : isSyncing
+                  ? 'Syncing...'
+                  : 'Sync now'
+            }
             className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {isSyncing ? 'Syncing...' : 'Sync'}

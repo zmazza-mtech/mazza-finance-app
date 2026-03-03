@@ -26,21 +26,6 @@ async function request<T>(
 }
 
 // ---------------------------------------------------------------------------
-// Enrollment (Teller Connect)
-// ---------------------------------------------------------------------------
-
-export async function enroll(body: {
-  accessToken: string;
-  enrollmentId: string;
-}): Promise<void> {
-  const res = await request<{ enrolled: true }>('/enroll', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-  if (res.error) throw new Error(String(res.error));
-}
-
-// ---------------------------------------------------------------------------
 // Accounts
 // ---------------------------------------------------------------------------
 
@@ -239,17 +224,17 @@ export async function getForecast(params: {
 // Sync
 // ---------------------------------------------------------------------------
 
-import type { SyncLog } from './types';
+import type { SyncStatusResponse } from './types';
 
 export async function triggerSync(): Promise<void> {
   const res = await request<{ accepted: true }>('/sync', { method: 'POST' });
   if (res.error) throw new Error(res.error);
 }
 
-export async function getSyncStatus(): Promise<SyncLog | null> {
-  const res = await request<SyncLog | null>('/sync/status');
+export async function getSyncStatus(): Promise<SyncStatusResponse> {
+  const res = await request<SyncStatusResponse>('/sync/status');
   if (res.error) throw new Error(res.error);
-  return res.data ?? null;
+  return res.data ?? { lastSync: null, syncsToday: 0, dailyLimit: 24 };
 }
 
 // ---------------------------------------------------------------------------
