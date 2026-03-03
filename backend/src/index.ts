@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { runMigrations } from './db/migrate';
 import { logger } from './lib/logger';
+import { readSecret } from './lib/read-secret';
 import app from './app';
 
 // ---------------------------------------------------------------------------
@@ -9,7 +10,6 @@ import app from './app';
 
 const required = [
   'DATABASE_URL',
-  'ENCRYPTION_KEY',
   'CORS_ORIGIN',
 ];
 
@@ -20,9 +20,9 @@ for (const key of required) {
   }
 }
 
-// Validate ENCRYPTION_KEY is exactly 64 hex characters (32 bytes for AES-256)
-if (!/^[0-9a-fA-F]{64}$/.test(process.env.ENCRYPTION_KEY ?? '')) {
-  logger.error('ENCRYPTION_KEY must be a 64-character hex string (generate with: openssl rand -hex 32)');
+// Validate SimpleFIN Access URL is available (via file or env var)
+if (!readSecret('SIMPLEFIN_ACCESS_URL')) {
+  logger.error('SIMPLEFIN_ACCESS_URL is not configured. Set SIMPLEFIN_ACCESS_URL_FILE or SIMPLEFIN_ACCESS_URL.');
   process.exit(1);
 }
 
@@ -43,14 +43,8 @@ async function main(): Promise<void> {
     logger.info(`Backend listening on port ${PORT}`);
   });
 
-  // Teller sync disabled — bank provider TBD
-  // To re-enable, uncomment these lines and add TELLER_CERT_PATH / TELLER_KEY_PATH
-  // to the required env vars above.
-  //
-  // const { startHourlySyncJob } = await import('./jobs/hourly-sync');
-  // startHourlySyncJob();
-  // const { runSync } = await import('./jobs/sync');
-  // runSync().catch((err) => logger.error('Initial sync failed', { err }));
+  // Syncs are demand-driven — triggered by frontend on first page load of
+  // the day and via manual "Sync Now". No cron job needed.
 }
 
 main().catch((err) => {

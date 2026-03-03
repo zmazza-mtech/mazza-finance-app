@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import accountsRouter from './api/accounts';
-// import enrollRouter from './api/enroll'; // Teller disabled — bank provider TBD
 import importRouter from './api/import';
 import transactionsRouter from './api/transactions';
 import recurringRouter from './api/recurring';
@@ -47,7 +46,6 @@ app.use((req, _res, next) => {
 const API_PREFIX = '/api/v1';
 
 app.use(`${API_PREFIX}/accounts`, accountsRouter);
-// app.use(`${API_PREFIX}/enroll`, enrollRouter); // Teller disabled — bank provider TBD
 app.use(`${API_PREFIX}/import`, importRouter);
 app.use(`${API_PREFIX}/transactions`, transactionsRouter);
 app.use(`${API_PREFIX}/recurring`, recurringRouter);

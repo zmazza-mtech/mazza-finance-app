@@ -4,8 +4,8 @@ import Decimal from 'decimal.js';
 // Types
 // ---------------------------------------------------------------------------
 
-export interface TellerTransaction {
-  id: string; // teller_id
+export interface IncomingTransaction {
+  id: string; // external ID (simplefin_id)
   accountId: string;
   date: string; // YYYY-MM-DD
   description: string;
@@ -15,7 +15,7 @@ export interface TellerTransaction {
 
 export interface StoredTransaction {
   id: string; // internal UUID
-  tellerId: string | null;
+  simplefinId: string | null;
   accountId: string;
   date: string;
   description: string;
@@ -26,7 +26,7 @@ export interface StoredTransaction {
 
 export interface TransactionUpdate {
   id: string; // internal UUID to update
-  tellerId: string;
+  simplefinId: string;
   updates: Partial<{
     description: string;
     amount: string;
@@ -36,7 +36,7 @@ export interface TransactionUpdate {
 }
 
 export interface ReconciliationResult {
-  toInsert: TellerTransaction[];
+  toInsert: IncomingTransaction[];
   toUpdate: TransactionUpdate[];
   unchanged: StoredTransaction[];
 }
@@ -46,31 +46,31 @@ export interface ReconciliationResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Compares incoming teller.io transactions against stored transactions and
+ * Compares incoming bank transactions against stored transactions and
  * produces a set of inserts and updates to bring the DB up to date.
  *
- * - Manual transactions (tellerId === null) are never touched.
+ * - Manual transactions (simplefinId === null) are never touched.
  * - A stored transaction is considered unchanged if description, amount,
  *   status, and date all match the incoming value.
  */
 export function reconcileTransactions(
-  incoming: TellerTransaction[],
+  incoming: IncomingTransaction[],
   existing: StoredTransaction[]
 ): ReconciliationResult {
-  // Build index of stored actual transactions keyed by tellerId
-  const storedByTellerId = new Map<string, StoredTransaction>();
+  // Build index of stored actual transactions keyed by simplefinId
+  const storedByExternalId = new Map<string, StoredTransaction>();
   for (const tx of existing) {
-    if (tx.tellerId !== null && tx.type === 'actual') {
-      storedByTellerId.set(tx.tellerId, tx);
+    if (tx.simplefinId !== null && tx.type === 'actual') {
+      storedByExternalId.set(tx.simplefinId, tx);
     }
   }
 
-  const toInsert: TellerTransaction[] = [];
+  const toInsert: IncomingTransaction[] = [];
   const toUpdate: TransactionUpdate[] = [];
   const unchanged: StoredTransaction[] = [];
 
   for (const tx of incoming) {
-    const stored = storedByTellerId.get(tx.id);
+    const stored = storedByExternalId.get(tx.id);
 
     if (!stored) {
       toInsert.push(tx);
@@ -98,7 +98,7 @@ export function reconcileTransactions(
     }
 
     if (Object.keys(updates).length > 0) {
-      toUpdate.push({ id: stored.id, tellerId: tx.id, updates });
+      toUpdate.push({ id: stored.id, simplefinId: tx.id, updates });
     } else {
       unchanged.push(stored);
     }

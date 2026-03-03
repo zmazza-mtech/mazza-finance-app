@@ -5,7 +5,7 @@ import Decimal from 'decimal.js';
 // ---------------------------------------------------------------------------
 
 export interface RawTransaction {
-  tellerId: string;
+  externalId: string;
   accountId: string;
   date: string; // YYYY-MM-DD
   description: string;

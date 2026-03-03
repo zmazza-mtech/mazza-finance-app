@@ -140,7 +140,7 @@ router.post('/detect', async (req: Request, res: Response) => {
     // ---------------------------------------------------------------------------
 
     const rawTxs: RawTransaction[] = txRows.map((t) => ({
-      tellerId: t.id,
+      externalId: t.id,
       accountId: t.accountId,
       date: String(t.date),
       description: t.description,

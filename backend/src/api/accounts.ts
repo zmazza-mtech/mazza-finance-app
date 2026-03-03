@@ -20,7 +20,7 @@ const UpdateAccountSchema = z.object({
 
 const router = Router();
 
-// POST /accounts — create a manual account (no Teller ID)
+// POST /accounts — create a manual account (no SimpleFIN ID)
 router.post('/', async (req: Request, res: Response) => {
   const parsed = CreateManualAccountSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -32,7 +32,7 @@ router.post('/', async (req: Request, res: Response) => {
     const rows = await db
       .insert(accounts)
       .values({
-        tellerId: null,
+        simplefinId: null,
         institution: parsed.data.institution,
         name: parsed.data.name,
         type: parsed.data.type,

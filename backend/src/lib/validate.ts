@@ -19,15 +19,6 @@ const decimalAmount = z
 const uuid = z.string().uuid();
 
 // ---------------------------------------------------------------------------
-// Teller Connect webhook / enrollment
-// ---------------------------------------------------------------------------
-
-export const EnrollAccountSchema = z.object({
-  accessToken: z.string().min(1),
-  enrollmentId: z.string().min(1),
-});
-
-// ---------------------------------------------------------------------------
 // Transactions
 // ---------------------------------------------------------------------------
 
@@ -122,7 +113,6 @@ export const TransactionsQuerySchema = z.object({
 // Type exports
 // ---------------------------------------------------------------------------
 
-export type EnrollAccountInput = z.infer<typeof EnrollAccountSchema>;
 export type CreateManualTransactionInput = z.infer<typeof CreateManualTransactionSchema>;
 export type UpdateManualTransactionInput = z.infer<typeof UpdateManualTransactionSchema>;
 export type CreateRecurringInput = z.infer<typeof CreateRecurringSchema>;

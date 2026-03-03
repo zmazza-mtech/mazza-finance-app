@@ -3,13 +3,11 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import {
   accounts,
-  tellerCredentials,
   transactions,
   recurringTransactions,
   syncLog,
 } from '../db/schema';
-import { decrypt } from '../lib/crypto';
-import { listAccounts, listTransactions, getBalance, TellerApiError } from '../lib/teller-client';
+import { fetchAccounts, SimpleFINApiError } from '../lib/simplefin-client';
 import { reconcileTransactions } from '../services/reconciliation';
 import { detectRecurring } from '../services/detection';
 import { logger } from '../lib/logger';
@@ -32,7 +30,6 @@ export async function runSync(): Promise<void> {
 
   syncRunning = true;
   const db = getDb();
-  const encryptionKey = process.env.ENCRYPTION_KEY!;
 
   const logRow = await db
     .insert(syncLog)
@@ -46,121 +43,121 @@ export async function runSync(): Promise<void> {
   let accountsSynced = 0;
 
   try {
-    // Fetch all credentials
-    const creds = await db.select().from(tellerCredentials);
+    // Fetch accounts + transactions from SimpleFIN (90-day window)
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    for (const cred of creds) {
-      const accessToken = decrypt(cred.accessToken, encryptionKey);
+    const accountSet = await fetchAccounts({
+      startDate: ninetyDaysAgo,
+      pending: true,
+    });
 
-      // Get accounts from Teller
-      let tellerAccounts;
-      try {
-        tellerAccounts = await listAccounts(accessToken);
-      } catch (err) {
-        if (err instanceof TellerApiError && err.status === 401) {
-          logger.warn('Teller token expired or revoked', { enrollmentId: cred.enrollmentId });
-          continue;
-        }
-        throw err;
+    for (const sfAccount of accountSet.accounts) {
+      // Find or create local account by simplefinId
+      let localRows = await db
+        .select()
+        .from(accounts)
+        .where(eq(accounts.simplefinId, sfAccount.id))
+        .limit(1);
+
+      if (localRows.length === 0) {
+        // Auto-create account from SimpleFIN data
+        localRows = await db
+          .insert(accounts)
+          .values({
+            simplefinId: sfAccount.id,
+            institution: sfAccount.org.name ?? sfAccount.org.domain ?? 'Unknown',
+            name: sfAccount.name,
+            type: mapAccountType(sfAccount.name),
+            currency: sfAccount.currency,
+          })
+          .returning();
+
+        logger.info('Auto-created account from SimpleFIN', {
+          simplefinId: sfAccount.id,
+          name: sfAccount.name,
+        });
       }
 
-      for (const ta of tellerAccounts) {
-        // Find our local account record
-        const localRows = await db
-          .select()
-          .from(accounts)
-          .where(eq(accounts.tellerId, ta.id))
-          .limit(1);
+      const localAccount = localRows[0]!;
 
-        if (localRows.length === 0) continue;
-        const localAccount = localRows[0]!;
+      // Update balance
+      const balanceValue = sfAccount['available-balance'] ?? sfAccount.balance;
+      await db
+        .update(accounts)
+        .set({
+          lastBalance: new Decimal(balanceValue).toFixed(2),
+          lastSyncedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(accounts.id, localAccount.id));
 
-        // Fetch balance
-        try {
-          const balance = await getBalance(accessToken, ta.id);
-          const balanceValue = balance.available ?? balance.ledger;
+      // Process transactions
+      const sfTxs = sfAccount.transactions ?? [];
+      totalFetched += sfTxs.length;
 
-          await db
-            .update(accounts)
-            .set({
-              lastBalance: new Decimal(balanceValue).toFixed(2),
-              lastSyncedAt: new Date(),
-              updatedAt: new Date(),
-            })
-            .where(eq(accounts.id, localAccount.id));
-        } catch {
-          logger.warn('Balance fetch failed', { accountId: localAccount.id });
-        }
+      const incoming = sfTxs.map((t) => ({
+        id: t.id,
+        accountId: localAccount.id,
+        date: unixToDate(t.posted || t.transacted_at || 0),
+        description: t.description,
+        amount: t.amount,
+        status: (t.pending ? 'pending' : 'posted') as 'posted' | 'pending',
+      }));
 
-        // Fetch transactions (90-day window for detection heuristics)
-        const tellerTxs = await listTransactions(accessToken, ta.id, 250);
-        totalFetched += tellerTxs.length;
+      // Fetch existing stored actual transactions
+      const existingRows = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.accountId, localAccount.id));
 
-        // Map Teller transactions — Teller reports positive as debit, we store negative as debit
-        const incoming = tellerTxs.map((t) => ({
-          id: t.id,
-          accountId: localAccount.id,
-          date: t.date,
-          description: t.description,
-          // Teller uses negative for credits, positive for debits — match our convention
-          amount: t.amount,
-          status: t.status as 'posted' | 'pending',
-        }));
+      const existing = existingRows.map((r) => ({
+        id: r.id,
+        simplefinId: r.simplefinId ?? null,
+        accountId: r.accountId,
+        date: r.date,
+        description: r.description,
+        amount: r.amount,
+        type: r.type as 'actual' | 'manual',
+        status: r.status as 'posted' | 'pending',
+      }));
 
-        // Fetch existing stored actual transactions
-        const existingRows = await db
-          .select()
-          .from(transactions)
-          .where(eq(transactions.accountId, localAccount.id));
+      const { toInsert, toUpdate } = reconcileTransactions(incoming, existing);
 
-        const existing = existingRows.map((r) => ({
-          id: r.id,
-          tellerId: r.tellerId ?? null,
-          accountId: r.accountId,
-          date: r.date,
-          description: r.description,
-          amount: r.amount,
-          type: r.type as 'actual' | 'manual',
-          status: r.status as 'posted' | 'pending',
-        }));
-
-        const { toInsert, toUpdate } = reconcileTransactions(incoming, existing);
-
-        // Insert new transactions
-        if (toInsert.length > 0) {
-          await db.insert(transactions).values(
-            toInsert.map((t) => ({
-              tellerId: t.id,
-              accountId: localAccount.id,
-              date: t.date,
-              description: t.description,
-              amount: t.amount,
-              type: 'actual' as const,
-              status: t.status,
-            }))
-          );
-        }
-
-        // Update changed transactions
-        for (const update of toUpdate) {
-          await db
-            .update(transactions)
-            .set({ ...update.updates, updatedAt: new Date() })
-            .where(eq(transactions.id, update.id));
-        }
-
-        totalReconciled += toInsert.length + toUpdate.length;
-        accountsSynced++;
-
-        // Run recurring detection on this account's transaction history
-        await runDetection(localAccount.id, incoming.map((t) => ({
-          tellerId: t.id,
-          accountId: t.accountId,
-          date: t.date,
-          description: t.description,
-          amount: t.amount,
-        })));
+      // Insert new transactions
+      if (toInsert.length > 0) {
+        await db.insert(transactions).values(
+          toInsert.map((t) => ({
+            simplefinId: t.id,
+            accountId: localAccount.id,
+            date: t.date,
+            description: t.description,
+            amount: t.amount,
+            type: 'actual' as const,
+            status: t.status,
+          }))
+        );
       }
+
+      // Update changed transactions
+      for (const update of toUpdate) {
+        await db
+          .update(transactions)
+          .set({ ...update.updates, updatedAt: new Date() })
+          .where(eq(transactions.id, update.id));
+      }
+
+      totalReconciled += toInsert.length + toUpdate.length;
+      accountsSynced++;
+
+      // Run recurring detection on this account's transaction history
+      await runDetection(localAccount.id, incoming.map((t) => ({
+        externalId: t.id,
+        accountId: t.accountId,
+        date: t.date,
+        description: t.description,
+        amount: t.amount,
+      })));
     }
 
     // Mark sync complete
@@ -177,12 +174,16 @@ export async function runSync(): Promise<void> {
 
     logger.info('Sync complete', { accountsSynced, totalFetched, totalReconciled });
   } catch (err) {
+    const errorCode = err instanceof SimpleFINApiError
+      ? `SIMPLEFIN_${err.status}`
+      : 'UNEXPECTED_ERROR';
+
     await db
       .update(syncLog)
       .set({
         status: 'failed',
         completedAt: new Date(),
-        errorCode: 'UNEXPECTED_ERROR',
+        errorCode,
         accountsSynced,
         transactionsFetched: totalFetched,
         transactionsReconciled: totalReconciled,
@@ -196,16 +197,33 @@ export async function runSync(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Convert Unix epoch seconds to YYYY-MM-DD string. */
+function unixToDate(epoch: number): string {
+  if (epoch === 0) return new Date().toISOString().slice(0, 10);
+  return new Date(epoch * 1000).toISOString().slice(0, 10);
+}
+
+/** Best-effort account type mapping from SimpleFIN account name. */
+function mapAccountType(name: string): 'checking' | 'savings' | 'credit' {
+  const lower = name.toLowerCase();
+  if (lower.includes('credit')) return 'credit';
+  if (lower.includes('saving')) return 'savings';
+  return 'checking';
+}
+
+// ---------------------------------------------------------------------------
 // Detection pass — called per account after reconciliation
 // ---------------------------------------------------------------------------
 
 async function runDetection(
   accountId: string,
-  rawTxs: { tellerId: string; accountId: string; date: string; description: string; amount: string }[]
+  rawTxs: { externalId: string; accountId: string; date: string; description: string; amount: string }[]
 ): Promise<void> {
   const db = getDb();
 
-  // Fetch existing recurring series names to avoid re-detecting
   const existingRows = await db
     .select({ name: recurringTransactions.name })
     .from(recurringTransactions)
