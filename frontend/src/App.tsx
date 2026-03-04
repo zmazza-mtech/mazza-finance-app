@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { CalendarPage } from '@/pages/CalendarPage';
 import { RecurringPage } from '@/pages/RecurringPage';
 import { TransactionsPage } from '@/pages/TransactionsPage';
+import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { getAccounts } from '@/api/client';
 
@@ -83,6 +84,7 @@ export function App() {
               <Route index element={<CalendarPage />} />
               <Route path="transactions" element={<TransactionsPage />} />
               <Route path="recurring" element={<RecurringPage />} />
+              <Route path="reports" element={<ReportsPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Routes>
