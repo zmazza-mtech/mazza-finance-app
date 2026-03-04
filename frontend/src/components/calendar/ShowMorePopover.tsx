@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import { TransactionItem } from './TransactionItem';
 import type { ForecastTransaction } from '@/api/types';
 
-const POPOVER_WIDTH = 280;
-const POPOVER_HEIGHT_EST = 320;
+const POPOVER_WIDTH = 400;
+const POPOVER_HEIGHT_EST = 360;
 const GAP = 6; // px gap between anchor and popover
 
 interface ShowMorePopoverProps {
@@ -120,7 +120,7 @@ export function ShowMorePopover({
         >
           {transactions.map((tx) => (
             <li key={tx.id} className="px-3 py-2">
-              <TransactionItem transaction={tx} />
+              <TransactionItem transaction={tx} wrap />
             </li>
           ))}
         </ul>
