@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import { DayCell } from './DayCell';
 import type { ForecastDay } from '@/api/types';
 
@@ -15,6 +16,10 @@ interface MonthCalendarGridProps {
   todayDate: string;
   greenThreshold: string;
   criticalThreshold: string;
+  searchQuery: string;
+  matchingDates: Set<string>;
+  searchInputRef: RefObject<HTMLInputElement>;
+  onSearchChange: (query: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
@@ -35,6 +40,10 @@ export function MonthCalendarGrid({
   todayDate,
   greenThreshold,
   criticalThreshold,
+  searchQuery,
+  matchingDates,
+  searchInputRef,
+  onSearchChange,
   onPrevMonth,
   onNextMonth,
   onToday,
@@ -85,6 +94,31 @@ export function MonthCalendarGrid({
         </div>
 
         <div className="absolute right-4 flex items-center gap-2">
+          <div className="relative">
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => e.stopPropagation()}
+              placeholder="Search... ( / )"
+              aria-label="Search transactions"
+              className="w-40 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  onSearchChange('');
+                  searchInputRef.current?.blur();
+                }}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
           {!isCurrentMonth && (
             <button
               type="button"
@@ -137,6 +171,8 @@ export function MonthCalendarGrid({
           const dayNum = i + 1;
           const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
           const dayData = dayMap.get(dateStr);
+          const isSearchActive = searchQuery.length > 0;
+          const hasSearchMatch = matchingDates.has(dateStr);
 
           return (
             <DayCell
@@ -148,6 +184,9 @@ export function MonthCalendarGrid({
               isFocused={dateStr === focusedDate}
               greenThreshold={greenThreshold}
               criticalThreshold={criticalThreshold}
+              isSearchActive={isSearchActive}
+              hasSearchMatch={hasSearchMatch}
+              searchQuery={searchQuery}
               onFocus={onFocusDate}
               onActivate={onActivateDate}
               onAddTransaction={onAddTransaction}

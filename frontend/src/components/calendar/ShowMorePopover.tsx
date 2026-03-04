@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { TransactionItem } from './TransactionItem';
+import { transactionMatchesQuery } from '@/lib/search';
 import type { ForecastTransaction } from '@/api/types';
 
 const POPOVER_WIDTH = 400;
@@ -12,6 +13,7 @@ interface ShowMorePopoverProps {
   transactions: ForecastTransaction[];
   anchorEl: HTMLElement | null;
   isOpen: boolean;
+  searchQuery: string;
   onClose: () => void;
 }
 
@@ -29,6 +31,7 @@ export function ShowMorePopover({
   transactions,
   anchorEl,
   isOpen,
+  searchQuery,
   onClose,
 }: ShowMorePopoverProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -120,7 +123,11 @@ export function ShowMorePopover({
         >
           {transactions.map((tx) => (
             <li key={tx.id} className="px-3 py-2">
-              <TransactionItem transaction={tx} wrap />
+              <TransactionItem
+                transaction={tx}
+                wrap
+                isMatch={searchQuery.length > 0 && transactionMatchesQuery(tx, searchQuery)}
+              />
             </li>
           ))}
         </ul>

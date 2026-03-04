@@ -1,5 +1,6 @@
 import { TransactionItem } from './TransactionItem';
 import { formatCurrency, getBalanceHealth, getBalanceHealthClasses } from '@/lib/balance';
+import { transactionMatchesQuery } from '@/lib/search';
 import type { ForecastTransaction } from '@/api/types';
 
 const MAX_VISIBLE = 2;
@@ -12,6 +13,9 @@ interface DayCellProps {
   isFocused: boolean;
   greenThreshold: string;
   criticalThreshold: string;
+  isSearchActive: boolean;
+  hasSearchMatch: boolean;
+  searchQuery: string;
   onFocus: (date: string) => void;
   onActivate: (date: string) => void;
   onAddTransaction: (date: string) => void;
@@ -33,6 +37,9 @@ export function DayCell({
   isFocused,
   greenThreshold,
   criticalThreshold,
+  isSearchActive,
+  hasSearchMatch,
+  searchQuery,
   onFocus,
   onActivate,
   onAddTransaction,
@@ -62,13 +69,14 @@ export function DayCell({
       }}
       className={[
         'group relative flex flex-col border-r border-b border-gray-200 dark:border-gray-700',
-        'min-h-[100px] p-1.5 focus:outline-none',
+        'min-h-[100px] p-1.5 focus:outline-none transition-opacity',
         isToday
           ? 'ring-2 ring-inset ring-blue-500 bg-blue-50/20 dark:bg-blue-950/10'
           : 'hover:bg-gray-50/60 dark:hover:bg-gray-800/40',
         isFocused && !isToday
           ? 'ring-2 ring-inset ring-blue-400'
           : '',
+        isSearchActive && !hasSearchMatch ? 'opacity-40' : '',
       ].join(' ')}
     >
       {/* Top row: date number + add button */}
@@ -101,7 +109,11 @@ export function DayCell({
       {visible.length > 0 && (
         <ul className="space-y-0.5 flex-1 min-w-0">
           {visible.map((tx) => (
-            <TransactionItem key={tx.id} transaction={tx} />
+            <TransactionItem
+              key={tx.id}
+              transaction={tx}
+              isMatch={isSearchActive && transactionMatchesQuery(tx, searchQuery)}
+            />
           ))}
         </ul>
       )}

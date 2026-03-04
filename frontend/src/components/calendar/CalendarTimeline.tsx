@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { MonthCalendarGrid } from './MonthCalendarGrid';
 import { ShowMorePopover } from './ShowMorePopover';
 import { TransactionModal } from './TransactionModal';
@@ -16,6 +16,9 @@ interface CalendarTimelineProps {
   currentMonth: string; // 'YYYY-MM'
   greenThreshold: string;
   criticalThreshold: string;
+  searchQuery: string;
+  matchingDates: Set<string>;
+  onSearchChange: (query: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
@@ -44,6 +47,9 @@ export function CalendarTimeline({
   currentMonth,
   greenThreshold,
   criticalThreshold,
+  searchQuery,
+  matchingDates,
+  onSearchChange,
   onPrevMonth,
   onNextMonth,
   onToday,
@@ -56,6 +62,8 @@ export function CalendarTimeline({
   const [rovingState, setRovingState] = useState(() =>
     createRovingState(allIds, todayDate),
   );
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [showMoreDate, setShowMoreDate] = useState<string | null>(null);
   const [showMoreAnchor, setShowMoreAnchor] = useState<HTMLElement | null>(null);
@@ -91,8 +99,20 @@ export function CalendarTimeline({
         return;
       }
 
+      if (e.key === '/' && !showMoreDate && !modalDate) {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+        }
+        return;
+      }
+
       if (e.key === 'Escape') {
-        if (showMoreDate) {
+        if (searchQuery && document.activeElement === searchInputRef.current) {
+          onSearchChange('');
+          searchInputRef.current?.blur();
+        } else if (showMoreDate) {
           setShowMoreDate(null);
           setShowMoreAnchor(null);
         } else if (modalDate) {
@@ -100,7 +120,7 @@ export function CalendarTimeline({
         }
       }
     },
-    [rovingState.focusedId, todayDate, onToday, showMoreDate, modalDate],
+    [rovingState.focusedId, todayDate, onToday, showMoreDate, modalDate, searchQuery, onSearchChange],
   );
 
   const showMoreTransactions =
@@ -122,6 +142,10 @@ export function CalendarTimeline({
         todayDate={todayDate}
         greenThreshold={greenThreshold}
         criticalThreshold={criticalThreshold}
+        searchQuery={searchQuery}
+        matchingDates={matchingDates}
+        searchInputRef={searchInputRef}
+        onSearchChange={onSearchChange}
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
         onToday={onToday}
@@ -141,6 +165,7 @@ export function CalendarTimeline({
         transactions={showMoreTransactions}
         anchorEl={showMoreAnchor}
         isOpen={showMoreDate !== null}
+        searchQuery={searchQuery}
         onClose={() => {
           setShowMoreDate(null);
           setShowMoreAnchor(null);

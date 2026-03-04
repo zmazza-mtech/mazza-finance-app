@@ -1,9 +1,10 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { CalendarTimeline } from '@/components/calendar/CalendarTimeline';
 import { BalanceAlertBanner } from '@/components/layout/BalanceAlertBanner';
 import { useForecast, useAddTransaction } from '@/hooks/useForecast';
 import { useThresholds } from '@/hooks/useSettings';
 import { AccountContext } from '@/App';
+import { findMatchingDates } from '@/lib/search';
 
 /**
  * Calendar page — shows a monthly grid view centered on currentMonth.
@@ -12,6 +13,7 @@ import { AccountContext } from '@/App';
 export function CalendarPage() {
   const { selectedAccountId } = useContext(AccountContext);
   const [currentMonth, setCurrentMonth] = useState(() => todayIso().slice(0, 7));
+  const [searchQuery, setSearchQuery] = useState('');
 
   const startDate = firstDayOfMonth(addMonths(currentMonth, -3));
   const endDate = lastDayOfMonth(addMonths(currentMonth, 3));
@@ -22,6 +24,11 @@ export function CalendarPage() {
     selectedAccountId,
     startDate,
     endDate,
+  );
+
+  const matchingDates = useMemo(
+    () => findMatchingDates(forecastDays, searchQuery),
+    [forecastDays, searchQuery],
   );
 
   const addTransaction = useAddTransaction(selectedAccountId, startDate, endDate);
@@ -88,6 +95,9 @@ export function CalendarPage() {
         currentMonth={currentMonth}
         greenThreshold={greenThreshold}
         criticalThreshold={criticalThreshold}
+        searchQuery={searchQuery}
+        matchingDates={matchingDates}
+        onSearchChange={setSearchQuery}
         onAddTransaction={handleAddTransaction}
         onPrevMonth={() => setCurrentMonth((m) => addMonths(m, -1))}
         onNextMonth={() => setCurrentMonth((m) => addMonths(m, 1))}

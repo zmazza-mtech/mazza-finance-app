@@ -7,6 +7,8 @@ interface TransactionItemProps {
   onClick?: () => void;
   /** When true, description wraps instead of truncating. */
   wrap?: boolean;
+  /** When true, highlights this transaction as a search match. */
+  isMatch?: boolean;
 }
 
 /**
@@ -14,7 +16,7 @@ interface TransactionItemProps {
  * - Color paired with direction icon (never color alone)
  * - aria-label: "[name], $[amount], [debit|deposit], [source]"
  */
-export function TransactionItem({ transaction, onClick, wrap }: TransactionItemProps) {
+export function TransactionItem({ transaction, onClick, wrap, isMatch }: TransactionItemProps) {
   const { description, amount, source } = transaction;
   const debit = isNegative(amount);
   const formattedAmount = formatAmount(amount);
@@ -27,7 +29,9 @@ export function TransactionItem({ transaction, onClick, wrap }: TransactionItemP
       aria-label={ariaLabel}
       className={`flex ${wrap ? 'items-start' : 'items-center'} justify-between gap-2 text-xs py-0.5 ${
         onClick ? 'cursor-pointer hover:underline' : ''
-      } ${debit ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'}`}
+      } ${debit ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'} ${
+        isMatch ? 'bg-yellow-100 dark:bg-yellow-900/30 rounded px-0.5' : ''
+      }`}
       onClick={onClick}
     >
       <span className="flex items-center gap-1 min-w-0">
