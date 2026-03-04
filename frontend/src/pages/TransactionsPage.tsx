@@ -3,6 +3,7 @@ import { AccountContext } from '@/App';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
+import { normalizeDescription } from '@/lib/normalize';
 import {
   useTransactions,
   useUpdateTransactionCategory,
@@ -71,8 +72,14 @@ export function TransactionsPage() {
       const tx = transactions.find((t) => t.id === id);
       if (!tx) return;
 
+      // Compare normalized descriptions so "DBT CRD 0407 ... TSTDRIP KITCHEN"
+      // matches "DBT CRD 0937 ... TSTDRIP KITCHEN"
+      const normalized = normalizeDescription(tx.description).toLowerCase();
       const others = transactions.filter(
-        (t) => t.id !== id && t.description === tx.description && t.category !== category,
+        (t) =>
+          t.id !== id &&
+          normalizeDescription(t.description).toLowerCase() === normalized &&
+          t.category !== category,
       );
 
       if (others.length > 0) {

@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { and, asc, desc, eq, gte, isNull, lte } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { transactions } from '../db/schema';
-import { categorize } from '../services/categorize';
+import { categorize, normalizeDescription } from '../services/categorize';
 import {
   CreateManualTransactionSchema,
   UpdateManualTransactionSchema,
@@ -175,7 +175,9 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /transactions/batch-categorize — update all transactions matching a description
+// POST /transactions/batch-categorize — update all transactions whose normalized
+// description matches, so "DBT CRD 0407 ... TSTDRIP KITCHEN" and
+// "DBT CRD 0937 ... TSTDRIP KITCHEN" both get categorized.
 router.post('/batch-categorize', async (req: Request, res: Response) => {
   const parsed = BatchCategorizeSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -183,16 +185,34 @@ router.post('/batch-categorize', async (req: Request, res: Response) => {
   }
 
   const { description, category } = parsed.data;
+  const targetNormalized = normalizeDescription(description).toLowerCase();
 
   try {
     const db = getDb();
-    const rows = await db
-      .update(transactions)
-      .set({ category, updatedAt: new Date() })
-      .where(eq(transactions.description, description))
-      .returning({ id: transactions.id });
 
-    res.json({ data: { updated: rows.length }, error: null });
+    // Fetch all transaction IDs + descriptions, filter by normalized match in JS
+    const all = await db
+      .select({ id: transactions.id, description: transactions.description })
+      .from(transactions);
+
+    const matchingIds = all
+      .filter((t) => normalizeDescription(t.description).toLowerCase() === targetNormalized)
+      .map((t) => t.id);
+
+    if (matchingIds.length === 0) {
+      return res.json({ data: { updated: 0 }, error: null });
+    }
+
+    let updated = 0;
+    for (const id of matchingIds) {
+      await db
+        .update(transactions)
+        .set({ category, updatedAt: new Date() })
+        .where(eq(transactions.id, id));
+      updated++;
+    }
+
+    res.json({ data: { updated }, error: null });
   } catch (err) {
     logger.error('POST /transactions/batch-categorize failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });

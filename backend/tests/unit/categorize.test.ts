@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { categorize, CATEGORIES } from '../../src/services/categorize';
+import { categorize, normalizeDescription, CATEGORIES } from '../../src/services/categorize';
 
 describe('categorize', () => {
   it('returns null for unknown descriptions', () => {
@@ -101,9 +101,50 @@ describe('categorize', () => {
     expect(categorize('ACH TRANSFER 1234')).toBe('Transfers');
   });
 
+  // Bank-prefixed descriptions
+  it('categorizes through DBT CRD prefix', () => {
+    expect(categorize('DBT CRD 0407 27105864 TSTDRIP KITCHEN AND CO ATHENS TN')).toBe('Dining');
+    expect(categorize('DBT CRD 1135 25663846 COOK OUT ATHENS TN')).toBe('Dining');
+    expect(categorize('DBT CRD 2150 20104716 APPLE.COM/BILL 866-712-7753')).toBe('Shopping');
+    expect(categorize('DBT CRD 1325 29000729 PATREON MEMBERSHIP 833-9728')).toBe('Subscriptions');
+    expect(categorize('DBT CRD 0347 29002884 GOOGLE YOUTUBEPREMIUM 650')).toBe('Entertainment');
+    expect(categorize('DBT CRD 1424 29067970 PAYPAL PYPL PAYIN4 888-221-116')).toBe('Transfers');
+  });
+
   it('exports CATEGORIES array with all expected values', () => {
     expect(CATEGORIES).toHaveLength(13);
     expect(CATEGORIES).toContain('Income');
     expect(CATEGORIES).toContain('Other');
+  });
+});
+
+describe('normalizeDescription', () => {
+  it('strips DBT CRD prefix', () => {
+    expect(normalizeDescription('DBT CRD 0407 27105864 TSTDRIP KITCHEN AND CO'))
+      .toBe('TSTDRIP KITCHEN AND CO');
+  });
+
+  it('strips POS DEBIT prefix', () => {
+    expect(normalizeDescription('POS DEBIT 1234 STARBUCKS COFFEE'))
+      .toBe('STARBUCKS COFFEE');
+  });
+
+  it('strips ACH DEBIT prefix', () => {
+    expect(normalizeDescription('ACH DEBIT NETFLIX.COM'))
+      .toBe('NETFLIX.COM');
+  });
+
+  it('strips CHECKCARD prefix', () => {
+    expect(normalizeDescription('CHECKCARD 1234 TARGET #5678'))
+      .toBe('TARGET #5678');
+  });
+
+  it('leaves clean descriptions unchanged', () => {
+    expect(normalizeDescription('NETFLIX.COM MONTHLY')).toBe('NETFLIX.COM MONTHLY');
+  });
+
+  it('collapses whitespace', () => {
+    expect(normalizeDescription('DBT CRD 0407 27105864  SOME   VENDOR'))
+      .toBe('SOME VENDOR');
   });
 });
