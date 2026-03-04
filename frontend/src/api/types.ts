@@ -170,4 +170,5 @@ export interface CategorySummaryItem {
 export interface CategorySummaryResponse {
   income: CategorySummaryItem[];
   expenses: CategorySummaryItem[];
+  transfers: CategorySummaryItem[];
 }

@@ -6,6 +6,7 @@ import { categorize } from '../services/categorize';
 import {
   CreateManualTransactionSchema,
   UpdateManualTransactionSchema,
+  BatchCategorizeSchema,
   TransactionsQuerySchema,
   UuidParamSchema,
 } from '../lib/validate';
@@ -170,6 +171,30 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (err) {
     logger.error('DELETE /transactions/:id failed', { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ data: null, error: 'Internal server error' });
+  }
+});
+
+// POST /transactions/batch-categorize — update all transactions matching a description
+router.post('/batch-categorize', async (req: Request, res: Response) => {
+  const parsed = BatchCategorizeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ data: null, error: parsed.error.flatten() });
+  }
+
+  const { description, category } = parsed.data;
+
+  try {
+    const db = getDb();
+    const rows = await db
+      .update(transactions)
+      .set({ category, updatedAt: new Date() })
+      .where(eq(transactions.description, description))
+      .returning({ id: transactions.id });
+
+    res.json({ data: { updated: rows.length }, error: null });
+  } catch (err) {
+    logger.error('POST /transactions/batch-categorize failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

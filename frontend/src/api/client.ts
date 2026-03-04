@@ -263,7 +263,7 @@ export async function importTransactions(body: ImportBody): Promise<ImportResult
 // Reports
 // ---------------------------------------------------------------------------
 
-import type { CategorySummaryResponse } from './types';
+import type { Category, CategorySummaryResponse } from './types';
 
 export async function getCategorySummary(params: {
   accountId: string;
@@ -273,6 +273,19 @@ export async function getCategorySummary(params: {
   const query = new URLSearchParams(params).toString();
   const res = await request<CategorySummaryResponse>(`/reports/category-summary?${query}`);
   if (res.error) throw new Error(res.error);
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
+export async function batchCategorize(
+  description: string,
+  category: Category | null,
+): Promise<{ updated: number }> {
+  const res = await request<{ updated: number }>('/transactions/batch-categorize', {
+    method: 'POST',
+    body: JSON.stringify({ description, category }),
+  });
+  if (res.error) throw new Error(String(res.error));
   if (!res.data) throw new Error('No data returned');
   return res.data;
 }

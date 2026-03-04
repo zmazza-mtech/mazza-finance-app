@@ -35,20 +35,24 @@ router.get('/category-summary', async (req: Request, res: Response) => {
 
     const income: Array<{ category: string; total: string }> = [];
     const expenses: Array<{ category: string; total: string }> = [];
+    const transfers: Array<{ category: string; total: string }> = [];
 
     for (const row of rows) {
       const category = row.category ?? 'Other';
       const total = row.total ?? '0';
       const isPositive = !total.startsWith('-');
 
-      if (isPositive && parseFloat(total) > 0) {
+      // Transfers are internal money movement — separate from income/expenses
+      if (category === 'Transfers') {
+        transfers.push({ category, total });
+      } else if (isPositive && parseFloat(total) > 0) {
         income.push({ category, total });
       } else if (!isPositive) {
         expenses.push({ category, total });
       }
     }
 
-    res.json({ data: { income, expenses }, error: null });
+    res.json({ data: { income, expenses, transfers }, error: null });
   } catch (err) {
     logger.error('GET /reports/category-summary failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });

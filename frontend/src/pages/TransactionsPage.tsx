@@ -1,8 +1,13 @@
 import { useState, useContext, useCallback } from 'react';
 import { AccountContext } from '@/App';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
-import { useTransactions, useUpdateTransactionCategory } from '@/hooks/useTransactions';
+import {
+  useTransactions,
+  useUpdateTransactionCategory,
+  useBatchCategorize,
+} from '@/hooks/useTransactions';
 import { CATEGORIES } from '@/lib/categories';
 import type { Category } from '@/api/types';
 
@@ -16,6 +21,13 @@ function defaultEndDate(): string {
   return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
 }
 
+interface BatchPrompt {
+  txId: string;
+  description: string;
+  category: Category | null;
+  matchCount: number;
+}
+
 export function TransactionsPage() {
   const { selectedAccountId } = useContext(AccountContext);
   const [startDate, setStartDate] = useState(defaultStartDate);
@@ -23,6 +35,7 @@ export function TransactionsPage() {
   const [sortBy, setSortBy] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [batchPrompt, setBatchPrompt] = useState<BatchPrompt | null>(null);
 
   const queryParams = {
     accountId: selectedAccountId || undefined,
@@ -35,6 +48,7 @@ export function TransactionsPage() {
 
   const { data: transactions = [], isLoading, error } = useTransactions(queryParams);
   const updateCategory = useUpdateTransactionCategory(queryParams);
+  const batchCategorize = useBatchCategorize(queryParams);
 
   const handleSort = useCallback(
     (column: string) => {
@@ -50,10 +64,43 @@ export function TransactionsPage() {
 
   const handleCategoryChange = useCallback(
     (id: string, category: Category | null) => {
+      // Always update the single transaction first
       updateCategory.mutate({ id, category });
+
+      // Check if other transactions share the same description and differ
+      const tx = transactions.find((t) => t.id === id);
+      if (!tx) return;
+
+      const others = transactions.filter(
+        (t) => t.id !== id && t.description === tx.description && t.category !== category,
+      );
+
+      if (others.length > 0) {
+        setBatchPrompt({
+          txId: id,
+          description: tx.description,
+          category,
+          matchCount: others.length,
+        });
+      }
     },
-    [updateCategory],
+    [transactions, updateCategory],
   );
+
+  const handleBatchConfirm = useCallback(() => {
+    if (!batchPrompt) return;
+    batchCategorize.mutate({
+      description: batchPrompt.description,
+      category: batchPrompt.category,
+    });
+    setBatchPrompt(null);
+  }, [batchPrompt, batchCategorize]);
+
+  const handleBatchCancel = useCallback(() => {
+    setBatchPrompt(null);
+  }, []);
+
+  const categoryLabel = batchPrompt?.category ?? 'Uncategorized';
 
   return (
     <div className="max-w-screen-lg mx-auto px-4 py-6">
@@ -104,6 +151,21 @@ export function TransactionsPage() {
           onCategoryChange={handleCategoryChange}
         />
       )}
+
+      {/* Batch categorize confirmation */}
+      <ConfirmDialog
+        isOpen={batchPrompt !== null}
+        title="Categorize matching transactions?"
+        description={
+          batchPrompt
+            ? `${batchPrompt.matchCount} other transaction${batchPrompt.matchCount === 1 ? '' : 's'} with the description "${batchPrompt.description}" can also be set to "${categoryLabel}". Apply to all?`
+            : ''
+        }
+        confirmLabel="Apply to all"
+        cancelLabel="Just this one"
+        onConfirm={handleBatchConfirm}
+        onCancel={handleBatchCancel}
+      />
     </div>
   );
 }

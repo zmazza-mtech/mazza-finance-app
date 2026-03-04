@@ -54,6 +54,11 @@ export const UpdateManualTransactionSchema = z.object({
   category: CategoryEnum.nullable().optional(),
 });
 
+export const BatchCategorizeSchema = z.object({
+  description: z.string().min(1).max(255),
+  category: CategoryEnum.nullable(),
+});
+
 // ---------------------------------------------------------------------------
 // Recurring transactions
 // ---------------------------------------------------------------------------
