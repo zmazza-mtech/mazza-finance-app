@@ -32,7 +32,7 @@ export function TransactionItem({ transaction, onClick }: TransactionItemProps) 
         <span aria-hidden="true" className="shrink-0">
           {debit ? '↓' : '↑'}
         </span>
-        <span className="truncate text-gray-800 dark:text-gray-200">
+        <span className="truncate text-gray-800 dark:text-gray-200" title={description}>
           {description}
         </span>
       </span>

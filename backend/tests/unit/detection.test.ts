@@ -247,12 +247,13 @@ describe('detectRecurring', () => {
   });
 
   it('does not detect recurring for highly inconsistent amounts (CV > 15%)', () => {
-    // $120, $87, $210, $95 — CV ~34%, well above threshold
+    // $50, $200, $400, $75, $350 — core amounts still highly variable after trimming
     const transactions = [
-      tx({ externalId: 'a', date: '2024-01-15', description: 'Electric Bill', amount: '-120.00' }),
-      tx({ externalId: 'b', date: '2024-02-15', description: 'Electric Bill', amount: '-87.00' }),
-      tx({ externalId: 'c', date: '2024-03-15', description: 'Electric Bill', amount: '-210.00' }),
-      tx({ externalId: 'd', date: '2024-04-15', description: 'Electric Bill', amount: '-95.00' }),
+      tx({ externalId: 'a', date: '2024-01-15', description: 'Electric Bill', amount: '-50.00' }),
+      tx({ externalId: 'b', date: '2024-02-15', description: 'Electric Bill', amount: '-200.00' }),
+      tx({ externalId: 'c', date: '2024-03-15', description: 'Electric Bill', amount: '-400.00' }),
+      tx({ externalId: 'd', date: '2024-04-15', description: 'Electric Bill', amount: '-75.00' }),
+      tx({ externalId: 'e', date: '2024-05-15', description: 'Electric Bill', amount: '-350.00' }),
     ];
 
     const results = detectRecurring(transactions, '2024-04-30');
@@ -270,7 +271,7 @@ describe('detectRecurring', () => {
     expect(results).toHaveLength(0);
   });
 
-  it('uses the most common amount when amounts are consistent', () => {
+  it('uses the median amount when amounts are consistent', () => {
     const transactions = [
       tx({ externalId: 'a', date: '2024-01-15', description: 'Netflix', amount: '-15.49' }),
       tx({ externalId: 'b', date: '2024-02-15', description: 'Netflix', amount: '-15.49' }),

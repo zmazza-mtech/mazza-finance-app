@@ -204,12 +204,16 @@ export function detectFrequency(dates: string[]): Frequency | null {
 function isAmountConsistent(amounts: string[]): boolean {
   if (amounts.length === 0) return false;
 
-  // Sort by absolute value and trim the top/bottom 5% before computing CV.
+  // Sort by absolute value and trim outliers before computing CV.
   // This makes detection robust to one-off outliers (e.g. a year-end bonus
   // posting alongside normal biweekly pay, or a partial first paycheck).
+  // For small samples (< 20), always trim at least 1 from each end so a
+  // single outlier doesn't block detection.
   const sorted = amounts.map((a) => new Decimal(a).abs()).sort((a, b) => a.cmp(b));
-  const trimCount = Math.floor(sorted.length * 0.05);
-  const trimmed = trimCount > 0 ? sorted.slice(trimCount, sorted.length - trimCount) : sorted;
+  const trimCount = Math.max(1, Math.floor(sorted.length * 0.05));
+  const trimmed = sorted.length > 2
+    ? sorted.slice(trimCount, sorted.length - trimCount)
+    : sorted;
 
   if (trimmed.length === 0) return true;
 
@@ -230,23 +234,22 @@ function isAmountConsistent(amounts: string[]): boolean {
   return cv <= AMOUNT_CV_THRESHOLD;
 }
 
-function mostCommonAmount(amounts: string[]): string {
-  const freq = new Map<string, number>();
-  for (const a of amounts) {
-    const key = new Decimal(a).toFixed(2);
-    freq.set(key, (freq.get(key) ?? 0) + 1);
-  }
+function representativeAmount(amounts: string[]): string {
+  // Median of trimmed absolute values — resilient to outliers like bonuses
+  // or partial first paychecks. Preserves the original sign.
+  const sign = amounts.length > 0 && new Decimal(amounts[0]!).isNeg() ? '-' : '';
+  const sorted = amounts.map((a) => new Decimal(a).abs()).sort((a, b) => a.cmp(b));
+  const trimCount = Math.max(1, Math.floor(sorted.length * 0.05));
+  const trimmed = sorted.length > 2
+    ? sorted.slice(trimCount, sorted.length - trimCount)
+    : sorted;
 
-  let best = amounts[0]!;
-  let bestCount = 0;
-  for (const [key, count] of freq) {
-    if (count > bestCount) {
-      bestCount = count;
-      best = key;
-    }
-  }
+  const mid = Math.floor(trimmed.length / 2);
+  const median = trimmed.length % 2 === 0
+    ? trimmed[mid - 1]!.plus(trimmed[mid]!).div(2)
+    : trimmed[mid]!;
 
-  return best;
+  return sign + median.toFixed(2);
 }
 
 // ---------------------------------------------------------------------------
@@ -315,7 +318,7 @@ export function detectRecurring(
     // Check amount consistency
     if (!isAmountConsistent(amounts)) continue;
 
-    const amount = mostCommonAmount(amounts);
+    const amount = representativeAmount(amounts);
     const lastDate = deduped[deduped.length - 1]!.tx.date;
     const nextDate = projectNext(lastDate, frequency);
 
