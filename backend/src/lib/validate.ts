@@ -18,6 +18,23 @@ const decimalAmount = z
 /** UUID string */
 const uuid = z.string().uuid();
 
+/** Transaction category */
+export const CategoryEnum = z.enum([
+  'Income',
+  'Housing',
+  'Utilities',
+  'Groceries',
+  'Transportation',
+  'Insurance',
+  'Healthcare',
+  'Entertainment',
+  'Dining',
+  'Shopping',
+  'Subscriptions',
+  'Transfers',
+  'Other',
+]);
+
 // ---------------------------------------------------------------------------
 // Transactions
 // ---------------------------------------------------------------------------
@@ -27,12 +44,14 @@ export const CreateManualTransactionSchema = z.object({
   date: dateString,
   description: z.string().min(1).max(255),
   amount: decimalAmount,
+  category: CategoryEnum.nullable().optional(),
 });
 
 export const UpdateManualTransactionSchema = z.object({
   date: dateString.optional(),
   description: z.string().min(1).max(255).optional(),
   amount: decimalAmount.optional(),
+  category: CategoryEnum.nullable().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -49,6 +68,7 @@ export const CreateRecurringSchema = z.object({
   frequency: FrequencyEnum,
   nextDate: dateString,
   endDate: dateString.nullable().optional(),
+  category: CategoryEnum.nullable().optional(),
 });
 
 export const UpdateRecurringSchema = z.object({
@@ -58,6 +78,7 @@ export const UpdateRecurringSchema = z.object({
   nextDate: dateString.optional(),
   endDate: dateString.nullable().optional(),
   status: RecurringStatusEnum.optional(),
+  category: CategoryEnum.nullable().optional(),
 });
 
 // ---------------------------------------------------------------------------

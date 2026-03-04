@@ -61,6 +61,7 @@ export const transactions = pgTable(
       .$type<string>(), // negative = debit, positive = deposit
     type: text('type').notNull(), // actual | manual
     status: text('status').notNull().default('posted'), // posted | pending
+    category: text('category'), // nullable — null means uncategorized
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -94,6 +95,7 @@ export const recurringTransactions = pgTable(
     endDate: date('end_date'),
     source: text('source').notNull(), // auto_detected | manual
     status: text('status').notNull().default('pending_review'), // active | disabled | pending_review | ended
+    category: text('category'), // nullable — null means uncategorized
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
