@@ -10,6 +10,7 @@ function makeTransaction(overrides: Partial<ForecastTransaction> = {}): Forecast
     description: 'Test transaction',
     amount: '-50.00',
     source: 'actual',
+    category: null,
     ...overrides,
   };
 }

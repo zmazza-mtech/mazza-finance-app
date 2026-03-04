@@ -71,11 +71,17 @@ import type {
 } from './types';
 
 export async function getTransactions(params: {
-  accountId: string;
-  startDate: string;
-  endDate: string;
+  accountId?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortDir?: string;
+  category?: string;
 }): Promise<Transaction[]> {
-  const query = new URLSearchParams(params).toString();
+  const query = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined) query.set(k, v);
+  }
   const res = await request<Transaction[]>(`/transactions?${query}`);
   if (res.error) throw new Error(res.error);
   return res.data ?? [];
@@ -247,6 +253,33 @@ export async function importTransactions(body: ImportBody): Promise<ImportResult
   const res = await request<ImportResult>('/import/csv', {
     method: 'POST',
     body: JSON.stringify(body),
+  });
+  if (res.error) throw new Error(String(res.error));
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
+// ---------------------------------------------------------------------------
+// Reports
+// ---------------------------------------------------------------------------
+
+import type { CategorySummaryResponse } from './types';
+
+export async function getCategorySummary(params: {
+  accountId: string;
+  startDate: string;
+  endDate: string;
+}): Promise<CategorySummaryResponse> {
+  const query = new URLSearchParams(params).toString();
+  const res = await request<CategorySummaryResponse>(`/reports/category-summary?${query}`);
+  if (res.error) throw new Error(res.error);
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
+export async function backfillCategories(): Promise<{ updated: number; total: number }> {
+  const res = await request<{ updated: number; total: number }>('/transactions/backfill-categories', {
+    method: 'POST',
   });
   if (res.error) throw new Error(String(res.error));
   if (!res.data) throw new Error('No data returned');

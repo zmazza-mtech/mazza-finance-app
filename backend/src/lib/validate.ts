@@ -125,9 +125,18 @@ export const ForecastQuerySchema = z.object({
 });
 
 export const TransactionsQuerySchema = z.object({
-  accountId: uuid,
+  accountId: uuid.optional(),
   startDate: dateString.optional(),
   endDate: dateString.optional(),
+  sortBy: z.enum(['date', 'amount', 'description', 'category']).optional(),
+  sortDir: z.enum(['asc', 'desc']).optional(),
+  category: CategoryEnum.optional(),
+});
+
+export const ReportQuerySchema = z.object({
+  accountId: uuid,
+  startDate: dateString,
+  endDate: dateString,
 });
 
 // ---------------------------------------------------------------------------

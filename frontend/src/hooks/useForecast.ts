@@ -72,6 +72,7 @@ export function useAddTransaction(
                 description: body.description,
                 amount: body.amount,
                 source: 'manual' as const,
+                category: body.category ?? null,
               },
             ],
           };

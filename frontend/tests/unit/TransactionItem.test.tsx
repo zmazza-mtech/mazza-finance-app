@@ -10,6 +10,7 @@ function makeTx(overrides: Partial<ForecastTransaction> = {}): ForecastTransacti
     description: 'Netflix',
     amount: '-15.99',
     source: 'actual',
+    category: null,
     ...overrides,
   };
 }

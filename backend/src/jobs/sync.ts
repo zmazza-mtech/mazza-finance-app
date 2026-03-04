@@ -10,6 +10,7 @@ import {
 import { fetchAccounts, SimpleFINApiError } from '../lib/simplefin-client';
 import { reconcileTransactions } from '../services/reconciliation';
 import { detectRecurring } from '../services/detection';
+import { categorize } from '../services/categorize';
 import { logger } from '../lib/logger';
 
 // ---------------------------------------------------------------------------
@@ -135,6 +136,7 @@ export async function runSync(): Promise<void> {
             amount: t.amount,
             type: 'actual' as const,
             status: t.status,
+            category: categorize(t.description),
           }))
         );
       }

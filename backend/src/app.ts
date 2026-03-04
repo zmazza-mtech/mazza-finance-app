@@ -7,6 +7,7 @@ import recurringRouter from './api/recurring';
 import forecastRouter from './api/forecast';
 import syncRouter from './api/sync';
 import settingsRouter from './api/settings';
+import reportsRouter from './api/reports';
 import { logger } from './lib/logger';
 
 const app = express();
@@ -52,6 +53,7 @@ app.use(`${API_PREFIX}/recurring`, recurringRouter);
 app.use(`${API_PREFIX}/forecast`, forecastRouter);
 app.use(`${API_PREFIX}/sync`, syncRouter);
 app.use(`${API_PREFIX}/settings`, settingsRouter);
+app.use(`${API_PREFIX}/reports`, reportsRouter);
 
 // Health check — no auth required (Caddy allows this path)
 app.get('/health', (_req, res) => {

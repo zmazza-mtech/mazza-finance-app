@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getDb } from '../db/client';
 import { recurringTransactions, recurringOverrides, transactions, accounts } from '../db/schema';
 import { detectRecurring, type RawTransaction } from '../services/detection';
+import { categorize } from '../services/categorize';
 import {
   CreateRecurringSchema,
   UpdateRecurringSchema,
@@ -67,6 +68,7 @@ router.post('/', async (req: Request, res: Response) => {
         nextDate: parsed.data.nextDate,
         source: 'manual',
         status: 'active',
+        category: parsed.data.category ?? categorize(parsed.data.name),
         ...(parsed.data.endDate !== undefined ? { endDate: parsed.data.endDate } : {}),
       })
       .returning();
@@ -246,6 +248,7 @@ router.patch('/:id', async (req: Request, res: Response) => {
     if (bodyParsed.data.nextDate !== undefined) setFields['nextDate'] = bodyParsed.data.nextDate;
     if (bodyParsed.data.endDate !== undefined) setFields['endDate'] = bodyParsed.data.endDate;
     if (bodyParsed.data.status !== undefined) setFields['status'] = bodyParsed.data.status;
+    if ('category' in bodyParsed.data) setFields['category'] = bodyParsed.data.category;
 
     const rows = await db
       .update(recurringTransactions)

@@ -5,6 +5,10 @@ export type RecurringStatus = 'active' | 'disabled' | 'pending_review' | 'ended'
 export type AccountType = 'checking' | 'savings' | 'credit';
 export type TransactionSource = 'actual' | 'forecast' | 'manual';
 export type OverrideType = 'skip' | 'reschedule' | 'amount_change' | 'rename';
+export type Category =
+  | 'Income' | 'Housing' | 'Utilities' | 'Groceries' | 'Transportation'
+  | 'Insurance' | 'Healthcare' | 'Entertainment' | 'Dining' | 'Shopping'
+  | 'Subscriptions' | 'Transfers' | 'Other';
 
 export interface ApiResponse<T> {
   data: T | null;
@@ -30,6 +34,7 @@ export interface Transaction {
   description: string;
   amount: string; // decimal string, negative = debit
   source: TransactionSource;
+  category: Category | null;
   recurringId: string | null;
 }
 
@@ -39,6 +44,7 @@ export interface ForecastTransaction {
   description: string;
   amount: string; // decimal string, negative = debit
   source: TransactionSource;
+  category: Category | null;
 }
 
 export interface ForecastDay {
@@ -58,6 +64,7 @@ export interface Recurring {
   endDate: string | null;
   source: 'auto_detected' | 'manual';
   status: RecurringStatus;
+  category: Category | null;
 }
 
 export interface Override {
@@ -101,12 +108,14 @@ export interface CreateTransactionBody {
   date: string;
   description: string;
   amount: string; // decimal string
+  category?: Category | null;
 }
 
 export interface UpdateTransactionBody {
   date?: string;
   description?: string;
   amount?: string;
+  category?: Category | null;
 }
 
 export interface CreateRecurringBody {
@@ -116,6 +125,7 @@ export interface CreateRecurringBody {
   frequency: Frequency;
   nextDate: string;
   endDate?: string;
+  category?: Category | null;
 }
 
 export interface UpdateRecurringBody {
@@ -125,6 +135,7 @@ export interface UpdateRecurringBody {
   nextDate?: string;
   endDate?: string | null;
   status?: RecurringStatus;
+  category?: Category | null;
 }
 
 export interface CreateOverrideBody {
@@ -148,4 +159,15 @@ export interface ImportResult {
 export interface DetectResult {
   detected: number;
   expired: number;
+}
+
+// Reports
+export interface CategorySummaryItem {
+  category: string;
+  total: string; // decimal string
+}
+
+export interface CategorySummaryResponse {
+  income: CategorySummaryItem[];
+  expenses: CategorySummaryItem[];
 }
