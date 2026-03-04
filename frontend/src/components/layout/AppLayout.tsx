@@ -69,6 +69,19 @@ export function AppLayout() {
               Calendar
             </NavLink>
             <NavLink
+              to="/transactions"
+              aria-label="Transactions"
+              className={({ isActive }) =>
+                `px-3 py-1.5 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  isActive
+                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`
+              }
+            >
+              Transactions
+            </NavLink>
+            <NavLink
               to="/recurring"
               aria-label="Recurring"
               className={({ isActive }) =>

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CalendarPage } from '@/pages/CalendarPage';
 import { RecurringPage } from '@/pages/RecurringPage';
+import { TransactionsPage } from '@/pages/TransactionsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { getAccounts } from '@/api/client';
 
@@ -80,6 +81,7 @@ export function App() {
           <Routes>
             <Route element={<AppLayout />}>
               <Route index element={<CalendarPage />} />
+              <Route path="transactions" element={<TransactionsPage />} />
               <Route path="recurring" element={<RecurringPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
