@@ -105,9 +105,17 @@ export function DayCell({
         </button>
       </div>
 
-      {/* Transaction list */}
+      {/* Transaction list — clickable to expand full details */}
       {visible.length > 0 && (
-        <ul className="space-y-0.5 flex-1 min-w-0">
+        <ul
+          className="space-y-0.5 flex-1 min-w-0 cursor-pointer rounded hover:bg-gray-50/60 dark:hover:bg-gray-700/30 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onShowMore(date, e.currentTarget.closest('[role="gridcell"]') as HTMLElement);
+          }}
+          role="button"
+          aria-label={`View all transactions for ${date}`}
+        >
           {visible.map((tx) => (
             <TransactionItem
               key={tx.id}
