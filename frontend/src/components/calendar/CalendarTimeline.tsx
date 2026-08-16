@@ -76,6 +76,8 @@ export function CalendarTimeline({
     defaultSelection(allIds, todayDate, currentMonth),
   );
   const [modalDate, setModalDate] = useState<string | null>(null);
+  /** Phone only: the search field is behind a toggle below `sm`. */
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -188,17 +190,49 @@ export function CalendarTimeline({
       onKeyDown={handleKeyDown}
       className="outline-none"
     >
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-4">
-        <h3 className="font-display text-2xl text-bark-dark">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2 sm:gap-4">
+        <h3 className="font-display text-xl text-bark-dark sm:text-2xl">
           {formatMonthTitle(currentMonth)}, day by day
         </h3>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[10px] uppercase tracking-label text-warm-gray">
+          {/* The legend moves below the grid on a phone, where the row has no room. */}
+          <span className="hidden font-mono text-[10px] uppercase tracking-label text-warm-gray sm:inline">
             Bar = spend that day
           </span>
 
-          <div className="relative">
+          {/*
+            A 160px field alongside three month controls does not fit 393px, so
+            below `sm` the field is behind this toggle and opens full width on
+            its own row. From `sm` up the field is always there and this button
+            is not.
+          */}
+          <button
+            type="button"
+            onClick={() => {
+              setSearchOpen((open) => !open);
+              // Focus lands after the field is displayed, not before.
+              requestAnimationFrame(() => searchInputRef.current?.focus());
+            }}
+            /*
+              Not "Search transactions" — that is the field's name, and two
+              controls under one accessible name is ambiguous to anyone
+              choosing between them by name. `aria-expanded` carries the state.
+            */
+            aria-label={searchOpen ? 'Hide search' : 'Show search'}
+            aria-expanded={searchOpen}
+            aria-controls="calendar-search"
+            className="hit-target flex h-9 w-9 items-center justify-center rounded-full border border-cream-mid bg-surface text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage sm:hidden"
+          >
+            <Icon name="search" />
+          </button>
+
+          <div
+            id="calendar-search"
+            className={`relative order-last basis-full sm:order-none sm:basis-auto ${
+              searchOpen ? 'block' : 'hidden'
+            } sm:block`}
+          >
             <input
               ref={searchInputRef}
               type="text"
@@ -219,7 +253,7 @@ export function CalendarTimeline({
               }}
               placeholder="Search ( / )"
               aria-label="Search transactions"
-              className="hit-target w-40 rounded-full border border-cream-mid bg-surface py-[7px] pl-3.5 pr-7 text-[13px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-full rounded-full sm:w-40 border border-cream-mid bg-surface py-[7px] pl-3.5 pr-7 text-[13px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
             {searchQuery && (
               <button
@@ -286,6 +320,15 @@ export function CalendarTimeline({
             onSelectDate={setSelectedDate}
             onActivateDate={openModal}
           />
+
+          {/*
+            The legend the header row has no room for on a phone. Also says
+            what a tap does, which is not discoverable the way hovering a
+            desktop cell is.
+          */}
+          <p className="mt-2.5 text-center font-mono text-[9px] uppercase tracking-label-wide text-warm-gray sm:hidden">
+            Tap a day for detail · bar = spend
+          </p>
         </div>
 
         <div className="max-w-[336px] flex-[1_1_320px]">

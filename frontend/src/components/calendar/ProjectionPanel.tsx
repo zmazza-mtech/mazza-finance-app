@@ -80,13 +80,23 @@ export function ProjectionPanel({
     low !== null && new Decimal(low.balance).lessThanOrEqualTo(new Decimal(comfortFloor));
 
   return (
-    <section aria-label="Balance projection" className="mb-5 rounded-xl bg-panel px-7 pb-5 pt-6">
-      <div className="flex flex-wrap items-start justify-between gap-8">
+    <section
+      aria-label="Balance projection"
+      className="mb-4 flex flex-col rounded-xl bg-panel px-4 pb-4 pt-5 sm:mb-5 sm:px-7 sm:pb-5 sm:pt-6"
+    >
+      {/*
+        `display: contents` below `sm` dissolves this wrapper, so the headline
+        and the stats become direct flex children of the section and `order`
+        can move the stats below the chart — the handoff's phone order, where
+        the chart is the payload directly under the projected figure. From
+        `sm` up the wrapper is a real row again and the two sit side by side.
+      */}
+      <div className="contents sm:flex sm:flex-wrap sm:items-start sm:justify-between sm:gap-8">
         <div>
           <p className="mb-1.5 font-mono text-[10px] uppercase tracking-label-wide text-panel-positive">
             Projected balance · through {formatShortDate(lastDate)}
           </p>
-          <h2 className="font-display text-4xl leading-[1.05] tracking-[-0.02em] text-panel-ink">
+          <h2 className="font-display text-3xl leading-[1.05] tracking-[-0.02em] text-panel-ink sm:text-4xl">
             {projected === null ? EM_DASH : formatCurrency(projected)}
           </h2>
           {low !== null && (
@@ -99,10 +109,10 @@ export function ProjectionPanel({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-7">
-          <div>
+        <div className="order-last mt-3 grid grid-cols-3 gap-2 sm:order-none sm:mt-0 sm:flex sm:flex-wrap sm:gap-7">
+          <div className="rounded-md bg-panel-ink/[0.06] p-2.5 sm:bg-transparent sm:p-0">
             <StatLabel>Burn rate</StatLabel>
-            <p className="font-mono text-xl text-panel-ink">
+            <p className="font-mono text-[13px] text-panel-ink sm:text-xl">
               {rate === null ? (
                 EM_DASH
               ) : (
@@ -118,9 +128,9 @@ export function ProjectionPanel({
             )}
           </div>
 
-          <div>
+          <div className="rounded-md bg-panel-ink/[0.06] p-2.5 sm:bg-transparent sm:p-0">
             <StatLabel>{state === 'current' ? 'Spent MTD' : 'Spent'}</StatLabel>
-            <p className="font-mono text-xl text-panel-ink">{formatCurrency(spent)}</p>
+            <p className="font-mono text-[13px] text-panel-ink sm:text-xl">{formatCurrency(spent)}</p>
             {comparison !== null && comparison.direction !== 'even' && (
               <p
                 className={`mt-1 text-xs ${
@@ -132,9 +142,9 @@ export function ProjectionPanel({
             )}
           </div>
 
-          <div>
+          <div className="rounded-md bg-panel-ink/[0.06] p-2.5 sm:bg-transparent sm:p-0">
             <StatLabel>Biggest mover</StatLabel>
-            <p className="font-mono text-xl text-panel-ink">{mover?.category ?? EM_DASH}</p>
+            <p className="font-mono text-[13px] text-panel-ink sm:text-xl">{mover?.category ?? EM_DASH}</p>
             {mover !== null && (
               <p className="mt-1 text-xs text-panel-ink-muted">
                 {moverRose ? '+' : '−'}${formatAmount(mover.change)} vs.{' '}
@@ -155,7 +165,10 @@ export function ProjectionPanel({
       <div className="flex justify-between font-mono text-[10px] uppercase tracking-label text-panel-ink-faint">
         <span>{formatAxisDate(firstDate)}</span>
         <span>{state === 'current' ? `Today · ${formatAxisDate(todayDate)}` : ''}</span>
-        <span>{formatAxisDate(lastDate)} · Solid = settled, dashed = forecast</span>
+        <span>
+          {formatAxisDate(lastDate)}
+          <span className="hidden sm:inline"> · Solid = settled, dashed = forecast</span>
+        </span>
       </div>
     </section>
   );

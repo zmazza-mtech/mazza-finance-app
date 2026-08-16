@@ -72,6 +72,26 @@ export function formatWholeCurrency(amount: string): string {
 }
 
 /**
+ * Formats a running balance for a phone calendar cell: "3,142", "−1,205".
+ *
+ * No currency symbol and no cents. The cell is roughly 50px wide at the phone
+ * breakpoint, where `$3,142.00` cannot fit and truncating it would be worse
+ * than rounding it — the cell shows the shape of the month, and the exact
+ * figure is one tap away in the day sheet.
+ *
+ * The sign is U+2212, matching every other amount in the design. A hyphen
+ * reads as a hyphen beside mono digits.
+ */
+export function formatCompactBalance(amount: string): string {
+  const rounded = new Decimal(amount).toDecimalPlaces(0);
+  const grouped = rounded.abs().toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  // `isZero` after rounding, not before: −0.40 rounds to zero, and "−0" would
+  // imply an overdraft the balance does not have.
+  return rounded.isNegative() && !rounded.isZero() ? `−${grouped}` : grouped;
+}
+
+/**
  * Returns true if the decimal string represents a negative value.
  */
 export function isNegative(amount: string): boolean {
