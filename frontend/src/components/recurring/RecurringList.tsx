@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { EditSeriesModal } from './EditSeriesModal';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { formatCurrency } from '@/lib/balance';
+import { formatAmount, isNegative } from '@/lib/balance';
+import { getCategoryColor } from '@/lib/categoryColors';
 import type { Recurring, UpdateRecurringBody } from '@/api/types';
 
 interface RecurringListProps {
@@ -9,6 +10,15 @@ interface RecurringListProps {
   onUpdate: (id: string, body: UpdateRecurringBody) => void;
   onDelete: (id: string) => void;
 }
+
+const COLUMNS: { key: string; label: string; width: string; alignRight?: boolean }[] = [
+  { key: 'name', label: 'Series', width: 'auto' },
+  { key: 'amount', label: 'Amount', width: '130px', alignRight: true },
+  { key: 'frequency', label: 'Frequency', width: '120px' },
+  { key: 'nextDate', label: 'Next date', width: '130px' },
+  { key: 'status', label: 'Status', width: '100px' },
+  { key: 'actions', label: 'Actions', width: '210px', alignRight: true },
+];
 
 /**
  * Displays active and disabled recurring transactions.
@@ -23,113 +33,127 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
 
   if (active.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-        <p className="text-sm">No recurring transactions yet.</p>
-        <p className="text-sm mt-1">
+      <div className="rounded-lg border border-cream-mid bg-white px-[18px] py-12 text-center">
+        <p className="text-sm text-stone">No recurring transactions yet.</p>
+        <p className="mt-1 text-sm text-warm-gray">
           Sync your accounts or add one manually to get started.
         </p>
       </div>
     );
   }
 
+  function toggleStatus(item: Recurring) {
+    onUpdate(item.id, { status: item.status === 'active' ? 'disabled' : 'active' });
+  }
+
   return (
     <>
       {/* Desktop table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead>
-            <tr>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Name
-              </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Amount
-              </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Frequency
-              </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Next date
-              </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {active.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                  {item.name}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                  {formatCurrency(item.amount)}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 capitalize">
-                  {item.frequency}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                  {item.nextDate}
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={item.status} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <RowActions
-                    item={item}
-                    onEdit={() => setEditTarget(item)}
-                    onToggle={() =>
-                      onUpdate(item.id, {
-                        status: item.status === 'active' ? 'disabled' : 'active',
-                      })
-                    }
-                    onDelete={() => setDeleteTarget(item.id)}
-                  />
-                </td>
+      <div className="hidden overflow-hidden rounded-lg border border-cream-mid bg-white md:block">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] table-fixed">
+            <colgroup>
+              {COLUMNS.map((col) => (
+                <col
+                  key={col.key}
+                  style={col.width === 'auto' ? undefined : { width: col.width }}
+                />
+              ))}
+            </colgroup>
+            <thead>
+              <tr className="border-b border-cream-mid bg-cream">
+                {COLUMNS.map((col) => (
+                  <th
+                    key={col.key}
+                    scope="col"
+                    className={`px-[18px] py-3 font-mono text-[10px] font-normal uppercase tracking-label-wide text-stone ${
+                      col.alignRight ? 'text-right' : 'text-left'
+                    }`}
+                  >
+                    {col.label}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {active.map((item) => {
+                const debit = isNegative(item.amount);
+                return (
+                  <tr
+                    key={item.id}
+                    className="border-b border-cream-mid transition-colors duration-150 last:border-b-0 hover:bg-cream"
+                  >
+                    <td className="px-[18px] py-[13px]">
+                      <SeriesName item={item} />
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-[18px] py-[13px] text-right font-mono text-sm ${
+                        debit ? 'text-bark-light' : 'text-sage-deep'
+                      }`}
+                    >
+                      {debit ? '−' : '+'}${formatAmount(item.amount)}
+                    </td>
+                    <td className="px-[18px] py-[13px] text-[13px] capitalize text-stone">
+                      {item.frequency}
+                    </td>
+                    <td className="whitespace-nowrap px-[18px] py-[13px] font-mono text-xs text-stone">
+                      {item.nextDate}
+                    </td>
+                    <td className="px-[18px] py-[13px]">
+                      <StatusBadge status={item.status} />
+                    </td>
+                    <td className="px-[18px] py-[13px]">
+                      <RowActions
+                        item={item}
+                        alignRight
+                        onEdit={() => setEditTarget(item)}
+                        onToggle={() => toggleStatus(item)}
+                        onDelete={() => setDeleteTarget(item.id)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Mobile card list */}
-      <ul className="md:hidden space-y-3">
-        {active.map((item) => (
-          <li
-            key={item.id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                  {item.name}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {formatCurrency(item.amount)} &middot; {item.frequency}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">
-                  Next: {item.nextDate}
-                </p>
+      <ul className="space-y-2.5 md:hidden">
+        {active.map((item) => {
+          const debit = isNegative(item.amount);
+          return (
+            <li
+              key={item.id}
+              className="rounded-lg border border-cream-mid bg-white p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <SeriesName item={item} />
+                  <p className="mt-0.5 font-mono text-xs text-stone">
+                    <span className={debit ? 'text-bark-light' : 'text-sage-deep'}>
+                      {debit ? '−' : '+'}${formatAmount(item.amount)}
+                    </span>{' '}
+                    &middot; <span className="capitalize">{item.frequency}</span>
+                  </p>
+                  <p className="mt-0.5 font-mono text-xs text-warm-gray">
+                    Next {item.nextDate}
+                  </p>
+                </div>
+                <StatusBadge status={item.status} />
               </div>
-              <StatusBadge status={item.status} />
-            </div>
-            <div className="flex gap-2 mt-3">
-              <RowActions
-                item={item}
-                onEdit={() => setEditTarget(item)}
-                onToggle={() =>
-                  onUpdate(item.id, {
-                    status: item.status === 'active' ? 'disabled' : 'active',
-                  })
-                }
-                onDelete={() => setDeleteTarget(item.id)}
-              />
-            </div>
-          </li>
-        ))}
+              <div className="mt-3">
+                <RowActions
+                  item={item}
+                  onEdit={() => setEditTarget(item)}
+                  onToggle={() => toggleStatus(item)}
+                  onDelete={() => setDeleteTarget(item.id)}
+                />
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       <EditSeriesModal
@@ -160,14 +184,31 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
 // Sub-components
 // ---------------------------------------------------------------------------
 
+function SeriesName({ item }: { item: Recurring }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span
+        className="h-[7px] w-[7px] shrink-0 rounded-full"
+        style={{ backgroundColor: getCategoryColor(item.category) }}
+        aria-hidden="true"
+      />
+      <span className="truncate text-sm text-charcoal" title={item.name}>
+        {item.name}
+      </span>
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: Recurring['status'] }) {
   const classes =
     status === 'active'
-      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
+      ? 'bg-sage-lighter text-sage-deep'
+      : 'bg-cream-mid text-stone';
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${classes}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${classes}`}
+    >
       {status === 'active' ? 'Active' : 'Disabled'}
     </span>
   );
@@ -178,19 +219,24 @@ function RowActions({
   onEdit,
   onToggle,
   onDelete,
+  alignRight = false,
 }: {
   item: Recurring;
   onEdit: () => void;
   onToggle: () => void;
   onDelete: () => void;
+  alignRight?: boolean;
 }) {
+  const ghost =
+    'hit-target rounded-full border border-cream-mid bg-white px-3 py-1 text-xs text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className={`flex flex-wrap gap-2 ${alignRight ? 'justify-end' : ''}`}>
       <button
         type="button"
         aria-label={`Edit ${item.name}`}
         onClick={onEdit}
-        className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={ghost}
       >
         Edit
       </button>
@@ -198,7 +244,7 @@ function RowActions({
         type="button"
         aria-label={item.status === 'active' ? `Disable ${item.name}` : `Enable ${item.name}`}
         onClick={onToggle}
-        className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={ghost}
       >
         {item.status === 'active' ? 'Disable' : 'Enable'}
       </button>
@@ -206,7 +252,7 @@ function RowActions({
         type="button"
         aria-label={`Delete ${item.name}`}
         onClick={onDelete}
-        className="px-3 py-1 text-xs border border-red-300 dark:border-red-700 rounded text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="hit-target rounded-full border border-[#E8D3CE] bg-white px-3 py-1 text-xs text-error transition-colors duration-150 hover:bg-[#F7EDEB] focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
       >
         Delete
       </button>

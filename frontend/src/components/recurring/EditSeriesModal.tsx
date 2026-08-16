@@ -125,7 +125,7 @@ export function EditSeriesModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-bark-dark/40"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -134,11 +134,11 @@ export function EditSeriesModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-series-title"
-        className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6 max-h-[90vh] overflow-y-auto"
+        className="relative mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-cream-mid bg-white p-6 shadow-xl"
       >
         <h2
           id="edit-series-title"
-          className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+          className="mb-4 font-display text-xl text-bark-dark"
         >
           {title}
         </h2>
@@ -147,7 +147,7 @@ export function EditSeriesModal({
           <div>
             <label
               htmlFor="series-name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Name
             </label>
@@ -158,14 +158,14 @@ export function EditSeriesModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={255}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 
           <div>
             <label
               htmlFor="series-amount"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Amount
             </label>
@@ -179,7 +179,7 @@ export function EditSeriesModal({
           <div>
             <label
               htmlFor="series-frequency"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Frequency
             </label>
@@ -187,7 +187,7 @@ export function EditSeriesModal({
               id="series-frequency"
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as Frequency)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               {FREQUENCY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -200,7 +200,7 @@ export function EditSeriesModal({
           <div>
             <label
               htmlFor="series-next-date"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Next date
             </label>
@@ -209,24 +209,24 @@ export function EditSeriesModal({
               type="date"
               value={nextDate}
               onChange={(e) => setNextDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 
           <div>
             <label
               htmlFor="series-end-date"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               End date{' '}
-              <span className="text-gray-400 font-normal">(optional)</span>
+              <span className="font-normal text-warm-gray">(optional)</span>
             </label>
             <input
               id="series-end-date"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 
@@ -234,14 +234,14 @@ export function EditSeriesModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="hit-target rounded-full border border-cream-mid bg-white px-4 py-2 text-sm text-stone transition-colors duration-150 hover:bg-cream-mid focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !isAmountValid()}
-              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="hit-target rounded-full bg-copper px-4 py-2 text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {submitLabel}
             </button>

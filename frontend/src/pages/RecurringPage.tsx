@@ -3,6 +3,12 @@ import { RecurringList } from '@/components/recurring/RecurringList';
 import { PendingReviewSection } from '@/components/recurring/PendingReviewSection';
 import { EditSeriesModal } from '@/components/recurring/EditSeriesModal';
 import {
+  ScanResultMessage,
+  type DetectStatus,
+} from '@/components/recurring/ScanResultMessage';
+import { Icon } from '@/components/shared/Icon';
+import { describeSeriesCounts } from '@/lib/recurring';
+import {
   useRecurring,
   usePendingReview,
   useCreateRecurring,
@@ -12,8 +18,6 @@ import {
 } from '@/hooks/useRecurring';
 import { AccountContext } from '@/App';
 import type { Recurring, UpdateRecurringBody, CreateRecurringBody } from '@/api/types';
-
-type DetectStatus = 'idle' | 'success' | 'none' | 'error';
 
 /**
  * Recurring transaction management page.
@@ -78,7 +82,7 @@ export function RecurringPage() {
 
   if (!selectedAccountId) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+      <div className="flex h-64 items-center justify-center text-sm text-stone">
         <p>Select an account to manage recurring transactions.</p>
       </div>
     );
@@ -86,9 +90,9 @@ export function RecurringPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div
-          className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+          className="spinner-sage"
           role="status"
           aria-label="Loading recurring transactions"
         />
@@ -98,35 +102,39 @@ export function RecurringPage() {
 
   if (isError) {
     return (
-      <div role="alert" className="p-4 text-center text-red-700 dark:text-red-400">
+      <div role="alert" className="p-4 text-center text-sm text-error">
         Failed to load recurring transactions. Please try refreshing.
       </div>
     );
   }
 
   const nonPending = allRecurring.filter((r) => r.status !== 'pending_review');
+  const activeCount = nonPending.filter((r) => r.status === 'active').length;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          Recurring Transactions
-        </h1>
+    <div className="mx-auto max-w-shell px-6 py-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-4xl text-bark-dark">Recurring</h1>
+          <p className="mt-1 text-[15px] text-stone">
+            {describeSeriesCounts(activeCount, pending.length)}
+          </p>
+        </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={handleScan}
             disabled={detectMutation.isPending}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="hit-target flex items-center gap-2 rounded-full border border-cream-mid bg-white px-[18px] py-[11px] text-sm text-bark transition-colors duration-150 hover:border-sage-light disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             {detectMutation.isPending ? (
               <span
-                className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"
+                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
                 aria-hidden="true"
               />
             ) : (
-              <span aria-hidden="true">🔍</span>
+              <Icon name="search" size={14} />
             )}
             Scan for patterns
           </button>
@@ -137,32 +145,18 @@ export function RecurringPage() {
               setEditTarget(null);
               setIsCreatingNew(true);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
-            <span aria-hidden="true">+</span>
             Add manually
           </button>
         </div>
       </div>
 
-      {/* Scan result feedback */}
-      {detectStatus === 'success' && (
-        <p className="mb-4 text-sm text-green-700 dark:text-green-400">
-          {detectCount > 0 && `Found ${detectCount} new pattern${detectCount !== 1 ? 's' : ''}.`}
-          {detectCount > 0 && expiredCount > 0 && ' '}
-          {expiredCount > 0 && `Ended ${expiredCount} stale series.`}
-        </p>
-      )}
-      {detectStatus === 'none' && (
-        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          No new patterns detected.
-        </p>
-      )}
-      {detectStatus === 'error' && (
-        <p className="mb-4 text-sm text-red-700 dark:text-red-400">
-          Scan failed — try again.
-        </p>
-      )}
+      <ScanResultMessage
+        status={detectStatus}
+        detected={detectCount}
+        expired={expiredCount}
+      />
 
       <PendingReviewSection
         items={pending}

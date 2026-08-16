@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { formatCurrency } from '@/lib/balance';
+import { formatAmount, isNegative } from '@/lib/balance';
 import type { Recurring } from '@/api/types';
 
 interface PendingReviewSectionProps {
@@ -26,66 +26,71 @@ export function PendingReviewSection({
   if (items.length === 0) return null;
 
   return (
-    <section aria-label="Pending review" className="mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-          Needs your review
-        </h2>
+    <section
+      aria-label="Pending review"
+      className="mb-6 rounded-lg border border-border-mid bg-white p-5"
+    >
+      <div className="mb-2 flex items-center gap-2.5">
+        <h2 className="font-display text-xl text-bark-dark">Needs your review</h2>
         <span
           aria-label={`${items.length} items pending review`}
-          className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold"
+          className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-copper px-1.5 font-mono text-xs text-white"
         >
           {items.length}
         </span>
       </div>
 
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        We detected these recurring transactions from your bank history. Confirm
-        ones we got right, or dismiss ones that aren't recurring.
+      <p className="mb-4 text-sm text-stone">
+        We spotted these patterns in your bank history. Confirm the ones we got
+        right, dismiss the rest.
       </p>
 
-      <ul className="space-y-3">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 rounded-lg"
-          >
-            <div className="min-w-0">
-              <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                {item.name}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {formatCurrency(item.amount)} &middot; {capitalize(item.frequency)}
-              </p>
-            </div>
-            <div className="flex gap-2 shrink-0">
-              <button
-                type="button"
-                aria-label={`Edit ${item.name}`}
-                onClick={() => onEdit(item)}
-                className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                aria-label={`Dismiss ${item.name}`}
-                onClick={() => setDismissTarget(item.id)}
-                className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Dismiss
-              </button>
-              <button
-                type="button"
-                aria-label={`Confirm ${item.name}`}
-                onClick={() => onConfirm(item.id)}
-                className="px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                Confirm
-              </button>
-            </div>
-          </li>
-        ))}
+      <ul className="space-y-2.5">
+        {items.map((item) => {
+          const debit = isNegative(item.amount);
+          return (
+            <li
+              key={item.id}
+              className="flex flex-col justify-between gap-3 rounded-md border border-cream-mid bg-cream px-4 py-3.5 sm:flex-row sm:items-center"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-[15px] font-semibold text-charcoal">
+                  {item.name}
+                </p>
+                <p className="font-mono text-xs text-stone">
+                  {debit ? '−' : '+'}${formatAmount(item.amount)} &middot;{' '}
+                  {capitalize(item.frequency)}
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                <button
+                  type="button"
+                  aria-label={`Edit ${item.name}`}
+                  onClick={() => onEdit(item)}
+                  className="hit-target rounded-full border border-cream-mid bg-white px-3.5 py-1.5 text-[13px] text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Dismiss ${item.name}`}
+                  onClick={() => setDismissTarget(item.id)}
+                  className="hit-target rounded-full border border-cream-mid bg-white px-3.5 py-1.5 text-[13px] text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                >
+                  Dismiss
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Confirm ${item.name}`}
+                  onClick={() => onConfirm(item.id)}
+                  className="hit-target rounded-full bg-sage-dark px-3.5 py-1.5 text-[13px] font-semibold text-white transition-colors duration-150 hover:bg-sage-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                >
+                  Confirm
+                </button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       <ConfirmDialog
