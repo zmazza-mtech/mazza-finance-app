@@ -391,9 +391,10 @@ A dedicated page for viewing and managing all recurring transactions.
 **Auto-Reconciliation**
 
 - Matches incoming actual transactions to forecasted recurring entries by date (±1 day) AND
-  amount (exact match)
+  amount within tolerance — the greater of $5.00 or 10% of the forecast amount
 - On match: replaces forecasted entry with actual; advances series next_date
 - On no match: inserts actual as-is; leaves forecasted entry for manual resolution
+- Matching is one-to-one and independent of row order
 
 ---
 
@@ -585,21 +586,50 @@ Express error handler middleware must sanitize all unhandled exceptions before l
 ### Auto-Reconciliation Logic
 
 ```
-For each incoming actual transaction (date D, amount A, account X):
-  Find recurring_transactions where:
+For each expanded instance of an active series (date D, amount A, account X):
+  Find actual transactions where:
     - account_id = X
-    - next_date = D (or within ±1 day tolerance)
-    - amount = A (exact match)
-    - status = 'active'
+    - date within ±1 day of D
+    - |actual amount − A| <= max($5.00, 10% of |A|)
 
   If match found:
-    - Mark the forecasted instance as reconciled
-    - Advance the recurring series next_date to the following occurrence
+    - Suppress the forecasted instance so the day carries the actual only
+    - Advance the series next_date to the occurrence after the last one paid
 
   If no match:
     - Insert actual transaction as-is
     - Leave forecasted entry in place (user resolves manually)
 ```
+
+The amount comparison is a **tolerance**, not an exact match. Exact equality
+only resolves the case where nothing changed, which is not the case
+reconciliation exists for: a bill whose amount drifts — a rate rise, a changed
+subscription tier — would never match, so it would double-count forever and its
+series would never advance. Taking the greater of a flat floor and a percentage
+covers both shapes of drift: a $15.99 subscription going to $17.99 is 12.5% but
+only $2.00, while a $2,000 mortgage escrow adjustment is a large sum but a small
+percentage. The ±1 day window and per-account scoping are what keep it from
+over-matching.
+
+Matching is one-to-one: an actual satisfies at most one instance and an instance
+is satisfied by at most one actual. Candidates are ranked by absolute amount
+difference, then by date proximity, then by identity, so the result does not
+depend on the order rows arrive from the database.
+
+Only transactions of type `actual` reconcile. A manual entry is something the
+user added deliberately rather than a bank record of the forecast bill, so it
+stands alongside the instance.
+
+`next_date` advances by exactly one interval past the last occurrence that was
+paid — it is **not** rolled forward to today. If January was paid and it is now
+March, the February and March occurrences are owed and unpaid, and must remain
+in the forecast. A series that has genuinely stopped therefore keeps a past
+`next_date` and still goes stale, which is the correct outcome.
+
+A series ended by the staleness sweep is left with a **null** `end_date`. The
+status already carries "this series stopped generating"; a date belongs there
+only once something has been observed to end, and the sweep observes nothing —
+it only notices an absence.
 
 ### Recurring Transaction Detection Heuristics
 

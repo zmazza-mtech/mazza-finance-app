@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js';
+import { matchInstancesToActuals } from './reconciliation.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -220,4 +221,100 @@ export function computeForecast(
       runningBalance: runningBalance.toFixed(2),
     };
   });
+}
+
+// ---------------------------------------------------------------------------
+// reconcileInstances
+// ---------------------------------------------------------------------------
+
+/**
+ * Removes forecast instances that a posted transaction already accounts for.
+ *
+ * Without this the forecast merges actuals and expanded instances with no
+ * suppression, so a bill that was predicted and then actually paid appears
+ * twice on its day and is counted twice in the running balance. The error is
+ * per-occurrence and compounds across every series and month in view, which
+ * defeats the only thing the calendar is for.
+ *
+ * Only `actual` transactions suppress. A manual entry is something the user
+ * added deliberately rather than a bank record of the forecast bill, so it
+ * stands alongside the instance instead of replacing it.
+ *
+ * Anything that does not pair is returned unchanged: an instance whose amount
+ * drifted beyond tolerance stays visible next to its actual, so the
+ * discrepancy is there to be reported rather than quietly absorbed.
+ */
+export function reconcileInstances(
+  accountId: string,
+  actuals: ActualTransaction[],
+  instances: RecurringInstance[]
+): RecurringInstance[] {
+  const posted = actuals.filter((t) => t.type === 'actual');
+  if (posted.length === 0 || instances.length === 0) return instances;
+
+  const { unmatchedInstances } = matchInstancesToActuals(
+    instances.map((i) => ({
+      recurringId: i.recurringId,
+      accountId,
+      date: i.date,
+      amount: i.amount,
+    })),
+    posted.map((t) => ({ id: t.id, accountId, date: t.date, amount: t.amount }))
+  );
+
+  // Map back to the full instances, which carry the name the matcher does not.
+  const kept = new Set(unmatchedInstances.map((i) => `${i.recurringId}|${i.date}`));
+  return instances.filter((i) => kept.has(`${i.recurringId}|${i.date}`));
+}
+
+// ---------------------------------------------------------------------------
+// advanceSeriesDate
+// ---------------------------------------------------------------------------
+
+/**
+ * The date a series should next be expected, given the payments actually seen.
+ *
+ * `POST /recurring/detect` ends any active series whose `nextDate` plus a
+ * grace period is in the past, on the reading that no occurrence has been seen
+ * for longer than the grace window. That reading is only true if something
+ * advances `nextDate` when a payment matches — and until this, nothing did. So
+ * `nextDate` stayed frozen at approval and every series crossed its own cutoff
+ * on a fixed timer whether or not the bill was still being paid, was marked
+ * `ended`, and was then blocked from re-detection by name.
+ *
+ * Returns `null` when nothing matched, which leaves `nextDate` untouched. That
+ * matters: a series with no evidence behind it *should* still go stale, so the
+ * staleness check keeps its meaning rather than being defeated wholesale.
+ *
+ * The returned date is always in the future — the next occurrence owed, not
+ * the last one paid — or the series would be stale again immediately.
+ */
+export function advanceSeriesDate(
+  series: RecurringDef,
+  actuals: ActualTransaction[],
+  today: string
+): string | null {
+  if (series.status !== 'active') return null;
+
+  // Expand a little past today so a payment that arrived a day early still has
+  // an instance to match against.
+  const horizon = addDays(today, 1);
+  const due = expandRecurringSeries(series, series.nextDate, horizon);
+  if (due.length === 0) return null;
+
+  const kept = new Set(
+    reconcileInstances(series.accountId, actuals, due).map((i) => i.date)
+  );
+  const matched = due.filter((i) => !kept.has(i.date));
+  if (matched.length === 0) return null;
+
+  // Exactly one interval past the last occurrence that was actually paid —
+  // deliberately not rolled forward to today. If January was paid and it is
+  // now March, February and March are owed and unpaid, and they must stay in
+  // the forecast. Advancing to the next future date would erase two bills the
+  // user still owes.
+  //
+  // A series that has genuinely stopped therefore keeps a past `nextDate` and
+  // still goes stale after its grace window, which is the correct outcome.
+  return nextOccurrence(matched[matched.length - 1]!.date, series.frequency);
 }

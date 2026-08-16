@@ -5,6 +5,8 @@ import { formatAmount, isNegative } from '@/lib/balance';
 import { getCategoryColor } from '@/lib/categoryColors';
 import type { Recurring, UpdateRecurringBody } from '@/api/types';
 import { useIsPhone } from '@/hooks/useIsPhone';
+import { nextOccurrenceAfter } from '@/lib/recurring';
+import { todayIso } from '@/lib/dates';
 
 interface RecurringListProps {
   items: Recurring[];
@@ -22,9 +24,14 @@ const COLUMNS: { key: string; label: string; width: string; alignRight?: boolean
 ];
 
 /**
- * Displays active and disabled recurring transactions.
- * - Desktop: table layout
- * - Mobile (<768px): card layout
+ * Displays recurring series: active and disabled in the main list, and any
+ * that have ended in a separate section below it.
+ *
+ * Ended series used to be filtered out entirely, which meant a series ended in
+ * error could not be seen, edited or revived from the app at all — and
+ * re-detection is blocked by name, so nothing brought it back on its own
+ * either (#43, Defect 4). They are listed here so that judgement stays with
+ * the reader rather than with a staleness heuristic.
  */
 export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps) {
   const isPhone = useIsPhone();
@@ -32,8 +39,25 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const active = items.filter((r) => r.status === 'active' || r.status === 'disabled');
+  const ended = items.filter((r) => r.status === 'ended');
 
-  if (active.length === 0) {
+  /**
+   * Brings an ended series back.
+   *
+   * `nextDate` is rolled forward to the next occurrence after today. Restoring
+   * the stored date would put a date months in the past into an active series,
+   * which is judged stale on the next detection run and expands every
+   * occurrence since as though it were owed.
+   */
+  function reactivate(item: Recurring) {
+    onUpdate(item.id, {
+      status: 'active',
+      endDate: null,
+      nextDate: nextOccurrenceAfter(item.nextDate, item.frequency, todayIso()),
+    });
+  }
+
+  if (active.length === 0 && ended.length === 0) {
     return (
       <div className="rounded-lg border border-cream-mid bg-surface px-[18px] py-12 text-center">
         <p className="text-sm text-stone">No recurring transactions yet.</p>
@@ -163,6 +187,49 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
           );
         })}
       </ul>
+      )}
+
+      {ended.length > 0 && (
+        <section aria-labelledby="ended-series-heading" className="mt-6">
+          <h3 id="ended-series-heading" className="font-display text-lg text-bark-dark">
+            Ended series
+          </h3>
+          <p className="mb-2.5 mt-1 text-[13px] text-stone">
+            These no longer appear in the forecast. A series is ended
+            automatically when no payment has been seen for a while, so anything
+            here that is still being paid can be brought back.
+          </p>
+
+          <ul className="space-y-2.5">
+            {ended.map((item) => {
+              const debit = isNegative(item.amount);
+              return (
+                <li
+                  key={item.id}
+                  className="list-row flex flex-wrap items-center justify-between gap-3 rounded-lg border border-cream-mid bg-surface p-3.5"
+                >
+                  <div className="min-w-0">
+                    <SeriesName item={item} />
+                    <p className="mt-0.5 font-mono text-xs text-stone">
+                      <span className={debit ? 'text-bark-light' : 'text-sage-deep'}>
+                        {debit ? '−' : '+'}${formatAmount(item.amount)}
+                      </span>{' '}
+                      &middot; <span className="capitalize">{item.frequency}</span>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => reactivate(item)}
+                    aria-label={`Reactivate ${item.name}`}
+                    className="hit-target shrink-0 rounded-full border border-cream-mid bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-sage-deep transition-colors duration-150 hover:border-sage-light hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                  >
+                    Reactivate
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       <EditSeriesModal

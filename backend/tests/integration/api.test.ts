@@ -494,3 +494,114 @@ describe('Category corrections', () => {
 afterAll(async () => {
   await closeDb();
 });
+
+// ---------------------------------------------------------------------------
+// #43 — a paid recurring bill is counted once
+// ---------------------------------------------------------------------------
+
+describe('GET /forecast — reconciliation of actuals against recurring instances', () => {
+  let accountId: string;
+
+  /** An active monthly series billing on the 15th. */
+  async function seedSeries(amount = '-100.00', nextDate = '2026-01-15') {
+    const res = await request.post('/api/v1/recurring').send({
+      accountId,
+      name: 'Internet Bill',
+      amount,
+      frequency: 'monthly',
+      nextDate,
+    });
+    expect(res.status).toBe(201);
+    await request.patch(`/api/v1/recurring/${res.body.data.id}`).send({ status: 'active' });
+    return res.body.data.id as string;
+  }
+
+  function day(body: { data: { date: string }[] }, date: string) {
+    return body.data.find((d) => d.date === date)!;
+  }
+
+  beforeEach(async () => {
+    await resetDb();
+    accountId = (await seedAccount({ lastBalance: '1000.00' })).id;
+  });
+
+  it('counts a bill once when the forecast instance was actually paid', async () => {
+    await seedSeries();
+    await seedTransactions(accountId, [
+      { date: '2026-01-15', description: 'Internet Bill', amount: '-100.00', type: 'actual' },
+    ]);
+
+    const res = await request
+      .get('/api/v1/forecast')
+      .query({ accountId, startDate: '2026-01-01', endDate: '2026-01-31' });
+
+    expect(res.status).toBe(200);
+    const jan15 = day(res.body, '2026-01-15');
+
+    // Before this, the day carried both rows and netted -200.00.
+    expect(jan15.transactions).toHaveLength(1);
+    expect(jan15.transactions[0].source).toBe('actual');
+    expect(jan15.dailyNet).toBe('-100.00');
+  });
+
+  it('still forecasts an instance with no payment behind it', async () => {
+    await seedSeries();
+
+    const res = await request
+      .get('/api/v1/forecast')
+      .query({ accountId, startDate: '2026-01-01', endDate: '2026-01-31' });
+
+    const jan15 = day(res.body, '2026-01-15');
+    expect(jan15.transactions).toHaveLength(1);
+    expect(jan15.transactions[0].source).toBe('forecast');
+    expect(jan15.dailyNet).toBe('-100.00');
+  });
+
+  it('keeps both rows when the amount drifted beyond tolerance', async () => {
+    await seedSeries();
+    await seedTransactions(accountId, [
+      { date: '2026-01-15', description: 'Internet Bill', amount: '-400.00', type: 'actual' },
+    ]);
+
+    const res = await request
+      .get('/api/v1/forecast')
+      .query({ accountId, startDate: '2026-01-01', endDate: '2026-01-31' });
+
+    // Left visible so #12 has a discrepancy to report, rather than one of them
+    // being silently swallowed.
+    const jan15 = day(res.body, '2026-01-15');
+    expect(jan15.transactions).toHaveLength(2);
+  });
+
+  it('suppresses a payment that landed a day late, within tolerance', async () => {
+    await seedSeries();
+    await seedTransactions(accountId, [
+      { date: '2026-01-16', description: 'Internet Bill', amount: '-104.00', type: 'actual' },
+    ]);
+
+    const res = await request
+      .get('/api/v1/forecast')
+      .query({ accountId, startDate: '2026-01-01', endDate: '2026-01-31' });
+
+    expect(day(res.body, '2026-01-15').transactions).toHaveLength(0);
+    expect(day(res.body, '2026-01-16').transactions).toHaveLength(1);
+  });
+
+  it('leaves a manual entry standing alongside its instance', async () => {
+    await seedSeries();
+    await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-01-15',
+      description: 'Internet Bill',
+      amount: '-100.00',
+    });
+
+    const res = await request
+      .get('/api/v1/forecast')
+      .query({ accountId, startDate: '2026-01-01', endDate: '2026-01-31' });
+
+    // A manual entry is something the user added deliberately, not a bank
+    // record of the forecast bill.
+    expect(day(res.body, '2026-01-15').transactions).toHaveLength(2);
+  });
+});

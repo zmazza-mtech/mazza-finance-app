@@ -19,3 +19,52 @@ export function describeSeriesCounts(activeCount: number, pendingCount: number):
 
   return `${driving} ${pendingCount} ${more}${verb} waiting on you.`;
 }
+
+/**
+ * The first occurrence of a series strictly after `today`.
+ *
+ * Used when reviving a series that was falsely ended (#43). Restoring it with
+ * its stored `nextDate` would put a date months in the past back into an
+ * active series: it would be judged stale again on the next detection run, and
+ * every occurrence between then and now would expand into the calendar as
+ * though owed.
+ *
+ * Dates are advanced by field arithmetic rather than by constructing a `Date`
+ * from the string — `new Date('2026-01-01')` is UTC midnight and reads back a
+ * day earlier anywhere west of Greenwich, which is the same trap `lib/dates`
+ * avoids.
+ */
+export function nextOccurrenceAfter(
+  date: string,
+  frequency: 'weekly' | 'biweekly' | 'monthly' | 'yearly',
+  today: string,
+): string {
+  let current = date;
+  // A series paid decades ago would otherwise spin; no real frequency needs
+  // more steps than this to clear any plausible gap.
+  for (let guard = 0; current <= today && guard < 5000; guard++) {
+    current = advance(current, frequency);
+  }
+  return current;
+}
+
+function advance(date: string, frequency: string): string {
+  const [year, month, day] = date.split('-').map(Number) as [number, number, number];
+
+  if (frequency === 'weekly' || frequency === 'biweekly') {
+    const step = frequency === 'weekly' ? 7 : 14;
+    const d = new Date(Date.UTC(year, month - 1, day + step));
+    return d.toISOString().slice(0, 10);
+  }
+
+  const months = frequency === 'yearly' ? 12 : 1;
+  const total = month - 1 + months;
+  const y = year + Math.floor(total / 12);
+  const m = (total % 12) + 1;
+  // Clamp rather than overflow: January 31 plus a month is the end of
+  // February, not March 3.
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const dd = Math.min(day, lastDay);
+
+  return `${y}-${String(m).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { describeSeriesCounts } from '@/lib/recurring';
+import { describeSeriesCounts, nextOccurrenceAfter } from '@/lib/recurring';
 
 describe('describeSeriesCounts', () => {
   it('states both counts', () => {
@@ -30,5 +30,40 @@ describe('describeSeriesCounts', () => {
     expect(describeSeriesCounts(0, 3)).toBe(
       'No series drive your forecast yet. 3 are waiting on you.',
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// nextOccurrenceAfter — #43 Defect 4
+// ---------------------------------------------------------------------------
+
+describe('nextOccurrenceAfter', () => {
+  it('rolls a stale date forward to the next future occurrence', () => {
+    // Reactivating a series with its old nextDate would leave it instantly
+    // stale again, and its overdue occurrences would flood the calendar.
+    expect(nextOccurrenceAfter('2026-03-05', 'biweekly', '2026-08-16')).toBe('2026-08-20');
+    expect(nextOccurrenceAfter('2026-03-23', 'monthly', '2026-08-16')).toBe('2026-08-23');
+  });
+
+  it('leaves a date that is already in the future alone', () => {
+    expect(nextOccurrenceAfter('2026-09-13', 'monthly', '2026-08-16')).toBe('2026-09-13');
+  });
+
+  it('moves a date landing exactly on today to the following occurrence', () => {
+    expect(nextOccurrenceAfter('2026-08-16', 'monthly', '2026-08-16')).toBe('2026-09-16');
+  });
+
+  it('handles weekly and yearly', () => {
+    expect(nextOccurrenceAfter('2026-08-01', 'weekly', '2026-08-16')).toBe('2026-08-22');
+    expect(nextOccurrenceAfter('2024-02-10', 'yearly', '2026-08-16')).toBe('2027-02-10');
+  });
+
+  it('clamps a month-end date rather than overflowing', () => {
+    // January 31 + 1 month is not March 3.
+    expect(nextOccurrenceAfter('2026-01-31', 'monthly', '2026-02-10')).toBe('2026-02-28');
+  });
+
+  it('does not shift a date west of Greenwich', () => {
+    expect(nextOccurrenceAfter('2026-01-01', 'monthly', '2026-01-15')).toBe('2026-02-01');
   });
 });

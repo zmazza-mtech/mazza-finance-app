@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../db/client';
 import { recurringTransactions, recurringOverrides, transactions, accounts } from '../db/schema';
@@ -177,7 +177,6 @@ router.post('/detect', async (req: Request, res: Response) => {
     // ---------------------------------------------------------------------------
 
     const staleIds: string[] = [];
-    const staleEndDates: Record<string, string> = {};
 
     for (const r of allRecurring) {
       if (r.status !== 'active') continue;
@@ -185,18 +184,28 @@ router.post('/detect', async (req: Request, res: Response) => {
       const cutoff = addDaysToDateStr(String(r.nextDate), graceDays);
       if (cutoff < serverToday) {
         staleIds.push(r.id);
-        staleEndDates[r.id] = String(r.nextDate);
       }
     }
 
+    /*
+     * `endDate` is deliberately left null (#43, Defect 3).
+     *
+     * This previously wrote the series' own `nextDate` as its end date — the
+     * date the forecast last *predicted* an occurrence, never one on which
+     * anything was observed to stop. On the live account that produced end
+     * dates one cycle after the account was connected, for bills still being
+     * paid months later, and it is the value a user would reasonably trust
+     * when judging whether a series has really finished.
+     *
+     * The `ended` status already carries "this series stopped generating".
+     * A date belongs here only once something is known to have ended, and
+     * nothing here knows that.
+     */
     if (staleIds.length > 0) {
-      // Update each stale series individually to set the correct endDate per row
-      for (const id of staleIds) {
-        await db
-          .update(recurringTransactions)
-          .set({ status: 'ended', endDate: staleEndDates[id]!, updatedAt: new Date() })
-          .where(eq(recurringTransactions.id, id));
-      }
+      await db
+        .update(recurringTransactions)
+        .set({ status: 'ended', updatedAt: new Date() })
+        .where(inArray(recurringTransactions.id, staleIds));
     }
 
     logger.info('POST /recurring/detect completed', {

@@ -8,6 +8,7 @@ import {
   expandRecurringSeries,
   applyOverrides,
   computeForecast,
+  reconcileInstances,
   type RecurringDef,
   type OverrideDef,
   type ActualTransaction,
@@ -137,7 +138,11 @@ router.get('/', async (req: Request, res: Response) => {
     const allInstances = series.flatMap((s) =>
       expandRecurringSeries(s, startDate, endDate)
     );
-    const instances = applyOverrides(allInstances, overrides);
+    const overridden = applyOverrides(allInstances, overrides);
+
+    // Drop instances a posted transaction already covers, so a bill that was
+    // forecast and then paid is counted once rather than twice (#43).
+    const instances = reconcileInstances(accountId, actuals, overridden);
 
     // Compute forecast
     const days = computeForecast(
