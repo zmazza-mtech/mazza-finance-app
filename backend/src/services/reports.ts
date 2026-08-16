@@ -111,6 +111,105 @@ export function splitByCategory(rows: RawCategoryRow[]): CategorySplit {
 }
 
 // ---------------------------------------------------------------------------
+// Monthly summary and month-over-month comparison
+// ---------------------------------------------------------------------------
+
+/** Every month from `startMonth` through `endMonth` inclusive, oldest first. */
+export function monthRange(startMonth: string, endMonth: string): string[] {
+  const [startYear, startM] = startMonth.split('-').map(Number) as [number, number];
+  const [endYear, endM] = endMonth.split('-').map(Number) as [number, number];
+
+  const first = startYear * 12 + (startM - 1);
+  const last = endYear * 12 + (endM - 1);
+  const months: string[] = [];
+
+  for (let absolute = first; absolute <= last; absolute += 1) {
+    months.push(`${Math.floor(absolute / 12)}-${pad((absolute % 12) + 1)}`);
+  }
+
+  return months;
+}
+
+/** The inclusive date span of a `YYYY-MM`, first day through last. */
+export function monthBounds(month: string): { startDate: string; endDate: string } {
+  const [year, m] = month.split('-').map(Number) as [number, number];
+  return {
+    startDate: `${month}-01`,
+    endDate: `${month}-${pad(daysInMonth(year, m))}`,
+  };
+}
+
+export interface MonthlyCategoryTotal {
+  category: string;
+  total: string;
+}
+
+/** One month's category totals, as the per-month queries return them. */
+export interface MonthlyBucket {
+  month: string;
+  categories: MonthlyCategoryTotal[];
+}
+
+export interface ComparedCategory extends MonthlyCategoryTotal {
+  /** Movement against the prior month, or null when there is nothing to compare. */
+  change: string | null;
+  /** That movement as a percent of the prior month, or null. */
+  changePercent: string | null;
+}
+
+export interface ComparedMonth {
+  month: string;
+  categories: ComparedCategory[];
+}
+
+/**
+ * Adds a month-over-month movement to each category total.
+ *
+ * Comparison is on magnitudes, not signed totals. Both months of a spending
+ * category are money out, so a signed subtraction would report a bigger charge
+ * as a decrease — exactly backwards from how the row reads.
+ *
+ * Two absences are distinguished, because they mean different things:
+ *
+ *   - the prior month had no such category at all → no comparison exists, both
+ *     figures are null rather than a change from an assumed zero
+ *   - the prior month had the category and it netted zero → the change is real
+ *     and stated, but the percent is null rather than an infinity
+ *
+ * The comparison is always against the month immediately before. Reaching back
+ * past an empty month would invent a comparison the data does not make.
+ *
+ * Every figure is `Decimal` throughout; nothing here touches a float.
+ */
+export function compareMonths(buckets: MonthlyBucket[]): ComparedMonth[] {
+  return buckets.map((bucket, index) => {
+    const prior = index === 0 ? null : buckets[index - 1]!;
+
+    return {
+      month: bucket.month,
+      categories: bucket.categories.map((row) => {
+        const priorRow = prior?.categories.find((c) => c.category === row.category);
+
+        if (!priorRow) {
+          return { ...row, change: null, changePercent: null };
+        }
+
+        const priorSize = new Decimal(priorRow.total).abs();
+        const change = new Decimal(row.total).abs().minus(priorSize);
+
+        return {
+          ...row,
+          change: change.toFixed(2),
+          changePercent: priorSize.isZero()
+            ? null
+            : change.div(priorSize).times(100).toFixed(1),
+        };
+      }),
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Uncategorized review
 // ---------------------------------------------------------------------------
 
