@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<style>
+  body { margin:0; background:#EDE7DE; font-family:'Instrument Sans',system-ui,sans-serif; color:#3A3530; -webkit-font-smoothing:antialiased; }
+  a { color:#5A7A5A; text-decoration:none; }
+  a:hover { color:#5D4037; }
+  .mf-scroll::-webkit-scrollbar { width:0; height:0; }
+  @keyframes mfSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>
+</helmet>
+<div style="display:flex;justify-content:center;padding:32px 16px">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="393px,852px">
+  <div style="position:relative;height:100%;display:flex;flex-direction:column;background:#FAF7F2;overflow:hidden">
+
+    <div style="flex-shrink:0;padding:50px 16px 10px;background:rgba(250,247,242,0.94);backdrop-filter:blur(12px);border-bottom:1px solid #F0EBE3;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span style="font-family:'Bricolage Grotesque',serif;font-weight:700;font-size:16px;letter-spacing:-0.02em;color:#3E2723">Mazza Finance</span>
+      <span style="display:flex;align-items:center;gap:8px;min-width:0">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#B5AEA4;white-space:nowrap">21/24</span>
+        <button type="button" style="padding:0 18px;font-size:14px;font-weight:600;background:#5D4037;color:#FAF7F2;border:0;border-radius:9999px;min-height:44px">Sync</button>
+      </span>
+    </div>
+
+    <div class="mf-scroll" style="flex:1;min-height:0;overflow-y:auto;padding:14px 16px 28px">
+
+      <sc-if value="{{ isCalendar }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <section style="background:#2A2420;border-radius:20px;padding:16px 16px 12px;margin-bottom:14px">
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#A3BFA3;max-width:none">Projected · through Aug 31</p>
+            <p style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:1.953rem;line-height:1.05;letter-spacing:-0.02em;color:#FAF7F2;max-width:none">{{ eomBalance }}</p>
+            <p style="margin:4px 0 0;font-size:12px;line-height:1.4;color:#D9A373;max-width:none">Low {{ lowBalance }} on {{ lowDate }} — under your comfort floor</p>
+            <svg viewBox="0 0 320 96" preserveAspectRatio="none" style="width:100%;height:96px;margin-top:12px;display:block">
+              <rect x="0" y="{{ bandY }}" width="320" height="{{ bandH }}" fill="#C17D4A" opacity="0.12"></rect>
+              <line x1="0" y1="{{ floorY }}" x2="320" y2="{{ floorY }}" stroke="#C1574A" stroke-width="1" stroke-dasharray="3 4" opacity="0.85"></line>
+              <path d="{{ curveArea }}" fill="#7B9E7B" opacity="0.18"></path>
+              <path d="{{ curveActual }}" fill="none" stroke="#A3BFA3" stroke-width="2" stroke-linejoin="round"></path>
+              <path d="{{ curveForecast }}" fill="none" stroke="#A3BFA3" stroke-width="2" stroke-dasharray="4 4" stroke-linejoin="round" opacity="0.85"></path>
+              <line x1="{{ todayX }}" y1="0" x2="{{ todayX }}" y2="96" stroke="#FAF7F2" stroke-width="1" opacity="0.3"></line>
+              <circle cx="{{ lowX }}" cy="{{ lowY }}" r="3.5" fill="#C17D4A"></circle>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279;margin-bottom:12px">
+              <span>AUG 1</span><span>TODAY</span><span>AUG 31</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+              <div style="background:rgba(250,247,242,0.06);border-radius:8px;padding:9px 10px">
+                <p style="margin:0 0 3px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#8A8279;max-width:none">Burn</p>
+                <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#FAF7F2;max-width:none">{{ burnRate }}</p>
+              </div>
+              <div style="background:rgba(250,247,242,0.06);border-radius:8px;padding:9px 10px">
+                <p style="margin:0 0 3px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#8A8279;max-width:none">Runway</p>
+                <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#FAF7F2;max-width:none">{{ runwayDays }} d</p>
+              </div>
+              <div style="background:rgba(250,247,242,0.06);border-radius:8px;padding:9px 10px">
+                <p style="margin:0 0 3px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#8A8279;max-width:none">Spent</p>
+                <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#FAF7F2;max-width:none">{{ mtdShort }}</p>
+              </div>
+            </div>
+          </section>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+            <h3 style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:1.25rem;color:#3E2723">August 2026</h3>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" aria-label="Previous month" style="width:44px;height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#5D4037;font-size:16px">‹</button>
+              <button type="button" style="height:44px;padding:0 16px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;font-weight:600;color:#5D4037">Today</button>
+              <button type="button" aria-label="Next month" style="width:44px;height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#5D4037;font-size:16px">›</button>
+            </div>
+          </div>
+
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#FAF7F2;border-bottom:1px solid #F0EBE3">
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">S</div>
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">M</div>
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">T</div>
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">W</div>
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">T</div>
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">F</div>
+              <div style="padding:7px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;color:#8A8279">S</div>
+            </div>
+            <div role="grid" aria-label="August 2026" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr))">
+              <sc-for list="{{ cells }}" as="c" hint-placeholder-count="42">
+                <div role="gridcell" onClick="{{ c.select }}" style="display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:3px;min-height:62px;padding:6px 2px 0;border-right:1px solid #F0EBE3;border-bottom:1px solid #F0EBE3;background: {{ c.bg }}; box-shadow: {{ c.ring }}">
+                  <sc-if value="{{ c.isDay }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;width:100%">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:11px;background: {{ c.numBg }}; color: {{ c.numColor }}">{{ c.dayNum }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.2;color: {{ c.balColor }}">{{ c.balShort }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;line-height:1.2;color:#B5AEA4">{{ c.countText }}</span>
+                      <span style="width:100%;height:16px;display:flex;align-items:flex-end;padding:0 3px;box-sizing:border-box">
+                        <span style="width:100%;border-radius:3px 3px 0 0;height: {{ c.barHeight }}; background: {{ c.barColor }}"></span>
+                      </span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+          <p style="margin:10px 0 0;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;text-align:center;max-width:none">Tap a day for detail · bar = spend</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTransactions }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h3 style="margin:0 0 2px;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;color:#3E2723">Transactions</h3>
+          <p style="margin:0 0 14px;font-size:13px;color:#8A8279;max-width:none">Aug 1 – Aug 31 · Joint Checking</p>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px">
+            <div style="background:#fff;border:1px solid #F0EBE3;border-radius:12px;padding:12px">
+              <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">In</p>
+              <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#3D5C3D;max-width:none">{{ txInShort }}</p>
+            </div>
+            <div style="background:#fff;border:1px solid #F0EBE3;border-radius:12px;padding:12px">
+              <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Out</p>
+              <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#7B5B4F;max-width:none">{{ txOutShort }}</p>
+            </div>
+            <div style="background:#fff;border:1px solid #F0EBE3;border-radius:12px;padding:12px">
+              <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Net</p>
+              <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#3E2723;max-width:none">{{ txNetShort }}</p>
+            </div>
+          </div>
+          <div class="mf-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px">
+            <sc-for list="{{ catFilters }}" as="f" hint-placeholder-count="5">
+              <button type="button" onClick="{{ f.go }}" style="flex-shrink:0;min-height:44px;padding:0 16px;border-radius:9999px;font-size:13px;border:1px solid {{ f.border }}; background: {{ f.bg }}; color: {{ f.color }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;overflow:hidden">
+            <sc-for list="{{ txGroups }}" as="g" hint-placeholder-count="6">
+              <div>
+                <p style="margin:0;padding:8px 14px;background:#FAF7F2;border-bottom:1px solid #F0EBE3;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#8A8279;max-width:none">{{ g.label }}</p>
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid #F0EBE3;min-height:56px">
+                    <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                      <span style="font-size:14px;line-height:1.3;color:#3A3530;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.description }}</span>
+                      <span style="display:flex;align-items:center;gap:6px;min-width:0">
+                        <span style="display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#8A8279">
+                          <span style="width:6px;height:6px;border-radius:9999px;background: {{ r.catColor }}"></span>{{ r.category }}
+                        </span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:1px 6px;border-radius:9999px;background: {{ r.srcBg }}; color: {{ r.srcFg }}">{{ r.srcLabel }}</span>
+                      </span>
+                    </span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:14px;flex-shrink:0;color: {{ r.color }}">{{ r.amountText }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRecurring }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h3 style="margin:0 0 2px;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;color:#3E2723">Recurring</h3>
+          <p style="margin:0 0 14px;font-size:13px;color:#8A8279;max-width:none">Eight series drive your forecast.</p>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button type="button" style="flex:1;min-height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;font-weight:600;color:#5D4037">Scan for patterns</button>
+            <button type="button" style="flex:1;min-height:44px;border:0;background:#C17D4A;color:#fff;border-radius:9999px;font-size:13px;font-weight:600">Add manually</button>
+          </div>
+          <section style="background:#fff;border:1px solid #E3DDD2;border-radius:16px;padding:16px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <h4 style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:1.125rem;color:#3E2723">Needs your review</h4>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:9999px;background:#C17D4A;color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px">2</span>
+            </div>
+            <p style="margin:0 0 12px;font-size:13px;line-height:1.45;color:#8A8279;max-width:none">We spotted these in your bank history. Confirm the ones we got right.</p>
+            <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ pending }}" as="p" hint-placeholder-count="2">
+                <li style="padding:12px;background:#FAF7F2;border:1px solid #F0EBE3;border-radius:12px">
+                  <p style="margin:0;font-size:15px;font-weight:600;color:#3A3530;max-width:none">{{ p.name }}</p>
+                  <p style="margin:3px 0 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A8279;max-width:none">{{ p.meta }}</p>
+                  <span style="display:flex;gap:8px">
+                    <button type="button" style="flex:1;min-height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;color:#5D4037">Edit</button>
+                    <button type="button" style="flex:1;min-height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;color:#8A8279">Dismiss</button>
+                    <button type="button" style="flex:1;min-height:44px;border:0;background:#5A7A5A;color:#fff;border-radius:9999px;font-size:13px;font-weight:600">Confirm</button>
+                  </span>
+                </li>
+              </sc-for>
+            </ul>
+          </section>
+          <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ series }}" as="s" hint-placeholder-count="8">
+              <li style="background:#fff;border:1px solid #F0EBE3;border-radius:12px;padding:14px">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                  <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                    <span style="display:flex;align-items:center;gap:7px;min-width:0">
+                      <span style="width:7px;height:7px;border-radius:9999px;flex-shrink:0;background: {{ s.catColor }}"></span>
+                      <span style="font-size:15px;color:#3A3530;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.name }}</span>
+                    </span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A8279">{{ s.frequency }} · next {{ s.nextDate }}</span>
+                  </span>
+                  <span style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:14px;color: {{ s.color }}">{{ s.amountText }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:1px 7px;border-radius:9999px;background: {{ s.statusBg }}; color: {{ s.statusFg }}">{{ s.status }}</span>
+                  </span>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <button type="button" style="flex:1;min-height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;color:#5D4037">Edit</button>
+                  <button type="button" style="flex:1;min-height:44px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;color:#8A8279">{{ s.toggleLabel }}</button>
+                  <button type="button" style="flex:1;min-height:44px;border:1px solid #E8D3CE;background:#fff;border-radius:9999px;font-size:13px;color:#C1574A">Delete</button>
+                </div>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReports }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h3 style="margin:0 0 2px;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;color:#3E2723">Reports</h3>
+          <p style="margin:0 0 14px;font-size:13px;color:#8A8279;max-width:none">Aug 1 – Aug 15 · settled only</p>
+          <div role="radiogroup" aria-label="Chart type" style="display:flex;gap:4px;padding:4px;background:#F0EBE3;border-radius:9999px;margin-bottom:14px">
+            <sc-for list="{{ chartModes }}" as="m" hint-placeholder-count="2">
+              <button type="button" role="radio" aria-checked="{{ m.checked }}" onClick="{{ m.go }}" style="flex:1;min-height:44px;border:0;border-radius:9999px;font-size:13px;font-weight: {{ m.weight }}; background: {{ m.bg }}; color: {{ m.color }}">{{ m.label }}</button>
+            </sc-for>
+          </div>
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:16px">
+            <p style="margin:0 0 2px;font-family:'Bricolage Grotesque',serif;font-size:1.125rem;color:#3E2723;max-width:none">Where the income went</p>
+            <p style="margin:0 0 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A8279;max-width:none">{{ incomeTotal }} in · {{ expenseTotal }} out</p>
+
+            <sc-if value="{{ isSankey }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <p style="margin:0 0 8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Income {{ incomeTotal }} →</p>
+                <div style="display:flex;align-items:stretch;gap:0">
+                  <svg viewBox="0 0 200 480" preserveAspectRatio="none" role="img" aria-label="Income flowing into expense categories" style="width:106px;flex-shrink:0;height:440px;display:block">
+                    <sc-for list="{{ sankeyLinks }}" as="k" hint-placeholder-count="10">
+                      <path d="{{ k.path }}" fill="{{ k.color }}" opacity="0.32"></path>
+                    </sc-for>
+                    <rect x="0" y="{{ sourceY }}" width="10" height="{{ sourceH }}" rx="2" fill="#5A7A5A"></rect>
+                    <sc-for list="{{ sankeyNodes }}" as="n" hint-placeholder-count="10">
+                      <rect x="190" y="{{ n.y }}" width="10" height="{{ n.h }}" rx="2" fill="{{ n.color }}"></rect>
+                    </sc-for>
+                  </svg>
+                  <div style="position:relative;flex:1;min-width:0">
+                    <sc-for list="{{ sankeyNodes }}" as="n" hint-placeholder-count="10">
+                      <div style="position:absolute;left:8px;right:0;transform:translateY(-50%);display:flex;flex-direction:column;gap:1px;top: {{ n.topPct }}">
+                        <span style="display:flex;align-items:center;gap:6px;min-width:0">
+                          <span style="width:6px;height:6px;border-radius:9999px;flex-shrink:0;background: {{ n.color }}"></span>
+                          <span style="font-size:12px;line-height:1.2;color:#3A3530;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.category }}</span>
+                        </span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8A8279;padding-left:12px">{{ n.meta }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isBars }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="display:flex;height:20px;border-radius:9999px;overflow:hidden;gap:2px;margin-bottom:14px">
+                  <sc-for list="{{ flowRows }}" as="f" hint-placeholder-count="7">
+                    <div style="height:20px;background: {{ f.color }}; width: {{ f.width }}"></div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ flowRows }}" as="f" hint-placeholder-count="7">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                      <span style="display:flex;align-items:center;gap:7px;min-width:0">
+                        <span style="width:7px;height:7px;border-radius:9999px;flex-shrink:0;background: {{ f.color }}"></span>
+                        <span style="font-size:13px;color:#3A3530;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.category }}</span>
+                      </span>
+                      <span style="display:flex;align-items:baseline;gap:8px;flex-shrink:0">
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#3A3530">{{ f.amount }}</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8A8279;width:38px;text-align:right">{{ f.pct }}</span>
+                      </span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h3 style="margin:0 0 2px;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;color:#3E2723">Settings</h3>
+          <p style="margin:0 0 14px;font-size:13px;color:#8A8279;max-width:none">Sync, thresholds, accounts and imports.</p>
+
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:16px;margin-bottom:12px">
+            <h4 style="margin:0 0 4px;font-family:'Bricolage Grotesque',serif;font-size:1.125rem;color:#3E2723">Bank sync</h4>
+            <p style="margin:0;font-size:13px;color:#5A7A5A;max-width:none">Last synced 7:14 AM · 2 accounts updated</p>
+            <p style="margin:4px 0 12px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#B5AEA4;max-width:none">21 of 24 syncs remaining today</p>
+            <button type="button" style="width:100%;min-height:44px;border:0;background:#5D4037;color:#FAF7F2;border-radius:9999px;font-size:14px;font-weight:600">Sync now</button>
+          </section>
+
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:16px;margin-bottom:12px">
+            <h4 style="margin:0 0 4px;font-family:'Bricolage Grotesque',serif;font-size:1.125rem;color:#3E2723">Balance health</h4>
+            <p style="margin:0 0 14px;font-size:13px;line-height:1.45;color:#8A8279;max-width:none">The calendar colors your running balance against these two lines.</p>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#3D5C3D;margin-bottom:10px">Good — at or above
+              <input type="text" value="1,000.00" style="min-height:44px;padding:0 14px;border:1px solid #F0EBE3;border-radius:8px;background:#FAF7F2;font-family:'JetBrains Mono',monospace;font-size:15px;color:#3A3530" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#9B5F30;margin-bottom:14px">Low — at or below
+              <input type="text" value="200.00" style="min-height:44px;padding:0 14px;border:1px solid #F0EBE3;border-radius:8px;background:#FAF7F2;font-family:'JetBrains Mono',monospace;font-size:15px;color:#3A3530" />
+            </label>
+            <button type="button" style="width:100%;min-height:44px;border:0;background:#C17D4A;color:#fff;border-radius:9999px;font-size:14px;font-weight:600">Save thresholds</button>
+          </section>
+
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:16px;margin-bottom:12px">
+            <h4 style="margin:0 0 12px;font-family:'Bricolage Grotesque',serif;font-size:1.125rem;color:#3E2723">Accounts in the forecast</h4>
+            <ul style="margin:0;padding:0;list-style:none">
+              <sc-for list="{{ accounts }}" as="a" hint-placeholder-count="3">
+                <li style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #F0EBE3;min-height:56px">
+                  <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                    <span style="font-size:14px;color:#3A3530;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.name }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#B5AEA4">{{ a.type }} · {{ a.balance }}</span>
+                  </span>
+                  <span style="width:46px;height:28px;border-radius:9999px;position:relative;flex-shrink:0;background: {{ a.toggleBg }}">
+                    <span style="position:absolute;top:3px;width:22px;height:22px;border-radius:9999px;background:#fff;box-shadow:0 1px 2px rgba(93,64,55,0.2);left: {{ a.knobLeft }}"></span>
+                  </span>
+                </li>
+              </sc-for>
+            </ul>
+          </section>
+
+          <section style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:16px">
+            <h4 style="margin:0 0 4px;font-family:'Bricolage Grotesque',serif;font-size:1.125rem;color:#3E2723">Import transactions</h4>
+            <p style="margin:0 0 14px;font-size:13px;color:#8A8279;max-width:none">CSV with date, description and amount columns.</p>
+            <div style="border:1px dashed #E3DDD2;border-radius:12px;padding:20px;text-align:center;background:#FAF7F2">
+              <p style="margin:0 0 10px;font-size:13px;color:#8A8279;max-width:none">Choose a CSV from your phone</p>
+              <button type="button" style="min-height:44px;padding:0 18px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:14px;font-weight:600;color:#5D4037">Choose file</button>
+            </div>
+          </section>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="position:absolute;top:0;left:0;right:0;height:100%;padding-bottom:74px;box-sizing:border-box;overflow:hidden;pointer-events:none;display:flex;align-items:flex-end;z-index:20">
+    <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="pointer-events:auto;width:100%;background:#fff;border-top:1px solid #F0EBE3;border-radius:24px 24px 0 0;box-shadow:0 -8px 32px rgba(93,64,55,0.12);max-height:62%;display:flex;flex-direction:column">
+      <div style="flex-shrink:0;padding:10px 0 4px;display:flex;justify-content:center">
+        <span style="width:38px;height:4px;border-radius:9999px;background:#E3DDD2"></span>
+      </div>
+      <div style="flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:4px 16px 12px">
+        <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4">{{ panelKind }}</span>
+          <span style="font-family:'Bricolage Grotesque',serif;font-size:1.25rem;line-height:1.15;color:#3E2723">{{ panelDate }}</span>
+        </span>
+        <button type="button" aria-label="Close day detail" onClick="{{ closeSheet }}" style="width:44px;height:44px;flex-shrink:0;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#8A8279;font-size:15px">✕</button>
+      </div>
+      <div style="flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 12px">
+        <div style="background:#FAF7F2;border-radius:8px;padding:10px 12px">
+          <p style="margin:0 0 3px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Day net</p>
+          <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:15px;color: {{ panelNetColor }};max-width:none">{{ panelNet }}</p>
+        </div>
+        <div style="background:#FAF7F2;border-radius:8px;padding:10px 12px">
+          <p style="margin:0 0 3px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Balance after</p>
+          <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:15px;color: {{ panelBalColor }};max-width:none">{{ panelBalance }}</p>
+        </div>
+      </div>
+      <div class="mf-scroll" style="flex:1;min-height:0;overflow-y:auto;padding:0 16px">
+        <ul style="margin:0;padding:0;list-style:none">
+          <sc-for list="{{ panelTxs }}" as="tx" hint-placeholder-count="3">
+            <li style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #F0EBE3;min-height:56px">
+              <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+                <span style="font-size:14px;line-height:1.3;color:#3A3530">{{ tx.description }}</span>
+                <span style="display:flex;align-items:center;gap:6px">
+                  <span style="display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#8A8279">
+                    <span style="width:6px;height:6px;border-radius:9999px;background: {{ tx.catColor }}"></span>{{ tx.category }}
+                  </span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:1px 6px;border-radius:9999px;background: {{ tx.srcBg }}; color: {{ tx.srcFg }}">{{ tx.srcLabel }}</span>
+                </span>
+              </span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:14px;flex-shrink:0;color: {{ tx.color }}">{{ tx.amountText }}</span>
+            </li>
+          </sc-for>
+        </ul>
+        <p style="margin:14px 0 0;font-size:13px;color:#8A8279;max-width:none">{{ panelEmpty }}</p>
+      </div>
+      <div style="flex-shrink:0;padding:12px 16px 16px">
+        <button type="button" style="width:100%;min-height:48px;border:0;border-radius:9999px;background:#C17D4A;color:#fff;font-size:15px;font-weight:600">Add transaction</button>
+      </div>
+    </div>
+    </sc-if>
+    </div>
+
+    <nav aria-label="Main navigation" style="flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:22px;background:rgba(250,247,242,0.94);backdrop-filter:blur(12px);border-top:1px solid #F0EBE3;z-index:30">
+      <button type="button" onClick="{{ goCalendar }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;min-height:52px;border:0;background:transparent;color: {{ tabCalendar }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v3M16 3v3"></path></svg>
+        <span style="font-size:10px;letter-spacing:0.02em">Calendar</span>
+      </button>
+      <button type="button" onClick="{{ goTransactions }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;min-height:52px;border:0;background:transparent;color: {{ tabTransactions }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h11M4 17h7"></path></svg>
+        <span style="font-size:10px;letter-spacing:0.02em">Activity</span>
+      </button>
+      <button type="button" onClick="{{ goRecurring }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;min-height:52px;border:0;background:transparent;color: {{ tabRecurring }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v4h-4"></path></svg>
+        <span style="font-size:10px;letter-spacing:0.02em">Recurring</span>
+      </button>
+      <button type="button" onClick="{{ goReports }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;min-height:52px;border:0;background:transparent;color: {{ tabReports }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 20V11M12 20V5M18 20v-6"></path></svg>
+        <span style="font-size:10px;letter-spacing:0.02em">Reports</span>
+      </button>
+      <button type="button" onClick="{{ goSettings }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;min-height:52px;border:0;background:transparent;color: {{ tabSettings }}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16"></path><circle cx="10" cy="8" r="2.5" fill="#FAF7F2"></circle><circle cx="15" cy="16" r="2.5" fill="#FAF7F2"></circle></svg>
+        <span style="font-size:10px;letter-spacing:0.02em">Settings</span>
+      </button>
+    </nav>
+  </div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:960}}">
+const RAW = {
+  1: [['Kroger', -112.38, 'actual', 'Groceries'], ['Netflix', -17.99, 'actual', 'Subscriptions']],
+  3: [['Mortgage — Home Federal', -1842.00, 'actual', 'Housing'], ['Athens Water Dept', -64.20, 'actual', 'Utilities']],
+  4: [['Shell', -48.10, 'actual', 'Transportation']],
+  5: [['Payroll — Volunteer Health', 2418.66, 'actual', 'Income'], ['Verizon Wireless', -132.44, 'actual', 'Utilities']],
+  6: [['Amazon', -39.87, 'actual', 'Shopping']],
+  7: [["Puleo's Grille", -74.20, 'actual', 'Dining']],
+  8: [['Kroger', -96.15, 'actual', 'Groceries'], ['Athens Utilities', -188.02, 'actual', 'Utilities']],
+  10: [['State Farm', -214.00, 'actual', 'Insurance'], ['Starbucks', -8.75, 'actual', 'Dining']],
+  11: [['Target', -142.66, 'actual', 'Shopping']],
+  12: [['Car payment — Ally', -486.11, 'actual', 'Transportation'], ['Spotify', -11.99, 'actual', 'Subscriptions']],
+  13: [['Kroger', -83.44, 'actual', 'Groceries']],
+  15: [['Payroll — Volunteer Health', 2418.66, 'actual', 'Income'], ['Planet Fitness', -42.00, 'actual', 'Healthcare'], ['Los Portales', -58.90, 'actual', 'Dining']],
+  16: [['Spectrum Internet', -89.99, 'forecast', 'Utilities']],
+  18: [['Kroger', -95.00, 'forecast', 'Groceries']],
+  19: [['Credit card payment', -650.00, 'forecast', 'Transfers']],
+  21: [['Athens Utilities', -176.00, 'forecast', 'Utilities'], ['Kroger', -95.00, 'forecast', 'Groceries']],
+  22: [['Dinner out', -60.00, 'manual', 'Dining']],
+  24: [['Vet — Momo', -180.00, 'manual', 'Healthcare']],
+  25: [['Kroger', -95.00, 'forecast', 'Groceries'], ['Verizon Wireless', -132.44, 'forecast', 'Utilities'], ['Athens Water Dept', -64.00, 'forecast', 'Utilities']],
+  27: [['Mortgage — Home Federal', -1842.00, 'forecast', 'Housing']],
+  29: [['Payroll — Volunteer Health', 2418.66, 'forecast', 'Income'], ['Car payment — Ally', -486.11, 'forecast', 'Transportation']],
+  30: [['Kroger', -95.00, 'forecast', 'Groceries']],
+  31: [['State Farm', -214.00, 'forecast', 'Insurance'], ['Netflix', -17.99, 'forecast', 'Subscriptions']],
+};
+const CAT_COLOR = {
+  Income: '#5A7A5A', Housing: '#5D4037', Utilities: '#7B9E7B', Groceries: '#A3BFA3',
+  Transportation: '#C17D4A', Insurance: '#8A8279', Healthcare: '#C1574A',
+  Dining: '#D9A373', Shopping: '#7B5B4F', Subscriptions: '#B5AEA4', Transfers: '#3D5C3D',
+};
+const SRC = {
+  actual: ['#D4E4D4', '#3D5C3D', 'Actual'],
+  forecast: ['#F0EBE3', '#7B5B4F', 'Forecast'],
+  manual: ['#FAF7F2', '#8A8279', 'Manual'],
+};
+const SERIES = [
+  ['Payroll — Volunteer Health', 2418.66, 'Biweekly', 'Aug 29', 'Active', 'Income'],
+  ['Mortgage — Home Federal', -1842.00, 'Monthly', 'Aug 27', 'Active', 'Housing'],
+  ['Car payment — Ally', -486.11, 'Monthly', 'Aug 29', 'Active', 'Transportation'],
+  ['State Farm', -214.00, 'Monthly', 'Aug 31', 'Active', 'Insurance'],
+  ['Athens Utilities', -176.00, 'Monthly', 'Aug 21', 'Active', 'Utilities'],
+  ['Verizon Wireless', -132.44, 'Monthly', 'Aug 25', 'Active', 'Utilities'],
+  ['Spectrum Internet', -89.99, 'Monthly', 'Sep 16', 'Active', 'Utilities'],
+  ['Spotify', -11.99, 'Monthly', 'Sep 12', 'Disabled', 'Subscriptions'],
+];
+const PENDING = [
+  ['Planet Fitness', '−$42.00 · Monthly · seen 4 months running'],
+  ['Athens Water Dept', '−$64.10 · Monthly · amount varies ±$3'],
+];
+const ACCOUNTS = [
+  ['Home Federal — Joint Checking', 'Checking', '$3,142.00', true],
+  ['Home Federal — Savings', 'Savings', '$12,480.11', true],
+  ['Citizens Bank — Visa', 'Credit', '−$1,204.66', false],
+];
+const OPENING = 3142.00, TODAY = 15, START_PAD = 6, DAYS = 31, GREEN = 1000, CRITICAL = 200;
+const WD = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
+const FILTERS = ['All', 'Groceries', 'Utilities', 'Housing', 'Dining'];
+
+function money(n, sign) {
+  const s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (sign) return (n < 0 ? '−$' : '+$') + s;
+  return (n < 0 ? '−$' : '$') + s;
+}
+function short(n) { return (n < 0 ? '−' : '') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US'); }
+function bare(n) { return (n < 0 ? '−' : '') + Math.round(Math.abs(n)).toLocaleString('en-US'); }
+function healthColor(b) { return b > GREEN ? '#3D5C3D' : b > CRITICAL ? '#C17D4A' : '#C1574A'; }
+
+class Component extends DCLogic {
+  state = { screen: 'calendar', selected: TODAY, sheet: false, filter: 'All', chart: 'sankey' };
+
+  sankey(rows, income) {
+    const H = 480, TOP = 8, GAP = 14, MINH = 22;
+    const x0 = 10, x1 = 190, xm = 100;
+    const n = rows.length;
+    const avail = H - TOP * 2 - GAP * (n - 1);
+    const flex = avail - MINH * n;
+    const nodes = [], links = [];
+    const sTop = TOP + (GAP * (n - 1)) / 2;
+    let ny = TOP, sy = sTop;
+    for (const r of rows) {
+      const h = MINH + (r.value / income) * flex;
+      const sy1 = sy + h, ny1 = ny + h;
+      links.push({
+        color: r.color,
+        path: 'M' + x0 + ' ' + sy.toFixed(1) +
+          ' C' + xm + ' ' + sy.toFixed(1) + ' ' + xm + ' ' + ny.toFixed(1) + ' ' + x1 + ' ' + ny.toFixed(1) +
+          ' L' + x1 + ' ' + ny1.toFixed(1) +
+          ' C' + xm + ' ' + ny1.toFixed(1) + ' ' + xm + ' ' + sy1.toFixed(1) + ' ' + x0 + ' ' + sy1.toFixed(1) + ' Z',
+      });
+      nodes.push({
+        category: r.category, color: r.color,
+        y: ny.toFixed(1), h: h.toFixed(1),
+        topPct: (((ny + h / 2) / H) * 100).toFixed(2) + '%',
+        meta: r.meta,
+      });
+      ny = ny1 + GAP;
+      sy = sy1;
+    }
+    return { nodes, links, sourceY: sTop.toFixed(1), sourceH: (sy - sTop).toFixed(1) };
+  }
+
+  renderVals() {
+    const s = [];
+    let bal = OPENING;
+    for (let d = 1; d <= DAYS; d++) {
+      const txs = RAW[d] || [];
+      let net = 0, spend = 0;
+      for (const t of txs) { net += t[1]; if (t[1] < 0) spend += -t[1]; }
+      bal += net;
+      s.push({ d, txs, net, spend, bal });
+    }
+    const maxSpend = Math.max.apply(null, s.map(x => x.spend)) || 1;
+
+    const cells = [];
+    for (let i = 0; i < START_PAD; i++) cells.push({ isDay: false, bg: '#FDFCFA', ring: 'none' });
+    for (const day of s) {
+      const isToday = day.d === TODAY, isSel = day.d === this.state.selected;
+      const ratio = day.spend / maxSpend;
+      cells.push({
+        isDay: true,
+        dayNum: String(day.d),
+        balShort: bare(day.bal),
+        balColor: healthColor(day.bal),
+        countText: day.txs.length ? day.txs.length + '×' : '',
+        barHeight: Math.max(ratio * 14, day.spend > 0 ? 2 : 0) + 'px',
+        barColor: ratio > 0.55 ? '#C1574A' : ratio > 0.25 ? '#C17D4A' : '#A3BFA3',
+        numBg: isToday ? '#5D4037' : 'transparent',
+        numColor: isToday ? '#FAF7F2' : day.d > TODAY ? '#8A8279' : '#3A3530',
+        bg: isSel ? '#FAF7F2' : '#ffffff',
+        ring: isSel ? 'inset 0 0 0 2px #7B9E7B' : 'none',
+        select: () => this.setState({ selected: day.d, sheet: true }),
+      });
+    }
+    while (cells.length % 7 !== 0) cells.push({ isDay: false, bg: '#FDFCFA', ring: 'none' });
+
+    const toTx = ([description, amount, source, category]) => {
+      const b = SRC[source];
+      return {
+        description, category, catColor: CAT_COLOR[category],
+        amountText: money(amount, true),
+        color: amount < 0 ? '#7B5B4F' : '#3D5C3D',
+        srcBg: b[0], srcFg: b[1], srcLabel: b[2],
+      };
+    };
+    const sel = s[this.state.selected - 1];
+
+    const mtd = s.slice(0, TODAY).reduce((a, x) => a + x.spend, 0);
+    const burn = mtd / TODAY;
+    const low = s.reduce((m, x) => (x.bal < m.bal ? x : m), s[0]);
+
+    const W = 320, H = 96;
+    const balances = s.map(x => x.bal);
+    const hi = Math.max.apply(null, balances) * 1.06;
+    const lo = Math.min(0, Math.min.apply(null, balances) * 0.9);
+    const y = v => H - ((v - lo) / (hi - lo)) * (H - 10) - 5;
+    const x = i => (i / (DAYS - 1)) * W;
+    const pt = i => x(i).toFixed(1) + ' ' + y(balances[i]).toFixed(1);
+    let actual = 'M' + pt(0);
+    for (let i = 1; i < TODAY; i++) actual += ' L' + pt(i);
+    let forecast = 'M' + pt(TODAY - 1);
+    for (let i = TODAY; i < DAYS; i++) forecast += ' L' + pt(i);
+    let area = 'M' + pt(0);
+    for (let i = 1; i < DAYS; i++) area += ' L' + pt(i);
+    area += ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
+
+    // Activity list grouped by day, newest first
+    const groups = [];
+    for (let d = DAYS; d >= 1; d--) {
+      let txs = RAW[d] || [];
+      if (this.state.filter !== 'All') txs = txs.filter(t => t[3] === this.state.filter);
+      if (!txs.length) continue;
+      groups.push({
+        label: WD[(d - 1) % 7].slice(0, 3) + ' · Aug ' + d + (d === TODAY ? ' · Today' : ''),
+        rows: txs.map(toTx),
+      });
+    }
+    let inSum = 0, outSum = 0;
+    for (const g of groups) for (const r of g.rows) {
+      const v = parseFloat(r.amountText.replace(/[+−$,]/g, ''));
+      if (r.amountText[0] === '+') inSum += v; else outSum += v;
+    }
+
+    const byCat = {};
+    for (let d = 1; d <= TODAY; d++) for (const t of (RAW[d] || [])) {
+      if (t[1] >= 0) continue;
+      byCat[t[3]] = (byCat[t[3]] || 0) + -t[1];
+    }
+    const income = s.slice(0, TODAY).reduce((a, xx) => a + xx.txs.reduce((b, t) => b + (t[1] > 0 ? t[1] : 0), 0), 0);
+    const expTotal = Object.keys(byCat).reduce((a, k) => a + byCat[k], 0);
+    const flowRows = Object.keys(byCat).map(k => ({ category: k, amount: byCat[k] }))
+      .sort((a, b) => b.amount - a.amount)
+      .map(r => ({
+        category: r.category, color: CAT_COLOR[r.category],
+        amount: short(-r.amount),
+        pct: ((r.amount / expTotal) * 100).toFixed(1) + '%',
+        width: ((r.amount / expTotal) * 100).toFixed(2) + '%',
+      }));
+    const kept = income - expTotal;
+    const ranked = Object.keys(byCat).map(k => ({ category: k, value: byCat[k], color: CAT_COLOR[k] }))
+      .sort((a, b) => b.value - a.value);
+    // Phones only have room for six named categories — the tail rolls up
+    const sankeyRows = ranked.slice(0, 6);
+    const tail = ranked.slice(6).reduce((a, r) => a + r.value, 0);
+    if (tail > 0) sankeyRows.push({ category: 'Other', value: tail, color: '#B5AEA4' });
+    if (kept > 0) sankeyRows.push({ category: 'Kept', value: kept, color: '#7B9E7B' });
+    for (const r of sankeyRows) r.meta = short(r.value) + ' · ' + ((r.value / income) * 100).toFixed(0) + '%';
+    const sk = this.sankey(sankeyRows, income);
+
+    const tab = id => (this.state.screen === id ? '#3D5C3D' : '#B5AEA4');
+    const go = id => () => this.setState({ screen: id, sheet: id === 'calendar' ? this.state.sheet : false });
+
+    return {
+      isCalendar: this.state.screen === 'calendar',
+      isTransactions: this.state.screen === 'transactions',
+      isRecurring: this.state.screen === 'recurring',
+      isReports: this.state.screen === 'reports',
+      isSettings: this.state.screen === 'settings',
+      goCalendar: go('calendar'), goTransactions: go('transactions'), goRecurring: go('recurring'),
+      goReports: go('reports'), goSettings: go('settings'),
+      tabCalendar: tab('calendar'), tabTransactions: tab('transactions'), tabRecurring: tab('recurring'),
+      tabReports: tab('reports'), tabSettings: tab('settings'),
+
+      cells,
+      sheetOpen: this.state.sheet && this.state.screen === 'calendar',
+      closeSheet: () => this.setState({ sheet: false }),
+      panelKind: this.state.selected > TODAY ? 'Forecast day' : this.state.selected === TODAY ? 'Today' : 'Settled day',
+      panelDate: WD[(this.state.selected - 1) % 7] + ', August ' + this.state.selected,
+      panelNet: sel.net === 0 ? '—' : money(sel.net, true),
+      panelNetColor: sel.net < 0 ? '#7B5B4F' : '#3D5C3D',
+      panelBalance: money(sel.bal),
+      panelBalColor: healthColor(sel.bal),
+      panelTxs: sel.txs.map(toTx),
+      panelEmpty: sel.txs.length ? '' : 'Nothing scheduled. Balance carries forward.',
+
+      eomBalance: money(s[DAYS - 1].bal),
+      lowBalance: money(low.bal),
+      lowDate: 'Aug ' + low.d,
+      burnRate: '$' + burn.toFixed(0),
+      runwayDays: Math.floor(s[DAYS - 1].bal / burn),
+      mtdShort: short(mtd),
+      curveActual: actual, curveForecast: forecast, curveArea: area,
+      todayX: x(TODAY - 1).toFixed(1),
+      lowX: x(low.d - 1).toFixed(1),
+      lowY: y(low.bal).toFixed(1),
+      floorY: y(GREEN).toFixed(1),
+      bandY: y(GREEN).toFixed(1),
+      bandH: (H - y(GREEN)).toFixed(1),
+
+      txGroups: groups,
+      txInShort: short(inSum),
+      txOutShort: short(-outSum),
+      txNetShort: short(inSum - outSum),
+      catFilters: FILTERS.map(f => ({
+        label: f,
+        go: () => this.setState({ filter: f }),
+        bg: this.state.filter === f ? '#D4E4D4' : '#fff',
+        color: this.state.filter === f ? '#3D5C3D' : '#8A8279',
+        border: this.state.filter === f ? '#A3BFA3' : '#F0EBE3',
+      })),
+
+      pending: PENDING.map(([name, meta]) => ({ name, meta })),
+      series: SERIES.map(([name, amount, frequency, nextDate, status, category]) => ({
+        name, frequency, nextDate, status,
+        catColor: CAT_COLOR[category],
+        amountText: money(amount, true),
+        color: amount < 0 ? '#7B5B4F' : '#3D5C3D',
+        statusBg: status === 'Active' ? '#D4E4D4' : '#F0EBE3',
+        statusFg: status === 'Active' ? '#3D5C3D' : '#8A8279',
+        toggleLabel: status === 'Active' ? 'Disable' : 'Enable',
+      })),
+
+      chartModes: [['sankey', 'Sankey'], ['bars', 'Breakdown']].map(([id, label]) => ({
+        label,
+        go: () => this.setState({ chart: id }),
+        checked: this.state.chart === id ? 'true' : 'false',
+        bg: this.state.chart === id ? '#5D4037' : 'transparent',
+        color: this.state.chart === id ? '#FAF7F2' : '#8A8279',
+        weight: this.state.chart === id ? '600' : '400',
+      })),
+      isSankey: this.state.chart === 'sankey',
+      isBars: this.state.chart === 'bars',
+      sankeyLinks: sk.links, sankeyNodes: sk.nodes,
+      sourceY: sk.sourceY, sourceH: sk.sourceH,
+      flowRows,
+      incomeTotal: money(income),
+      expenseTotal: money(-expTotal),
+
+      accounts: ACCOUNTS.map(([name, type, balance, on]) => ({
+        name, type, balance,
+        toggleBg: on ? '#7B9E7B' : '#F0EBE3',
+        knobLeft: on ? '21px' : '3px',
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>
