@@ -380,10 +380,21 @@ variants across all restyled components. Filed with no milestone.
 Strict TDD applies to:
 
 - `lib/metrics.ts`, `lib/trends.ts`, `lib/chart.ts`, `lib/sankey.ts`
-- the `category-trend` endpoint, as integration tests against real Postgres
+- `services/reports.ts` — bucket computation and category splitting
+- route validation for `category-trend`, via supertest
 - component *behavior*: day selection driving the panel, overflow counts,
   keyboard bindings surviving, the category filter recomputing summaries,
   threshold validation
+
+**Database coverage carve-out.** This document originally called for
+integration tests against real Postgres. There is none to reach:
+`docker-compose.yml` deliberately gives the database no `ports:` mapping
+(internal network only, a stated security requirement), and the existing
+`backend/tests/integration/api.test.ts` uses an in-memory stub despite its
+name. The grouped SQL query behind `category-summary` and `category-trend` is
+therefore untested, and closing that gap is deferred to issue #5, which will
+cover the whole API at once. No mocks were introduced in its place — the pure
+logic was extracted and tested directly instead.
 
 Existing `DayCell`, `TransactionItem` and `balance` tests are updated as
 behavior changes rather than deleted.
