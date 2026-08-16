@@ -135,7 +135,7 @@ export function TransactionModal({
               onChange={(e) => setDescription(e.target.value)}
               maxLength={255}
               placeholder="e.g. Grocery run"
-              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 

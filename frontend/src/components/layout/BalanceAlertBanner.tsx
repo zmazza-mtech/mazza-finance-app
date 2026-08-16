@@ -90,6 +90,13 @@ export function BalanceAlertBanner({
         <span className="font-semibold">{label}:</span>{' '}
         Your balance is projected to reach{' '}
         {isCritical ? 'critical' : 'low'} levels on{' '}
+        {/*
+          Deliberately not `hit-target`. This button sits inside a sentence,
+          and a 44px minimum on an inline element breaks the line box and
+          spaces the surrounding prose apart. WCAG 2.5.8 exempts targets in a
+          sentence for exactly this reason. The dismiss button below the prose
+          is a normal target and carries the class.
+        */}
         <button
           type="button"
           onClick={() => onViewDate(alertDay.date)}

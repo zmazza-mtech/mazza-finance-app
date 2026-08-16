@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      viewport-fit=cover lets the page extend under the notch and home
+      indicator, which is what makes env(safe-area-inset-*) report non-zero
+      values. Without it iOS letterboxes the page and the insets are always 0.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Mazza Finance — personal cash flow forecasting" />
     <title>Mazza Finance</title>
     <!-- Theme flash prevention: read localStorage before React hydrates -->

@@ -45,7 +45,7 @@ export function MonthRangePicker({
             type="month"
             value={startMonth}
             onChange={(e) => onStartMonthChange(e.target.value)}
-            className="bg-transparent font-mono text-xs text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target bg-transparent font-mono text-xs text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
         </label>
         <span aria-hidden="true" className="text-warm-gray">
@@ -59,7 +59,7 @@ export function MonthRangePicker({
             type="month"
             value={endMonth}
             onChange={(e) => onEndMonthChange(e.target.value)}
-            className="bg-transparent font-mono text-xs text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target bg-transparent font-mono text-xs text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
         </label>
       </div>

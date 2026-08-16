@@ -9,7 +9,7 @@ interface ThresholdSettingsProps {
 }
 
 const FIELD_CLASSES =
-  'w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] font-mono text-[15px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+  'hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] font-mono text-[15px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
 
 /**
  * Form for configuring balance health thresholds.

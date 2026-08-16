@@ -85,6 +85,32 @@ html {
     }
   }
 
+  /*
+   * The design's list rows are 56px on a phone, which is taller than the same
+   * row needs to be under a mouse. Like `hit-target`, this applies only where
+   * the pointer is coarse, so desktop density is unaffected.
+   */
+  @media (pointer: coarse) {
+    .list-row {
+      min-height: 56px;
+    }
+  }
+
+  /*
+   * Full viewport height for the phone shell, whose header and tab bar are
+   * fixed and whose <main> is the only scroller.
+   *
+   * `vh` is wrong in mobile Safari: it measures against the viewport with the
+   * URL bar collapsed, so a `100vh` shell is taller than the visible area and
+   * the tab bar sits below the fold until you scroll. `dvh` tracks the bar as
+   * it collapses. The `vh` line is the fallback for browsers without `dvh`,
+   * and being first it loses the cascade wherever `dvh` is understood.
+   */
+  .app-shell {
+    height: 100vh;
+    height: 100dvh;
+  }
+
   /* Loading ring — sage track, transparent top, 500ms. */
   .spinner-sage {
     @apply h-8 w-8 rounded-full border-2 border-sage border-t-transparent;

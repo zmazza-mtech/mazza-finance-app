@@ -58,7 +58,7 @@ export function AddAccountForm() {
             onChange={(e) => setInstitution(e.target.value)}
             placeholder="e.g. Chase"
             required
-            className="block w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target block w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
         </div>
         <div>
@@ -75,7 +75,7 @@ export function AddAccountForm() {
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Checking ****1234"
             required
-            className="block w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target block w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
         </div>
       </div>
@@ -91,7 +91,7 @@ export function AddAccountForm() {
           id="add-type"
           value={type}
           onChange={(e) => setType(e.target.value as AccountType)}
-          className="block w-full max-w-xs rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+          className="hit-target block w-full max-w-xs rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
         >
           <option value="checking">Checking</option>
           <option value="savings">Savings</option>

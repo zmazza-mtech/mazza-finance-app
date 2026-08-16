@@ -108,6 +108,15 @@ const config: Config = {
       maxWidth: {
         shell: '1200px',
       },
+      // iOS reports the notch and home-indicator insets through env(). Every
+      // other platform resolves them to the 0px fallback, so these are safe to
+      // apply unconditionally. Compose them with the design's own padding via
+      // calc() at the call site — the inset is added on top of that padding,
+      // never a replacement for it.
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top, 0px)',
+        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
+      },
       letterSpacing: {
         label: '0.12em',
         'label-wide': '0.14em',

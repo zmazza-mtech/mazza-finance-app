@@ -158,7 +158,7 @@ export function EditSeriesModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={255}
-              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 
@@ -187,7 +187,7 @@ export function EditSeriesModal({
               id="series-frequency"
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as Frequency)}
-              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               {FREQUENCY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -209,7 +209,7 @@ export function EditSeriesModal({
               type="date"
               value={nextDate}
               onChange={(e) => setNextDate(e.target.value)}
-              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 
@@ -226,7 +226,7 @@ export function EditSeriesModal({
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 

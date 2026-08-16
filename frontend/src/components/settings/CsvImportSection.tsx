@@ -278,7 +278,7 @@ export function CsvImportSection() {
           accept=".csv"
           onChange={handleFileChange}
           aria-label="Select a CSV file to import"
-          className="mt-3 w-full text-sm text-stone file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-cream-mid file:bg-surface file:px-4 file:py-2 file:text-sm file:text-bark hover:file:border-sage-light"
+          className="hit-target mt-3 w-full text-sm text-stone file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-cream-mid file:bg-surface file:px-4 file:py-2 file:text-sm file:text-bark hover:file:border-sage-light"
         />
       </div>
 
@@ -313,7 +313,7 @@ export function CsvImportSection() {
               id="import-account"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="block w-full max-w-sm rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target block w-full max-w-sm rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               <option value="">Select an account…</option>
               {accounts.map((a) => (
@@ -379,7 +379,7 @@ export function CsvImportSection() {
           )}
           <button
             onClick={handleReset}
-            className="text-[13px] text-sage-dark underline decoration-sage-light underline-offset-2 hover:text-sage-deep"
+            className="hit-target text-[13px] text-sage-dark underline decoration-sage-light underline-offset-2 hover:text-sage-deep"
           >
             Import another file
           </button>

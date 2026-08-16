@@ -61,7 +61,10 @@ function CategoryCell({
   onCategoryChange: (id: string, category: Category | null) => void;
 }) {
   return (
-    <span className="relative inline-flex max-w-full items-center gap-1.5 rounded-full border border-cream-mid bg-surface px-2.5 py-1 text-xs text-charcoal transition-colors duration-150 hover:border-sage-light focus-within:border-sage focus-within:ring-2 focus-within:ring-sage">
+    // `hit-target` sits on the pill rather than the select: the select is
+    // `absolute inset-0`, so its touch area is whatever the pill measures.
+    // Sizing the select alone would leave it 24px tall.
+    <span className="hit-target relative inline-flex max-w-full items-center gap-1.5 rounded-full border border-cream-mid bg-surface px-2.5 py-1 text-xs text-charcoal transition-colors duration-150 hover:border-sage-light focus-within:border-sage focus-within:ring-2 focus-within:ring-sage">
       <span
         aria-hidden="true"
         className="h-1.5 w-1.5 shrink-0 rounded-full"
@@ -138,7 +141,7 @@ export function TransactionsTable({
                     <button
                       type="button"
                       onClick={() => onSort(col.key)}
-                      className={`inline-flex items-center gap-1 uppercase tracking-label-wide transition-colors duration-150 hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
+                      className={`hit-target inline-flex items-center gap-1 uppercase tracking-label-wide transition-colors duration-150 hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
                         col.alignRight ? 'flex-row-reverse' : ''
                       }`}
                     >

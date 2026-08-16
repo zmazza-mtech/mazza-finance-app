@@ -70,7 +70,7 @@ export function UncategorizedReview({
               value=""
               disabled={isAssigning}
               onChange={(e) => onAssign(group.description, e.target.value as Category)}
-              className="shrink-0 rounded-md border border-cream-mid bg-surface px-2.5 py-1.5 text-sm text-charcoal focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage disabled:opacity-50"
+              className="hit-target shrink-0 rounded-md border border-cream-mid bg-surface px-2.5 py-1.5 text-sm text-charcoal focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage disabled:opacity-50"
             >
               <option value="" disabled>
                 Choose a category
