@@ -20,8 +20,50 @@ export const NODE_WIDTH = 14;
 export const NODE_RADIUS = 3;
 export const SOURCE_X = 0;
 export const TARGET_X = 546;
-/** Bezier control points sit at the horizontal midpoint. */
-const CONTROL_X = 280;
+
+/**
+ * The canvas a layout is measured against.
+ *
+ * The diagram is drawn twice at very different widths, and the geometry is not
+ * a scale of itself: a phone gets a taller minimum row, because a 10px band
+ * cannot carry a label beside it at phone type sizes, and a wider gap to keep
+ * the ribbons apart in a 200-unit viewbox.
+ */
+export interface SankeyDimensions {
+  width: number;
+  height: number;
+  topInset: number;
+  nodeGap: number;
+  minRowHeight: number;
+  nodeWidth: number;
+  targetX: number;
+  /** Bezier control points, at the horizontal midpoint. */
+  controlX: number;
+}
+
+/** Desktop. These are the values the diagram has always used. */
+export const WIDE_SANKEY: SankeyDimensions = {
+  width: VIEWBOX_WIDTH,
+  height: VIEWBOX_HEIGHT,
+  topInset: TOP_INSET,
+  nodeGap: NODE_GAP,
+  minRowHeight: MIN_ROW_HEIGHT,
+  nodeWidth: NODE_WIDTH,
+  targetX: TARGET_X,
+  controlX: 280,
+};
+
+/** Phone: a tall, narrow column with the labels rendered beside it in HTML. */
+export const NARROW_SANKEY: SankeyDimensions = {
+  width: 200,
+  height: 480,
+  topInset: 8,
+  nodeGap: 14,
+  minRowHeight: 22,
+  nodeWidth: 10,
+  targetX: 190,
+  controlX: 100,
+};
 
 /**
  * The Kept band is sage, the one row that is not a spend category. It reads
@@ -29,6 +71,27 @@ const CONTROL_X = 280;
  */
 export const KEPT_COLOR = 'rgb(var(--c-sage))';
 export const KEPT_LABEL = 'Kept';
+
+/**
+ * The rolled-up tail. Neutral rather than a category hue, because it is not
+ * one category — reusing a hue would imply it was.
+ */
+export const OTHER_COLOR = 'rgb(var(--c-warm-gray))';
+export const OTHER_LABEL = 'Other';
+
+export interface SankeyOptions {
+  /** Defaults to `WIDE_SANKEY`, so existing call sites are unaffected. */
+  dimensions?: SankeyDimensions;
+  /**
+   * Keep only the largest N spend categories and sum the rest into one
+   * `Other` row. Omitted means every category is drawn.
+   *
+   * Kept is never counted or rolled up: it is not a spend category, and
+   * burying it would answer a different question than "where did the income
+   * go".
+   */
+  maxCategories?: number;
+}
 
 export interface SankeyRow {
   label: string;
@@ -80,7 +143,11 @@ const EMPTY: Omit<SankeyLayout, 'income' | 'expenses' | 'kept' | 'overspend'> = 
   isEmpty: true,
 };
 
-export function buildSankeyLayout(data: CategorySummaryResponse): SankeyLayout {
+export function buildSankeyLayout(
+  data: CategorySummaryResponse,
+  options: SankeyOptions = {},
+): SankeyLayout {
+  const dim = options.dimensions ?? WIDE_SANKEY;
   const income = sumAbs(data.income);
   const expenses = sumAbs(data.expenses);
   const kept = income.minus(expenses);
@@ -99,7 +166,7 @@ export function buildSankeyLayout(data: CategorySummaryResponse): SankeyLayout {
     return { ...EMPTY, ...totals };
   }
 
-  const spend = data.expenses
+  const ranked = data.expenses
     .map((item) => ({
       label: item.category,
       color: getCategoryColor(item.category as Category),
@@ -107,6 +174,8 @@ export function buildSankeyLayout(data: CategorySummaryResponse): SankeyLayout {
     }))
     .filter((row) => !row.value.isZero())
     .sort((a, b) => b.value.comparedTo(a.value));
+
+  const spend = rollUpTail(ranked, options.maxCategories);
 
   const values = kept.isPositive() && !kept.isZero()
     ? [...spend, { label: KEPT_LABEL, color: KEPT_COLOR, value: kept }]
@@ -123,20 +192,20 @@ export function buildSankeyLayout(data: CategorySummaryResponse): SankeyLayout {
   const denominator = values.reduce((total, row) => total.plus(row.value), new Decimal(0));
 
   const count = values.length;
-  const available = VIEWBOX_HEIGHT - TOP_INSET * 2 - NODE_GAP * (count - 1);
-  const flexible = Math.max(0, available - MIN_ROW_HEIGHT * count);
+  const available = dim.height - dim.topInset * 2 - dim.nodeGap * (count - 1);
+  const flexible = Math.max(0, available - dim.minRowHeight * count);
 
   // The bundle is centered against the target column, which is taller by the
   // gaps the source node does not have.
-  const sourceTop = TOP_INSET + (NODE_GAP * (count - 1)) / 2;
+  const sourceTop = dim.topInset + (dim.nodeGap * (count - 1)) / 2;
 
-  let targetY = TOP_INSET;
+  let targetY = dim.topInset;
   let sourceY = sourceTop;
   const rows: SankeyRow[] = [];
 
   for (const row of values) {
     const ratio = row.value.div(denominator).toNumber();
-    const height = MIN_ROW_HEIGHT + ratio * flexible;
+    const height = dim.minRowHeight + ratio * flexible;
 
     rows.push({
       label: row.label,
@@ -146,11 +215,11 @@ export function buildSankeyLayout(data: CategorySummaryResponse): SankeyLayout {
       height,
       sourceY,
       targetY,
-      path: ribbonPath(sourceY, sourceY + height, targetY, targetY + height),
-      centerPercent: ((targetY + height / 2) / VIEWBOX_HEIGHT) * 100,
+      path: ribbonPath(sourceY, sourceY + height, targetY, targetY + height, dim),
+      centerPercent: ((targetY + height / 2) / dim.height) * 100,
     });
 
-    targetY += height + NODE_GAP;
+    targetY += height + dim.nodeGap;
     sourceY += height;
   }
 
@@ -162,7 +231,7 @@ export function buildSankeyLayout(data: CategorySummaryResponse): SankeyLayout {
     source: {
       y: sourceTop,
       height: sourceHeight,
-      centerPercent: ((sourceTop + sourceHeight / 2) / VIEWBOX_HEIGHT) * 100,
+      centerPercent: ((sourceTop + sourceHeight / 2) / dim.height) * 100,
     },
     isEmpty: false,
   };
@@ -177,16 +246,39 @@ function ribbonPath(
   sourceBottom: number,
   targetTop: number,
   targetBottom: number,
+  dim: SankeyDimensions,
 ): string {
   const st = svgNumber(sourceTop);
   const sb = svgNumber(sourceBottom);
   const tt = svgNumber(targetTop);
   const tb = svgNumber(targetBottom);
+  const { nodeWidth: w, controlX: c, targetX: x } = dim;
 
   return (
-    `M${NODE_WIDTH} ${st} ` +
-    `C${CONTROL_X} ${st} ${CONTROL_X} ${tt} ${TARGET_X} ${tt} ` +
-    `L${TARGET_X} ${tb} ` +
-    `C${CONTROL_X} ${tb} ${CONTROL_X} ${sb} ${NODE_WIDTH} ${sb} Z`
+    `M${w} ${st} ` +
+    `C${c} ${st} ${c} ${tt} ${x} ${tt} ` +
+    `L${x} ${tb} ` +
+    `C${c} ${tb} ${c} ${sb} ${w} ${sb} Z`
   );
+}
+
+/**
+ * Collapses everything past the largest `max` rows into one `Other`.
+ *
+ * The tail is summed in decimal.js, not by adding the ratios back up: the
+ * rolled-up row states a real amount, and a diagram that quietly lost a cent
+ * would look exactly as convincing as one that did not.
+ */
+function rollUpTail<T extends { label: string; color: string; value: Decimal }>(
+  ranked: T[],
+  max: number | undefined,
+): { label: string; color: string; value: Decimal }[] {
+  if (max === undefined || ranked.length <= max) return ranked;
+
+  const kept = ranked.slice(0, max);
+  const tail = ranked
+    .slice(max)
+    .reduce((total, row) => total.plus(row.value), new Decimal(0));
+
+  return [...kept, { label: OTHER_LABEL, color: OTHER_COLOR, value: tail }];
 }
