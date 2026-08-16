@@ -40,10 +40,31 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
+  /*
+   * Two projects against the same stack.
+   *
+   * `mobile` runs a subset rather than a copy of the desktop suite. Below
+   * 640px the app renders a different shell — bottom tab bar, day detail as a
+   * sheet, cards instead of tables — and only the flows that shell actually
+   * changes are worth running twice. Re-running every desktop spec at a narrow
+   * viewport would double maintenance to re-assert behaviour that does not
+   * differ.
+   *
+   * The split is by filename so it stays obvious from the file tree which
+   * shell a spec is about, and so neither project can silently pick up the
+   * other's tests.
+   */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /\.mobile\.spec\.ts$/,
+    },
+    {
+      // 393x851 — within a pixel of the handoff's 393x852 reference.
+      name: 'mobile',
+      use: { ...devices['Pixel 5'] },
+      testMatch: /\.mobile\.spec\.ts$/,
     },
   ],
 });
