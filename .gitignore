@@ -40,6 +40,9 @@ Thumbs.db
 
 # Playwright MCP scratch output
 .playwright-mcp/
+# Screenshots dropped at the repo root while checking a layout in a browser.
+# Scoped to the root so real image assets under public/ still commit.
+/*.png
 
 # Playwright run output — traces and screenshots from failed E2E runs.
 # Unanchored: the runner writes these beside whichever directory it is invoked
