@@ -9,7 +9,7 @@ interface CategoryFilterPillsProps {
 }
 
 const ACTIVE = 'border-sage-light bg-sage-lighter text-sage-deep';
-const INACTIVE = 'border-cream-mid bg-white text-stone hover:border-sage-light';
+const INACTIVE = 'border-cream-mid bg-surface text-stone hover:border-sage-light';
 
 function pillLabel(value: Exclude<CategoryFilter, 'all'>): string {
   return value === 'uncategorized' ? 'Uncategorized' : value;

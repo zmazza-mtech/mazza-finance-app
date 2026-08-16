@@ -26,7 +26,7 @@ export function ReportsChartCard({ data }: ReportsChartCardProps) {
   const layout = useMemo(() => buildSankeyLayout(data), [data]);
 
   return (
-    <section className="rounded-lg border border-cream-mid bg-white p-[22px]">
+    <section className="rounded-lg border border-cream-mid bg-surface p-[22px]">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-xl text-bark-dark">Where the income went</h2>

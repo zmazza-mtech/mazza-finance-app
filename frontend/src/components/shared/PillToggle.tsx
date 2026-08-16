@@ -33,7 +33,7 @@ export function PillToggle({ checked, onChange, label, disabled }: PillTogglePro
       >
         <span
           data-knob
-          className={`absolute left-[3px] top-[3px] block h-[18px] w-[18px] rounded-full bg-white shadow-[0_1px_2px_rgba(93,64,55,.2)] transition-transform duration-150 ${
+          className={`absolute left-[3px] top-[3px] block h-[18px] w-[18px] rounded-full bg-surface shadow-[0_1px_2px_rgba(93,64,55,.2)] transition-transform duration-150 ${
             checked ? 'translate-x-[18px]' : 'translate-x-0'
           }`}
         />

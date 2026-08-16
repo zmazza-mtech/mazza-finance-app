@@ -70,8 +70,8 @@ export function BalanceAlertBanner({
 
   const isCritical = alertDay.health === 'critical';
   const bgClass = isCritical
-    ? 'border-[#E8D3CE] bg-[#F7EDEB] text-error-dark'
-    : 'border-[#EBD5BE] bg-[#FAF0E6] text-copper-dark';
+    ? 'border-danger-line bg-danger-bg text-error-dark'
+    : 'border-warning-line bg-warning-bg text-copper-dark';
 
   const label = isCritical ? 'Critical balance' : 'Low balance';
 

@@ -31,7 +31,7 @@ function monthState(days: ForecastDay[], todayDate: string): MonthState {
 
 function StatLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-1.5 font-mono text-[10px] uppercase tracking-label-wide text-stone">
+    <p className="mb-1.5 font-mono text-[10px] uppercase tracking-label-wide text-panel-ink-faint">
       {children}
     </p>
   );
@@ -80,17 +80,17 @@ export function ProjectionPanel({
     low !== null && new Decimal(low.balance).lessThanOrEqualTo(new Decimal(comfortFloor));
 
   return (
-    <section aria-label="Balance projection" className="mb-5 rounded-xl bg-espresso px-7 pb-5 pt-6">
+    <section aria-label="Balance projection" className="mb-5 rounded-xl bg-panel px-7 pb-5 pt-6">
       <div className="flex flex-wrap items-start justify-between gap-8">
         <div>
-          <p className="mb-1.5 font-mono text-[10px] uppercase tracking-label-wide text-sage-light">
+          <p className="mb-1.5 font-mono text-[10px] uppercase tracking-label-wide text-panel-positive">
             Projected balance · through {formatShortDate(lastDate)}
           </p>
-          <h2 className="font-display text-4xl leading-[1.05] tracking-[-0.02em] text-cream">
+          <h2 className="font-display text-4xl leading-[1.05] tracking-[-0.02em] text-panel-ink">
             {projected === null ? EM_DASH : formatCurrency(projected)}
           </h2>
           {low !== null && (
-            <p className="mt-1.5 text-[13px] text-copper-light">
+            <p className="mt-1.5 text-[13px] text-panel-warning">
               Low point {formatCurrency(low.balance)} on {formatShortDate(low.date)} —{' '}
               {belowFloor
                 ? `under your ${formatWholeCurrency(comfortFloor)} comfort floor`
@@ -102,29 +102,29 @@ export function ProjectionPanel({
         <div className="flex flex-wrap gap-7">
           <div>
             <StatLabel>Burn rate</StatLabel>
-            <p className="font-mono text-xl text-cream">
+            <p className="font-mono text-xl text-panel-ink">
               {rate === null ? (
                 EM_DASH
               ) : (
                 <>
                   {/* Whole dollars: an average to the cent is false precision. */}
                   {formatWholeCurrency(rate)}
-                  <span className="text-xs text-warm-gray">/day</span>
+                  <span className="text-xs text-panel-ink-muted">/day</span>
                 </>
               )}
             </p>
             {runwayDays !== null && (
-              <p className="mt-1 text-xs text-warm-gray">{runwayDays} days runway</p>
+              <p className="mt-1 text-xs text-panel-ink-muted">{runwayDays} days runway</p>
             )}
           </div>
 
           <div>
             <StatLabel>{state === 'current' ? 'Spent MTD' : 'Spent'}</StatLabel>
-            <p className="font-mono text-xl text-cream">{formatCurrency(spent)}</p>
+            <p className="font-mono text-xl text-panel-ink">{formatCurrency(spent)}</p>
             {comparison !== null && comparison.direction !== 'even' && (
               <p
                 className={`mt-1 text-xs ${
-                  comparison.direction === 'above' ? 'text-copper-light' : 'text-sage-light'
+                  comparison.direction === 'above' ? 'text-panel-warning' : 'text-panel-positive'
                 }`}
               >
                 {comparison.direction === 'above' ? '▲' : '▼'} {comparison.percent}% vs. average
@@ -134,9 +134,9 @@ export function ProjectionPanel({
 
           <div>
             <StatLabel>Biggest mover</StatLabel>
-            <p className="font-mono text-xl text-cream">{mover?.category ?? EM_DASH}</p>
+            <p className="font-mono text-xl text-panel-ink">{mover?.category ?? EM_DASH}</p>
             {mover !== null && (
-              <p className="mt-1 text-xs text-warm-gray">
+              <p className="mt-1 text-xs text-panel-ink-muted">
                 {moverRose ? '+' : '−'}${formatAmount(mover.change)} vs.{' '}
                 {formatMonthTitle(mover.previousMonth)}
               </p>
@@ -152,7 +152,7 @@ export function ProjectionPanel({
         }`}
       />
 
-      <div className="flex justify-between font-mono text-[10px] uppercase tracking-label text-stone">
+      <div className="flex justify-between font-mono text-[10px] uppercase tracking-label text-panel-ink-faint">
         <span>{formatAxisDate(firstDate)}</span>
         <span>{state === 'current' ? `Today · ${formatAxisDate(todayDate)}` : ''}</span>
         <span>{formatAxisDate(lastDate)} · Solid = settled, dashed = forecast</span>

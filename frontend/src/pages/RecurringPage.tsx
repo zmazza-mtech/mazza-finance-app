@@ -126,7 +126,7 @@ export function RecurringPage() {
             type="button"
             onClick={handleScan}
             disabled={detectMutation.isPending}
-            className="hit-target flex items-center gap-2 rounded-full border border-cream-mid bg-white px-[18px] py-[11px] text-sm text-bark transition-colors duration-150 hover:border-sage-light disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target flex items-center gap-2 rounded-full border border-cream-mid bg-surface px-[18px] py-[11px] text-sm text-bark transition-colors duration-150 hover:border-sage-light disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             {detectMutation.isPending ? (
               <span
@@ -145,7 +145,7 @@ export function RecurringPage() {
               setEditTarget(null);
               setIsCreatingNew(true);
             }}
-            className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             Add manually
           </button>

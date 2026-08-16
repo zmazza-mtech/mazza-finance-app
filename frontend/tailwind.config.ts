@@ -1,12 +1,58 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
+import { PALETTE } from './src/lib/palette';
+import {
+  CATEGORY_HUES,
+  UNCATEGORIZED_HUES,
+  UNCATEGORIZED_VAR,
+  categoryVarName,
+} from './src/lib/categoryPalette';
 
 /**
  * Momoski Tech design system tokens.
  *
- * Dark mode is retained as a class strategy but has no counterpart palette
- * yet — restyled components carry no `dark:` variants, so dark currently
- * renders identically to light. See issue #23.
+ * Every color resolves through a CSS custom property rather than a literal, so
+ * light and dark are one data change in `src/lib/palette.ts` instead of a
+ * `dark:` variant on every element. `.dark` on <html> reassigns the variables
+ * and the whole tree follows.
+ *
+ * Variables hold space-separated RGB channels, not hex, so Tailwind's alpha
+ * shorthand still works: `bg-scrim/50` compiles to `rgb(var(--c-scrim) / 0.5)`.
  */
+
+/** `#5D4037` -> `93 64 55`. */
+function channels(hex: string): string {
+  const value = hex.replace('#', '');
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `${r} ${g} ${b}`;
+}
+
+type Vars = Record<string, string>;
+
+function buildVars(mode: 'light' | 'dark'): Vars {
+  const vars: Vars = {};
+
+  for (const [name, pair] of Object.entries(PALETTE)) {
+    vars[`--c-${name}`] = channels(pair[mode]);
+  }
+
+  // Category hues are consumed as inline `fill`/`background-color`, so they
+  // stay whole colors rather than channels.
+  for (const [category, hues] of Object.entries(CATEGORY_HUES)) {
+    vars[categoryVarName(category)] = hues[mode];
+  }
+  vars[UNCATEGORIZED_VAR] = UNCATEGORIZED_HUES[mode];
+
+  return vars;
+}
+
+/** `cream` -> `rgb(var(--c-cream) / <alpha-value>)` for every token. */
+const colors = Object.fromEntries(
+  Object.keys(PALETTE).map((name) => [name, `rgb(var(--c-${name}) / <alpha-value>)`]),
+);
+
 const config: Config = {
   darkMode: 'class',
   content: [
@@ -15,46 +61,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
-        sage: {
-          DEFAULT: '#7B9E7B',
-          light: '#A3BFA3',
-          lighter: '#D4E4D4',
-          dark: '#5A7A5A',
-          deep: '#3D5C3D',
-        },
-        bark: {
-          DEFAULT: '#5D4037',
-          light: '#7B5B4F',
-          lighter: '#A68B7B',
-          dark: '#3E2723',
-        },
-        cream: {
-          DEFAULT: '#FAF7F2',
-          mid: '#F0EBE3',
-        },
-        copper: {
-          DEFAULT: '#C17D4A',
-          light: '#D9A373',
-          dark: '#9B5F30',
-        },
-        'warm-gray': '#B5AEA4',
-        stone: '#8A8279',
-        charcoal: '#3A3530',
-        espresso: '#2A2420',
-        error: '#C1574A',
-        // Body-text weight: `error` clears 3:1 on cream but only 3.86:1 on the
-        // critical alert tint, short of the 4.5:1 text minimum.
-        'error-dark': '#A8483D',
-        'border-mid': '#E3DDD2',
-
-        // Balance health — contrast on cream is at least 4.5:1 for all three.
-        // Paired with a text label so color is never the sole signal.
-        balance: {
-          good: '#3D5C3D',
-          warning: '#C17D4A',
-          critical: '#C1574A',
-        },
+      colors,
+      // Tailwind's ring offset defaults to white, which reads as a halo on a
+      // dark card. Every offset ring in the app sits on a card.
+      ringOffsetColor: {
+        DEFAULT: 'rgb(var(--c-surface))',
       },
       fontFamily: {
         display: ['"Bricolage Grotesque"', 'Georgia', 'serif'],
@@ -103,7 +114,14 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addBase }) => {
+      addBase({
+        ':root': buildVars('light'),
+        '.dark': buildVars('dark'),
+      });
+    }),
+  ],
 };
 
 export default config;

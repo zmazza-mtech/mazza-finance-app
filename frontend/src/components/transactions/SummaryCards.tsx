@@ -23,7 +23,7 @@ function Card({
   valueClass: string;
 }) {
   return (
-    <div className="flex-1 rounded-lg border border-cream-mid bg-white p-[18px]">
+    <div className="flex-1 rounded-lg border border-cream-mid bg-surface p-[18px]">
       <p className="font-mono text-[10px] uppercase tracking-label-wide text-warm-gray">
         {label}
       </p>

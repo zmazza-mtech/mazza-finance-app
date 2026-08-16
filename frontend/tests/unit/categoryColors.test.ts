@@ -1,29 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { CATEGORIES } from '@/lib/categories';
 import { CATEGORY_COLORS, UNCATEGORIZED_COLOR, getCategoryColor } from '@/lib/categoryColors';
+import { CATEGORY_HUES, categoryVarName } from '@/lib/categoryPalette';
+
+/**
+ * The hues themselves, and their contrast in both modes, are covered by
+ * `palette.test.ts`. What matters here is the indirection: every category
+ * resolves to a custom property, so a dot or a Sankey ribbon picks up the dark
+ * counterpart without the component knowing which mode it is in.
+ */
+const PALETTE_EXTENSIONS = ['Loan Payments', 'Taxes', 'Fitness'] as const;
 
 /** Relative luminance per WCAG 2.1, from a #rrggbb string. */
 function luminance(hex: string): number {
   const channels = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
   const linear = channels.map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  return 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
 }
 
 /** Contrast ratio of a color against pure white. */
 function contrastOnWhite(hex: string): number {
   return 1.05 / (luminance(hex) + 0.05);
 }
-
-/**
- * Categories added after the design handoff was authored, coloured by
- * extending the Momoski palette. Unlike the handoff's own tints these are
- * held to 3:1 on white, since nothing about them is the designer's choice.
- */
-const PALETTE_EXTENSIONS = {
-  'Loan Payments': '#8A5570',
-  Taxes: '#9C7C36',
-  Fitness: '#4E7F7A',
-} as const;
 
 describe('CATEGORY_COLORS', () => {
   it('covers every canonical category', () => {
@@ -36,9 +34,17 @@ describe('CATEGORY_COLORS', () => {
     expect(Object.keys(CATEGORY_COLORS).sort()).toEqual([...CATEGORIES].sort());
   });
 
-  it('uses #rrggbb notation throughout, as SVG fills require', () => {
-    for (const [category, hex] of Object.entries(CATEGORY_COLORS)) {
-      expect(hex, `${category} is not a #rrggbb hex`).toMatch(/^#[0-9A-Fa-f]{6}$/);
+  it('resolves every category through a custom property', () => {
+    for (const [category, value] of Object.entries(CATEGORY_COLORS)) {
+      expect(value, `${category} is not a var() reference`).toBe(
+        `var(${categoryVarName(category)})`,
+      );
+    }
+  });
+
+  it('backs every reference with a hue in both modes', () => {
+    for (const category of CATEGORIES) {
+      expect(CATEGORY_HUES[category as keyof typeof CATEGORY_HUES], category).toBeDefined();
     }
   });
 
@@ -49,8 +55,8 @@ describe('CATEGORY_COLORS', () => {
    */
   it('shares a color only between Subscriptions and Other', () => {
     const byColor = new Map<string, string[]>();
-    for (const [category, hex] of Object.entries(CATEGORY_COLORS)) {
-      const key = hex.toUpperCase();
+    for (const [category, hues] of Object.entries(CATEGORY_HUES)) {
+      const key = hues.light.toUpperCase();
       byColor.set(key, [...(byColor.get(key) ?? []), category]);
     }
     const collisions = [...byColor.values()]
@@ -60,10 +66,14 @@ describe('CATEGORY_COLORS', () => {
     expect(collisions).toEqual([['Other', 'Subscriptions']]);
   });
 
-  it('holds the palette extensions to 3:1 against white', () => {
-    for (const [category, hex] of Object.entries(PALETTE_EXTENSIONS)) {
-      expect(CATEGORY_COLORS[category as keyof typeof PALETTE_EXTENSIONS]).toBe(hex);
-      expect(contrastOnWhite(hex), `${category} (${hex}) is too pale on white`).toBeGreaterThanOrEqual(3);
+  it('gives the post-handoff categories a hue of their own', () => {
+    // Loan Payments, Taxes and Fitness were added after the handoff and had no
+    // assigned color. Nothing about them is the designer's choice, so they are
+    // held to 3:1 on white — see palette.test.ts for the dark counterparts.
+    for (const category of PALETTE_EXTENSIONS) {
+      const hue = CATEGORY_HUES[category];
+      expect(hue, category).toBeDefined();
+      expect(contrastOnWhite(hue.light), `${category} is too pale on white`).toBeGreaterThanOrEqual(3);
     }
   });
 });

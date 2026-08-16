@@ -57,7 +57,7 @@ export function RecurringInstanceMenu({
             ref={menuRef}
             role="menu"
             aria-label="Edit recurring transaction"
-            className="absolute z-50 min-w-[240px] rounded-md border border-cream-mid bg-white py-1 shadow-lg"
+            className="absolute z-50 min-w-[240px] rounded-md border border-cream-mid bg-surface py-1 shadow-lg"
           >
             <button
               ref={firstButtonRef}

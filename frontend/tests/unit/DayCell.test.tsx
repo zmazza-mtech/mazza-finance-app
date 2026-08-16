@@ -232,7 +232,7 @@ describe('DayCell — spend bar', () => {
         transactions={[makeTransaction({ amount: '-60.00' })]}
       />,
     );
-    expect(findBar(container)?.style.backgroundColor).toBe('rgb(193, 87, 74)');
+    expect(findBar(container)?.style.backgroundColor).toBe('rgb(var(--c-error))');
   });
 
   it('colors a light day with the sage token', () => {
@@ -243,7 +243,7 @@ describe('DayCell — spend bar', () => {
         transactions={[makeTransaction({ amount: '-10.00' })]}
       />,
     );
-    expect(findBar(container)?.style.backgroundColor).toBe('rgb(163, 191, 163)');
+    expect(findBar(container)?.style.backgroundColor).toBe('rgb(var(--c-sage-light))');
   });
 
   it('draws no bar when the month has no spend at all', () => {

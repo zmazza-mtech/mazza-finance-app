@@ -64,7 +64,7 @@ export function AppLayout() {
         Skip to main content
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-cream-mid bg-[rgba(250,247,242,0.92)] backdrop-blur-[12px]">
+      <header className="sticky top-0 z-30 border-b border-cream-mid bg-cream/90 backdrop-blur-[12px]">
         <div className="mx-auto flex min-h-[64px] max-w-shell flex-wrap items-center gap-x-5 gap-y-3 px-6 py-2.5">
           <span className="shrink-0 font-display text-[19px] font-bold tracking-[-0.02em] text-bark-dark">
             Mazza Finance
@@ -101,7 +101,7 @@ export function AppLayout() {
                 aria-label="Select account"
                 value={selectedAccountId}
                 onChange={(e) => setSelectedAccountId(e.target.value)}
-                className="hit-target min-w-0 max-w-[240px] truncate rounded-full border border-cream-mid bg-white px-[14px] py-[7px] text-[13px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                className="hit-target min-w-0 max-w-[240px] truncate rounded-full border border-cream-mid bg-surface px-[14px] py-[7px] text-[13px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
               >
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>

@@ -75,7 +75,7 @@ export function DayPanel({
   return (
     <aside
       aria-label={`Detail for ${formatFullDate(date)}`}
-      className="sticky top-[88px] w-full rounded-lg border border-cream-mid bg-white p-5"
+      className="sticky top-[88px] w-full rounded-lg border border-cream-mid bg-surface p-5"
     >
       <p className="font-mono text-[10px] uppercase tracking-label-wide text-warm-gray">
         {kindLabel(date, todayDate)}
@@ -138,7 +138,7 @@ export function DayPanel({
       <button
         type="button"
         onClick={() => onAddTransaction(date)}
-        className="hit-target mt-5 w-full rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+        className="hit-target mt-5 w-full rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
       >
         Add transaction
       </button>

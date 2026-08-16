@@ -33,7 +33,7 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
 
   if (active.length === 0) {
     return (
-      <div className="rounded-lg border border-cream-mid bg-white px-[18px] py-12 text-center">
+      <div className="rounded-lg border border-cream-mid bg-surface px-[18px] py-12 text-center">
         <p className="text-sm text-stone">No recurring transactions yet.</p>
         <p className="mt-1 text-sm text-warm-gray">
           Sync your accounts or add one manually to get started.
@@ -49,7 +49,7 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
   return (
     <>
       {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-lg border border-cream-mid bg-white md:block">
+      <div className="hidden overflow-hidden rounded-lg border border-cream-mid bg-surface md:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] table-fixed">
             <colgroup>
@@ -126,7 +126,7 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
           return (
             <li
               key={item.id}
-              className="rounded-lg border border-cream-mid bg-white p-4"
+              className="rounded-lg border border-cream-mid bg-surface p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -228,7 +228,7 @@ function RowActions({
   alignRight?: boolean;
 }) {
   const ghost =
-    'hit-target rounded-full border border-cream-mid bg-white px-3 py-1 text-xs text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+    'hit-target rounded-full border border-cream-mid bg-surface px-3 py-1 text-xs text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
 
   return (
     <div className={`flex flex-wrap gap-2 ${alignRight ? 'justify-end' : ''}`}>
@@ -252,7 +252,7 @@ function RowActions({
         type="button"
         aria-label={`Delete ${item.name}`}
         onClick={onDelete}
-        className="hit-target rounded-full border border-[#E8D3CE] bg-white px-3 py-1 text-xs text-error transition-colors duration-150 hover:bg-[#F7EDEB] focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+        className="hit-target rounded-full border border-danger-line bg-surface px-3 py-1 text-xs text-error transition-colors duration-150 hover:bg-danger-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
       >
         Delete
       </button>

@@ -23,8 +23,11 @@ export const TARGET_X = 546;
 /** Bezier control points sit at the horizontal midpoint. */
 const CONTROL_X = 280;
 
-/** The Kept band is sage, the one row that is not a spend category. */
-export const KEPT_COLOR = '#7B9E7B';
+/**
+ * The Kept band is sage, the one row that is not a spend category. It reads
+ * through the token so it follows the theme, like the category hues do.
+ */
+export const KEPT_COLOR = 'rgb(var(--c-sage))';
 export const KEPT_LABEL = 'Kept';
 
 export interface SankeyRow {

@@ -160,7 +160,7 @@ export function CalendarTimeline({
               }}
               placeholder="Search ( / )"
               aria-label="Search transactions"
-              className="hit-target w-40 rounded-full border border-cream-mid bg-white py-[7px] pl-3.5 pr-7 text-[13px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target w-40 rounded-full border border-cream-mid bg-surface py-[7px] pl-3.5 pr-7 text-[13px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
             {searchQuery && (
               <button
@@ -181,7 +181,7 @@ export function CalendarTimeline({
             type="button"
             onClick={onPrevMonth}
             aria-label="Previous month"
-            className="hit-target flex h-9 w-9 items-center justify-center rounded-full border border-cream-mid bg-white text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target flex h-9 w-9 items-center justify-center rounded-full border border-cream-mid bg-surface text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             <Icon name="chevron-left" />
           </button>
@@ -190,7 +190,7 @@ export function CalendarTimeline({
             <button
               type="button"
               onClick={onToday}
-              className="hit-target rounded-full border border-cream-mid bg-white px-4 py-2 text-[13px] font-semibold text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target rounded-full border border-cream-mid bg-surface px-4 py-2 text-[13px] font-semibold text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               Today
             </button>
@@ -200,7 +200,7 @@ export function CalendarTimeline({
             type="button"
             onClick={onNextMonth}
             aria-label="Next month"
-            className="hit-target flex h-9 w-9 items-center justify-center rounded-full border border-cream-mid bg-white text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target flex h-9 w-9 items-center justify-center rounded-full border border-cream-mid bg-surface text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             <Icon name="chevron-right" />
           </button>

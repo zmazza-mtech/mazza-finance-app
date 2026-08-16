@@ -123,14 +123,14 @@ function AccountRow({ account, onToggleInclude }: AccountRowProps) {
             type="button"
             onClick={handleSave}
             disabled={updateAccount.isPending}
-            className="hit-target rounded-full bg-sage-dark px-3.5 py-1.5 text-[13px] font-semibold text-white transition-colors duration-150 hover:bg-sage-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:opacity-50"
+            className="hit-target rounded-full bg-sage-dark px-3.5 py-1.5 text-[13px] font-semibold text-cream transition-colors duration-150 hover:bg-sage-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:opacity-50"
           >
             {updateAccount.isPending ? 'Saving…' : 'Save'}
           </button>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="hit-target rounded-full border border-cream-mid bg-white px-3.5 py-1.5 text-[13px] text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target rounded-full border border-cream-mid bg-surface px-3.5 py-1.5 text-[13px] text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             Cancel
           </button>

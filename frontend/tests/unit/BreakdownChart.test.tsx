@@ -41,7 +41,7 @@ describe('BreakdownChart', () => {
     const segments = bar?.children;
 
     expect(segments).toHaveLength(3);
-    expect(segments?.[0]).toHaveStyle({ backgroundColor: '#5D4037' });
+    expect(segments?.[0]).toHaveStyle({ backgroundColor: 'var(--cat-housing)' });
     expect(segments?.[0]).toHaveStyle({ flexGrow: '60' });
   });
 

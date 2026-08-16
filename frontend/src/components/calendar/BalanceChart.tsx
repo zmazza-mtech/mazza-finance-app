@@ -29,7 +29,7 @@ export function BalanceChart({ geometry, label }: BalanceChartProps) {
       aria-label={label}
     >
       {bandHeight !== null && bandHeight > 0 && (
-        <rect x="0" y={bandY ?? 0} width={CHART_WIDTH} height={bandHeight} fill="#C17D4A" opacity="0.10" />
+        <rect x="0" y={bandY ?? 0} width={CHART_WIDTH} height={bandHeight} fill="rgb(var(--c-panel-warning))" opacity="0.10" />
       )}
 
       {floorY !== null && (
@@ -38,20 +38,20 @@ export function BalanceChart({ geometry, label }: BalanceChartProps) {
           y1={floorY}
           x2={CHART_WIDTH}
           y2={floorY}
-          stroke="#C1574A"
+          stroke="rgb(var(--c-balance-critical))"
           strokeWidth="1"
           strokeDasharray="4 5"
           opacity="0.8"
         />
       )}
 
-      <path d={areaPath} fill="#7B9E7B" opacity="0.18" />
+      <path d={areaPath} fill="rgb(var(--c-sage))" opacity="0.18" />
 
       {settledPath !== '' && (
         <path
           d={settledPath}
           fill="none"
-          stroke="#A3BFA3"
+          stroke="rgb(var(--c-panel-positive))"
           strokeWidth="2.5"
           strokeLinejoin="round"
         />
@@ -61,7 +61,7 @@ export function BalanceChart({ geometry, label }: BalanceChartProps) {
         <path
           d={forecastPath}
           fill="none"
-          stroke="#A3BFA3"
+          stroke="rgb(var(--c-panel-positive))"
           strokeWidth="2.5"
           strokeDasharray="6 5"
           strokeLinejoin="round"
@@ -75,13 +75,13 @@ export function BalanceChart({ geometry, label }: BalanceChartProps) {
           y1="0"
           x2={todayX}
           y2={CHART_HEIGHT}
-          stroke="#FAF7F2"
+          stroke="rgb(var(--c-panel-ink))"
           strokeWidth="1"
           opacity="0.35"
         />
       )}
 
-      {lowPoint && <circle cx={lowPoint.x} cy={lowPoint.y} r="4.5" fill="#C17D4A" />}
+      {lowPoint && <circle cx={lowPoint.x} cy={lowPoint.y} r="4.5" fill="rgb(var(--c-panel-warning))" />}
     </svg>
   );
 }

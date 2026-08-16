@@ -8,10 +8,11 @@ import type { ForecastDay, ForecastTransaction } from '@/api/types';
 
 const MAX_VISIBLE = 3;
 
+// Read through the tokens so the bars follow the theme.
 const SPEND_BAR_COLORS = {
-  heavy: '#C1574A',
-  moderate: '#C17D4A',
-  light: '#A3BFA3',
+  heavy: 'rgb(var(--c-error))',
+  moderate: 'rgb(var(--c-copper))',
+  light: 'rgb(var(--c-sage-light))',
 } as const;
 
 interface DayCellProps {
@@ -104,8 +105,8 @@ export function DayCell({
       className={[
         'flex min-h-[126px] cursor-pointer flex-col border-b border-r border-cream-mid',
         'px-2.5 pt-[9px] transition-colors duration-150 ease-out focus:outline-none',
-        isSelected ? 'bg-cream shadow-[inset_0_0_0_2px_#7B9E7B]' : 'hover:bg-cream',
-        isFocused && !isSelected ? 'shadow-[inset_0_0_0_1px_#A3BFA3]' : '',
+        isSelected ? 'bg-cream shadow-[inset_0_0_0_2px_rgb(var(--c-sage))]' : 'hover:bg-cream',
+        isFocused && !isSelected ? 'shadow-[inset_0_0_0_1px_rgb(var(--c-sage-light))]' : '',
         isSearchActive && !hasSearchMatch ? 'opacity-40' : '',
       ].join(' ')}
     >

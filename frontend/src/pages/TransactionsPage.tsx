@@ -173,7 +173,7 @@ export function TransactionsPage() {
           placeholder="Search descriptions"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="ml-auto w-[220px] rounded-full border border-cream-mid bg-white px-3.5 py-[9px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:border-sage focus-visible:ring-2 focus-visible:ring-sage"
+          className="ml-auto w-[220px] rounded-full border border-cream-mid bg-surface px-3.5 py-[9px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:border-sage focus-visible:ring-2 focus-visible:ring-sage"
         />
       </div>
 

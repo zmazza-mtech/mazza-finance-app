@@ -61,10 +61,10 @@ export function MonthCalendarGrid({
   const totalCells = startPadding + daysInMonth;
   const trailingPadding = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
 
-  const fillerClass = 'border-b border-r border-cream-mid bg-[#FDFCFA] min-h-[126px]';
+  const fillerClass = 'border-b border-r border-cream-mid bg-surface-muted min-h-[126px]';
 
   return (
-    <div className="overflow-hidden rounded-lg border border-cream-mid bg-white">
+    <div className="overflow-hidden rounded-lg border border-cream-mid bg-surface">
       <div className="grid grid-cols-7 border-b border-cream-mid bg-cream">
         {WEEKDAYS.map((day) => (
           <div

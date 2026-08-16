@@ -278,7 +278,7 @@ export function CsvImportSection() {
           accept=".csv"
           onChange={handleFileChange}
           aria-label="Select a CSV file to import"
-          className="mt-3 w-full text-sm text-stone file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-cream-mid file:bg-white file:px-4 file:py-2 file:text-sm file:text-bark hover:file:border-sage-light"
+          className="mt-3 w-full text-sm text-stone file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-cream-mid file:bg-surface file:px-4 file:py-2 file:text-sm file:text-bark hover:file:border-sage-light"
         />
       </div>
 
@@ -328,13 +328,13 @@ export function CsvImportSection() {
             <button
               onClick={handleImport}
               disabled={!accountId || importMutation.isPending}
-              className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {importMutation.isPending ? 'Importing…' : 'Import'}
             </button>
             <button
               onClick={handleReset}
-              className="hit-target rounded-full border border-cream-mid bg-white px-[18px] py-[11px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target rounded-full border border-cream-mid bg-surface px-[18px] py-[11px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               Cancel
             </button>

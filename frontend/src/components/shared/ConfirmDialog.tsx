@@ -58,12 +58,12 @@ export function ConfirmDialog({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-espresso/40"
+        className="absolute inset-0 bg-scrim/50"
         onClick={onCancel}
         aria-hidden="true"
       />
       {/* Panel */}
-      <div className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-white p-6 shadow-xl">
+      <div className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-surface p-6 shadow-xl">
         <h2 id="confirm-dialog-title" className="font-display text-xl text-bark-dark">
           {title}
         </h2>
@@ -74,13 +74,13 @@ export function ConfirmDialog({
           <button
             ref={cancelRef}
             onClick={onCancel}
-            className="hit-target rounded-full border border-cream-mid bg-white px-[18px] py-[9px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target rounded-full border border-cream-mid bg-surface px-[18px] py-[9px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className={`hit-target rounded-full px-[18px] py-[9px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
+            className={`hit-target rounded-full px-[18px] py-[9px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
               destructive ? 'bg-error hover:bg-error-dark' : 'bg-sage-dark hover:bg-sage-deep'
             }`}
           >

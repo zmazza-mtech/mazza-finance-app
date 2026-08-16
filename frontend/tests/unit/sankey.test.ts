@@ -5,6 +5,7 @@ import {
   TOP_INSET,
   NODE_GAP,
   MIN_ROW_HEIGHT,
+  KEPT_COLOR,
 } from '@/lib/sankey';
 import type { CategorySummaryResponse } from '@/api/types';
 
@@ -70,12 +71,12 @@ describe('buildSankeyLayout — rows', () => {
     const layout = buildSankeyLayout(BALANCED);
     const kept = layout.rows[layout.rows.length - 1];
     expect(kept.label).toBe('Kept');
-    expect(kept.color).toBe('#7B9E7B');
+    expect(kept.color).toBe(KEPT_COLOR);
   });
 
   it('carries the category color for each expense row', () => {
     const layout = buildSankeyLayout(BALANCED);
-    expect(layout.rows[0].color).toBe('#5D4037'); // Housing
+    expect(layout.rows[0].color).toBe('var(--cat-housing)'); // Housing
   });
 
   it('drops categories with no amount', () => {

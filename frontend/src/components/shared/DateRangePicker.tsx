@@ -63,7 +63,7 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <div className="inline-flex items-center gap-2 rounded-full border border-cream-mid bg-white px-3.5 py-[7px]">
+      <div className="inline-flex items-center gap-2 rounded-full border border-cream-mid bg-surface px-3.5 py-[7px]">
         <label className="inline-flex items-center gap-1.5">
           <span className="font-mono text-[10px] uppercase tracking-label text-warm-gray">
             From
@@ -101,7 +101,7 @@ export function DateRangePicker({
               onStartDateChange(s);
               onEndDateChange(e);
             }}
-            className="hit-target rounded-full border border-cream-mid bg-white px-3 py-[7px] text-xs text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target rounded-full border border-cream-mid bg-surface px-3 py-[7px] text-xs text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             {preset.label}
           </button>

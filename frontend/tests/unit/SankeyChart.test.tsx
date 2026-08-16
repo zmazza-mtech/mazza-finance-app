@@ -56,7 +56,7 @@ describe('SankeyChart — flow', () => {
   it('fills each ribbon with its category color, translucent', () => {
     const { container } = renderChart(BALANCED);
     const first = container.querySelector('path');
-    expect(first).toHaveAttribute('fill', '#5D4037');
+    expect(first).toHaveAttribute('fill', 'var(--cat-housing)');
     expect(first).toHaveAttribute('fill-opacity', '0.32');
   });
 

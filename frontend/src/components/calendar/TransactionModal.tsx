@@ -101,7 +101,7 @@ export function TransactionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-bark-dark/40"
+        className="absolute inset-0 bg-scrim/50"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -110,7 +110,7 @@ export function TransactionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="transaction-modal-title"
-        className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-white p-6 shadow-xl"
+        className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-surface p-6 shadow-xl"
       >
         <h2
           id="transaction-modal-title"
@@ -165,14 +165,14 @@ export function TransactionModal({
             <button
               type="button"
               onClick={onClose}
-              className="hit-target rounded-full border border-cream-mid bg-white px-4 py-2 text-sm text-stone transition-colors duration-150 hover:bg-cream-mid focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              className="hit-target rounded-full border border-cream-mid bg-surface px-4 py-2 text-sm text-stone transition-colors duration-150 hover:bg-cream-mid focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!description.trim() || !isAmountValid()}
-              className="hit-target rounded-full bg-copper px-4 py-2 text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+              className="hit-target rounded-full bg-copper px-4 py-2 text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               Add transaction
             </button>

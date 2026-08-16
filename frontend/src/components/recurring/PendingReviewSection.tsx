@@ -28,13 +28,13 @@ export function PendingReviewSection({
   return (
     <section
       aria-label="Pending review"
-      className="mb-6 rounded-lg border border-border-mid bg-white p-5"
+      className="mb-6 rounded-lg border border-border-mid bg-surface p-5"
     >
       <div className="mb-2 flex items-center gap-2.5">
         <h2 className="font-display text-xl text-bark-dark">Needs your review</h2>
         <span
           aria-label={`${items.length} items pending review`}
-          className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-copper px-1.5 font-mono text-xs text-white"
+          className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-copper px-1.5 font-mono text-xs text-cream"
         >
           {items.length}
         </span>
@@ -67,7 +67,7 @@ export function PendingReviewSection({
                   type="button"
                   aria-label={`Edit ${item.name}`}
                   onClick={() => onEdit(item)}
-                  className="hit-target rounded-full border border-cream-mid bg-white px-3.5 py-1.5 text-[13px] text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                  className="hit-target rounded-full border border-cream-mid bg-surface px-3.5 py-1.5 text-[13px] text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
                 >
                   Edit
                 </button>
@@ -75,7 +75,7 @@ export function PendingReviewSection({
                   type="button"
                   aria-label={`Dismiss ${item.name}`}
                   onClick={() => setDismissTarget(item.id)}
-                  className="hit-target rounded-full border border-cream-mid bg-white px-3.5 py-1.5 text-[13px] text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                  className="hit-target rounded-full border border-cream-mid bg-surface px-3.5 py-1.5 text-[13px] text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
                 >
                   Dismiss
                 </button>
@@ -83,7 +83,7 @@ export function PendingReviewSection({
                   type="button"
                   aria-label={`Confirm ${item.name}`}
                   onClick={() => onConfirm(item.id)}
-                  className="hit-target rounded-full bg-sage-dark px-3.5 py-1.5 text-[13px] font-semibold text-white transition-colors duration-150 hover:bg-sage-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                  className="hit-target rounded-full bg-sage-dark px-3.5 py-1.5 text-[13px] font-semibold text-cream transition-colors duration-150 hover:bg-sage-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
                 >
                   Confirm
                 </button>

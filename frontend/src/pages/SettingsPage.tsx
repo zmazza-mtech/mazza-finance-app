@@ -100,7 +100,7 @@ function SettingsCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="rounded-lg border border-cream-mid bg-white p-[22px]"
+      className="rounded-lg border border-cream-mid bg-surface p-[22px]"
     >
       <h2 id={headingId} className="mb-3 font-display text-xl text-bark-dark">
         {title}

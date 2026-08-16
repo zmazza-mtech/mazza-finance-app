@@ -23,7 +23,7 @@ export function CategorySummaryTable({ title, items }: CategorySummaryTableProps
   );
 
   return (
-    <section className="rounded-lg border border-cream-mid bg-white p-[22px]">
+    <section className="rounded-lg border border-cream-mid bg-surface p-[22px]">
       <h3 className="mb-3 font-display text-xl text-bark-dark">{title}</h3>
 
       <table className="w-full table-fixed">

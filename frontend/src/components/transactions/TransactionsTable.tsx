@@ -61,7 +61,7 @@ function CategoryCell({
   onCategoryChange: (id: string, category: Category | null) => void;
 }) {
   return (
-    <span className="relative inline-flex max-w-full items-center gap-1.5 rounded-full border border-cream-mid bg-white px-2.5 py-1 text-xs text-charcoal transition-colors duration-150 hover:border-sage-light focus-within:border-sage focus-within:ring-2 focus-within:ring-sage">
+    <span className="relative inline-flex max-w-full items-center gap-1.5 rounded-full border border-cream-mid bg-surface px-2.5 py-1 text-xs text-charcoal transition-colors duration-150 hover:border-sage-light focus-within:border-sage focus-within:ring-2 focus-within:ring-sage">
       <span
         aria-hidden="true"
         className="h-1.5 w-1.5 shrink-0 rounded-full"
@@ -104,7 +104,7 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   if (transactions.length === 0) {
     return (
-      <div className="rounded-lg border border-cream-mid bg-white px-[18px] py-12">
+      <div className="rounded-lg border border-cream-mid bg-surface px-[18px] py-12">
         <p className="text-center text-sm text-stone">
           {isFiltered
             ? 'No transactions match the current filters.'
@@ -115,7 +115,7 @@ export function TransactionsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-cream-mid bg-white">
+    <div className="overflow-hidden rounded-lg border border-cream-mid bg-surface">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] table-fixed">
           <colgroup>
