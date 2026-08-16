@@ -5,9 +5,11 @@ import { AccountSettings } from '@/components/settings/AccountSettings';
 import { SyncStatus } from '@/components/settings/SyncStatus';
 import { CsvImportSection } from '@/components/settings/CsvImportSection';
 import { AddAccountForm } from '@/components/settings/AddAccountForm';
+import { UncategorizedReview } from '@/components/settings/UncategorizedReview';
 import { useSettings, useUpdateSetting, SETTING_KEYS } from '@/hooks/useSettings';
 import { useAccounts, useUpdateAccount } from '@/hooks/useAccounts';
 import { useSyncStatus, useTriggerSync } from '@/hooks/useSync';
+import { useUncategorized, useAssignUncategorized } from '@/hooks/useReports';
 
 /**
  * Settings page — sync, thresholds, accounts, imports and appearance.
@@ -21,6 +23,9 @@ export function SettingsPage() {
 
   const { data: syncStatus } = useSyncStatus();
   const triggerSync = useTriggerSync();
+
+  const { data: uncategorized } = useUncategorized();
+  const assignUncategorized = useAssignUncategorized();
 
   const greenThreshold = settingsMap[SETTING_KEYS.GREEN_THRESHOLD] ?? '1000';
   const yellowThreshold = settingsMap[SETTING_KEYS.YELLOW_THRESHOLD] ?? '200';
@@ -50,6 +55,20 @@ export function SettingsPage() {
       </p>
 
       <div className="mt-6 flex flex-col gap-4">
+        {/*
+          Renders itself, or nothing at all when there is nothing to review —
+          so it is not wrapped in a SettingsCard, which would leave an empty
+          bordered box on a fully categorized ledger.
+        */}
+        <UncategorizedReview
+          groups={uncategorized?.groups ?? []}
+          total={uncategorized?.total ?? '0.00'}
+          onAssign={(description, category) =>
+            assignUncategorized.mutate({ description, category })
+          }
+          isAssigning={assignUncategorized.isPending}
+        />
+
         <SettingsCard id="sync" title="Bank sync">
           <SyncStatus
             syncStatus={syncStatus ?? null}
