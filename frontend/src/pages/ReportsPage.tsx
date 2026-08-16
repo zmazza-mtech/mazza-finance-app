@@ -1,8 +1,9 @@
 import { useState, useContext } from 'react';
 import { AccountContext } from '@/App';
 import { DateRangePicker } from '@/components/shared/DateRangePicker';
-import { SankeyChart } from '@/components/reports/SankeyChart';
+import { ReportsChartCard } from '@/components/reports/ReportsChartCard';
 import { CategorySummaryTable } from '@/components/reports/CategorySummaryTable';
+import { formatDateRange } from '@/lib/dates';
 import { useCategorySummary } from '@/hooks/useReports';
 
 function defaultStartDate(): string {
@@ -27,12 +28,13 @@ export function ReportsPage() {
   });
 
   return (
-    <div className="max-w-screen-lg mx-auto px-4 py-6">
-      <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-        Reports
-      </h1>
+    <div className="mx-auto max-w-shell px-6 py-6">
+      <h1 className="font-display text-4xl text-bark-dark">Reports</h1>
+      <p className="mt-1 text-[15px] text-stone">
+        {formatDateRange(startDate, endDate)} · settled transactions only
+      </p>
 
-      <div className="mb-6">
+      <div className="mb-6 mt-4">
         <DateRangePicker
           startDate={startDate}
           endDate={endDate}
@@ -42,25 +44,22 @@ export function ReportsPage() {
       </div>
 
       {isLoading && (
-        <p className="text-center text-gray-500 dark:text-gray-400 py-8">Loading...</p>
+        <div className="flex h-64 items-center justify-center">
+          <div className="spinner-sage" role="status" aria-label="Loading report data" />
+        </div>
       )}
+
       {error && (
-        <p className="text-center text-red-600 dark:text-red-400 py-8">
+        <p role="alert" className="py-8 text-center text-sm text-error">
           Failed to load report data.
         </p>
       )}
-      {data && (
-        <div className="space-y-8">
-          {/* Sankey chart */}
-          <section>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
-              Income to Expense Flow
-            </h2>
-            <SankeyChart data={data} />
-          </section>
 
-          {/* Summary tables */}
-          <div className="grid gap-8 md:grid-cols-2">
+      {data && (
+        <div className="space-y-4">
+          <ReportsChartCard data={data} />
+
+          <div className="grid gap-4 md:grid-cols-2">
             <CategorySummaryTable title="Income" items={data.income} />
             <CategorySummaryTable title="Expenses" items={data.expenses} />
           </div>

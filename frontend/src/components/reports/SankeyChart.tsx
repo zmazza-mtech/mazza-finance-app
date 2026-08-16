@@ -1,112 +1,121 @@
-import { Sankey, Tooltip, Layer, Rectangle } from 'recharts';
-import type { CategorySummaryResponse } from '@/api/types';
+import { formatCurrency } from '@/lib/balance';
+import { getCategoryColor } from '@/lib/categoryColors';
+import {
+  svgNumber,
+  NODE_RADIUS,
+  NODE_WIDTH,
+  SOURCE_X,
+  TARGET_X,
+  VIEWBOX_HEIGHT,
+  VIEWBOX_WIDTH,
+  type SankeyLayout,
+} from '@/lib/sankey';
 
 interface SankeyChartProps {
-  data: CategorySummaryResponse;
-}
-
-// Colors for expense categories
-const CATEGORY_COLORS: Record<string, string> = {
-  Income: '#22c55e',
-  Housing: '#3b82f6',
-  Utilities: '#06b6d4',
-  Groceries: '#84cc16',
-  Transportation: '#f59e0b',
-  Insurance: '#6366f1',
-  Healthcare: '#f43f5e',
-  Entertainment: '#8b5cf6',
-  Dining: '#f97316',
-  Shopping: '#ec4899',
-  Subscriptions: '#a855f7',
-  Transfers: '#6b7280',
-  Other: '#9ca3af',
-};
-
-function SankeyNode({ x, y, width, height, payload }: {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  payload: { name: string };
-}) {
-  const color = CATEGORY_COLORS[payload.name] ?? '#6b7280';
-  return (
-    <Layer>
-      <Rectangle x={x} y={y} width={width} height={height} fill={color} fillOpacity={0.9} />
-      <text
-        x={x + width + 6}
-        y={y + height / 2}
-        textAnchor="start"
-        dominantBaseline="middle"
-        className="text-xs fill-gray-700 dark:fill-gray-300"
-      >
-        {payload.name}
-      </text>
-    </Layer>
-  );
+  layout: SankeyLayout;
 }
 
 /**
- * Sankey diagram showing income flowing to expense categories.
- * Uses parseFloat for chart layout positioning only — not financial arithmetic.
+ * Income flowing to expense categories, drawn by hand.
+ *
+ * Node labels are DOM text positioned in percentage terms rather than SVG
+ * `<text>`, so they stay legible and selectable however wide the SVG flexes.
+ * The drawing itself is decorative — everything it shows is in the two label
+ * columns, so assistive tech reads those instead.
  */
-export function SankeyChart({ data }: SankeyChartProps) {
-  const totalIncome = data.income.reduce(
-    (sum, item) => sum + parseFloat(item.total),
-    0,
-  );
-
-  if (totalIncome === 0 && data.expenses.length === 0) {
+export function SankeyChart({ layout }: SankeyChartProps) {
+  if (layout.isEmpty) {
     return (
-      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-        No data for the selected date range.
-      </p>
-    );
-  }
-
-  // Build Sankey nodes: [Income, ...expense categories]
-  const nodes: { name: string }[] = [{ name: 'Income' }];
-  const links: { source: number; target: number; value: number }[] = [];
-
-  for (const expense of data.expenses) {
-    const nodeIndex = nodes.length;
-    nodes.push({ name: expense.category });
-    links.push({
-      source: 0,
-      target: nodeIndex,
-      value: Math.abs(parseFloat(expense.total)),
-    });
-  }
-
-  // If no expense links, nothing to render
-  if (links.length === 0) {
-    return (
-      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-        No expenses to display.
+      <p className="py-12 text-center text-sm text-stone">
+        No income in this range, so there is nothing to trace.
       </p>
     );
   }
 
   return (
-    <div className="w-full overflow-x-auto">
-      <Sankey
-        width={700}
-        height={400}
-        data={{ nodes, links }}
-        node={SankeyNode}
-        nodePadding={24}
-        nodeWidth={10}
-        linkCurvature={0.5}
-        margin={{ top: 20, right: 120, bottom: 20, left: 20 }}
-      >
-        <Tooltip
-          formatter={(value: number | undefined) =>
-            value != null
-              ? `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-              : ''
-          }
-        />
-      </Sankey>
+    <div>
+      <div className="overflow-x-auto">
+        <div className="flex min-w-[720px] items-stretch">
+          <div className="relative w-[150px] shrink-0">
+            <div
+              className="absolute right-3 -translate-y-1/2 text-right"
+              style={{ top: `${svgNumber(layout.source.centerPercent)}%` }}
+            >
+              <p className="text-sm text-charcoal">Income</p>
+              <p className="font-mono text-xs text-stone">
+                {formatCurrency(layout.income)}
+              </p>
+            </div>
+          </div>
+
+          <svg
+            viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
+            className="h-auto flex-1"
+            aria-hidden="true"
+            focusable="false"
+          >
+            {layout.rows.map((row) => (
+              <path key={row.label} d={row.path} fill={row.color} fillOpacity={0.32} />
+            ))}
+
+            <rect
+              x={SOURCE_X}
+              y={svgNumber(layout.source.y)}
+              width={NODE_WIDTH}
+              height={svgNumber(layout.source.height)}
+              rx={NODE_RADIUS}
+              fill={getCategoryColor('Income')}
+            />
+
+            {layout.rows.map((row) => (
+              <rect
+                key={row.label}
+                x={TARGET_X}
+                y={svgNumber(row.targetY)}
+                width={NODE_WIDTH}
+                height={svgNumber(row.height)}
+                rx={NODE_RADIUS}
+                fill={row.color}
+              />
+            ))}
+          </svg>
+
+          <ul aria-label="Flow by category" className="relative w-[270px] shrink-0">
+            {layout.rows.map((row) => (
+              <li
+                key={row.label}
+                className="absolute left-3 right-0 flex -translate-y-1/2 items-center justify-between gap-2"
+                style={{ top: `${svgNumber(row.centerPercent)}%` }}
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="h-[7px] w-[7px] shrink-0 rounded-full"
+                    style={{ backgroundColor: row.color }}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate text-[13px] text-charcoal" title={row.label}>
+                    {row.label}
+                  </span>
+                </span>
+                <span className="shrink-0 font-mono text-[11px] text-stone">
+                  {formatCurrency(row.amount)} · {row.percent}%
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <p className="mt-3 font-mono text-[10px] uppercase tracking-label text-warm-gray">
+        {caption(layout)}
+      </p>
     </div>
   );
+}
+
+function caption(layout: SankeyLayout): string {
+  if (layout.overspend) {
+    return `Ribbon width = share of spending · spending exceeded income by ${formatCurrency(layout.overspend)}`;
+  }
+  return 'Ribbon width = share of income · sage band = kept';
 }

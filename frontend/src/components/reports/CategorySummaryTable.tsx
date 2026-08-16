@@ -9,7 +9,7 @@ interface CategorySummaryTableProps {
 }
 
 /**
- * Table showing category breakdown with amounts and percentages.
+ * Card showing a category breakdown with amounts and percentages.
  * Percentages computed with decimal.js for accuracy.
  */
 export function CategorySummaryTable({ title, items }: CategorySummaryTableProps) {
@@ -23,24 +23,15 @@ export function CategorySummaryTable({ title, items }: CategorySummaryTableProps
   );
 
   return (
-    <div>
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-        {title}
-      </h3>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-700">
-            <th className="px-3 py-1.5 text-left font-medium text-gray-600 dark:text-gray-400">
-              Category
-            </th>
-            <th className="px-3 py-1.5 text-right font-medium text-gray-600 dark:text-gray-400">
-              Amount
-            </th>
-            <th className="px-3 py-1.5 text-right font-medium text-gray-600 dark:text-gray-400">
-              %
-            </th>
-          </tr>
-        </thead>
+    <section className="rounded-lg border border-cream-mid bg-white p-[22px]">
+      <h3 className="mb-3 font-display text-xl text-bark-dark">{title}</h3>
+
+      <table className="w-full table-fixed">
+        <colgroup>
+          <col />
+          <col style={{ width: '110px' }} />
+          <col style={{ width: '60px' }} />
+        </colgroup>
         <tbody>
           {items.map((item) => {
             const absAmount = new Decimal(item.total).abs();
@@ -49,17 +40,14 @@ export function CategorySummaryTable({ title, items }: CategorySummaryTableProps
               : absAmount.div(total).times(100).toFixed(1);
 
             return (
-              <tr
-                key={item.category}
-                className="border-b border-gray-100 dark:border-gray-800"
-              >
-                <td className="px-3 py-1.5">
+              <tr key={item.category} className="border-b border-cream-mid">
+                <td className="py-2 pr-3">
                   <CategoryBadge category={item.category as Category} />
                 </td>
-                <td className="px-3 py-1.5 text-right font-medium text-gray-900 dark:text-gray-100">
+                <td className="py-2 text-right font-mono text-sm text-charcoal">
                   {formatCurrency(absAmount.toFixed(2))}
                 </td>
-                <td className="px-3 py-1.5 text-right text-gray-500 dark:text-gray-400">
+                <td className="py-2 text-right font-mono text-xs text-stone">
                   {pct}%
                 </td>
               </tr>
@@ -67,19 +55,15 @@ export function CategorySummaryTable({ title, items }: CategorySummaryTableProps
           })}
         </tbody>
         <tfoot>
-          <tr className="border-t border-gray-300 dark:border-gray-600">
-            <td className="px-3 py-1.5 font-semibold text-gray-800 dark:text-gray-200">
-              Total
-            </td>
-            <td className="px-3 py-1.5 text-right font-semibold text-gray-800 dark:text-gray-200">
+          <tr>
+            <td className="py-2 pr-3 text-sm font-semibold text-bark-dark">Total</td>
+            <td className="py-2 text-right font-mono text-sm font-semibold text-bark-dark">
               {formatCurrency(total.toFixed(2))}
             </td>
-            <td className="px-3 py-1.5 text-right text-gray-500 dark:text-gray-400">
-              100%
-            </td>
+            <td className="py-2 text-right font-mono text-xs text-stone">100%</td>
           </tr>
         </tfoot>
       </table>
-    </div>
+    </section>
   );
 }
