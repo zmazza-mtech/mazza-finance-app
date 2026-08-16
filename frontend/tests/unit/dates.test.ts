@@ -6,6 +6,7 @@ import {
   lastDayOfMonth,
   todayIso,
   formatFullDate,
+  formatDateRange,
 } from '@/lib/dates';
 
 describe('formatShortDate', () => {
@@ -107,5 +108,27 @@ describe('formatFullDate', () => {
 
   it('gets the weekday right on a leap day', () => {
     expect(formatFullDate('2024-02-29')).toBe('Thursday, February 29');
+  });
+});
+
+describe('formatDateRange', () => {
+  it('states the year once when both ends share a month', () => {
+    expect(formatDateRange('2026-08-01', '2026-08-31')).toBe('Aug 1 – Aug 31, 2026');
+  });
+
+  it('states the year once when both ends share a year', () => {
+    expect(formatDateRange('2026-08-01', '2026-09-30')).toBe('Aug 1 – Sep 30, 2026');
+  });
+
+  it('states both years when the range crosses a year boundary', () => {
+    expect(formatDateRange('2025-12-01', '2026-01-31')).toBe('Dec 1, 2025 – Jan 31, 2026');
+  });
+
+  it('drops leading zeroes from single-digit days', () => {
+    expect(formatDateRange('2026-08-01', '2026-08-09')).toBe('Aug 1 – Aug 9, 2026');
+  });
+
+  it('collapses a single-day range to one date', () => {
+    expect(formatDateRange('2026-08-15', '2026-08-15')).toBe('Aug 15, 2026');
   });
 });

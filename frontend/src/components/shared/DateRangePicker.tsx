@@ -50,7 +50,10 @@ const PRESETS: Preset[] = [
 ];
 
 /**
- * Date range picker with two date inputs and preset buttons.
+ * Date range picker: a single pill holding both bounds, with preset shortcuts.
+ *
+ * The two inputs read as one control because they describe one range — the
+ * FROM and TO labels sit inside the pill rather than floating beside it.
  */
 export function DateRangePicker({
   startDate,
@@ -59,26 +62,36 @@ export function DateRangePicker({
   onEndDateChange,
 }: DateRangePickerProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <label className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
-        From
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => onStartDateChange(e.target.value)}
-          className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </label>
-      <label className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
-        To
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => onEndDateChange(e.target.value)}
-          className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </label>
-      <div className="flex gap-1">
+    <div className="flex flex-wrap items-center gap-2.5">
+      <div className="inline-flex items-center gap-2 rounded-full border border-cream-mid bg-white px-3.5 py-[7px]">
+        <label className="inline-flex items-center gap-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-label text-warm-gray">
+            From
+          </span>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => onStartDateChange(e.target.value)}
+            className="bg-transparent font-mono text-xs text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+          />
+        </label>
+        <span aria-hidden="true" className="text-warm-gray">
+          ·
+        </span>
+        <label className="inline-flex items-center gap-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-label text-warm-gray">
+            To
+          </span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => onEndDateChange(e.target.value)}
+            className="bg-transparent font-mono text-xs text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
         {PRESETS.map((preset) => (
           <button
             key={preset.label}
@@ -88,7 +101,7 @@ export function DateRangePicker({
               onStartDateChange(s);
               onEndDateChange(e);
             }}
-            className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="hit-target rounded-full border border-cream-mid bg-white px-3 py-[7px] text-xs text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             {preset.label}
           </button>

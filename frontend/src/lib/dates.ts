@@ -58,6 +58,25 @@ export function formatFullDate(date: string): string {
 }
 
 /**
+ * "2026-08-01", "2026-08-31" → "Aug 1 – Aug 31, 2026", for the page subtitle.
+ *
+ * The year is stated once when both ends share it and twice when the range
+ * crosses a year boundary, where the shared-year form would be ambiguous.
+ */
+export function formatDateRange(startDate: string, endDate: string): string {
+  const startYear = startDate.slice(0, 4);
+  const endYear = endDate.slice(0, 4);
+
+  if (startDate === endDate) {
+    return `${formatShortDate(startDate)}, ${endYear}`;
+  }
+  if (startYear !== endYear) {
+    return `${formatShortDate(startDate)}, ${startYear} – ${formatShortDate(endDate)}, ${endYear}`;
+  }
+  return `${formatShortDate(startDate)} – ${formatShortDate(endDate)}, ${endYear}`;
+}
+
+/**
  * Today in the viewer's own timezone.
  *
  * `new Date().toISOString().slice(0, 10)` is UTC's today, which rolls over

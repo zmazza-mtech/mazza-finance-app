@@ -58,38 +58,30 @@ export function ConfirmDialog({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-espresso/40"
         onClick={onCancel}
         aria-hidden="true"
       />
       {/* Panel */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-        <h2
-          id="confirm-dialog-title"
-          className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2"
-        >
+      <div className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-white p-6 shadow-xl">
+        <h2 id="confirm-dialog-title" className="font-display text-xl text-bark-dark">
           {title}
         </h2>
-        <p
-          id="confirm-dialog-desc"
-          className="text-sm text-gray-600 dark:text-gray-400 mb-6"
-        >
+        <p id="confirm-dialog-desc" className="mb-6 mt-2 text-sm text-stone">
           {description}
         </p>
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-2.5">
           <button
             ref={cancelRef}
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="hit-target rounded-full border border-cream-mid bg-white px-[18px] py-[9px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              destructive
-                ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
-                : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+            className={`hit-target rounded-full px-[18px] py-[9px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
+              destructive ? 'bg-error hover:bg-[#A8483D]' : 'bg-sage-dark hover:bg-sage-deep'
             }`}
           >
             {confirmLabel}
