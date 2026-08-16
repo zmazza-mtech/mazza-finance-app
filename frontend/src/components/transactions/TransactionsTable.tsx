@@ -1,5 +1,7 @@
 import { formatAmount, isNegative } from '@/lib/balance';
 import { SourceBadge } from '@/components/shared/SourceBadge';
+import { useIsPhone } from '@/hooks/useIsPhone';
+import { formatDayGroup } from '@/lib/dates';
 import { getCategoryColor } from '@/lib/categoryColors';
 import { CATEGORIES } from '@/lib/categories';
 import type { Transaction, Category } from '@/api/types';
@@ -95,7 +97,114 @@ function CategoryCell({
 }
 
 /**
- * Sortable transactions table with inline category editing.
+ * Groups consecutive rows by date, for the phone card list.
+ *
+ * Only meaningful while the rows are in date order — grouping an
+ * amount-sorted list would produce one header per row. The caller checks that
+ * before using this.
+ */
+function groupByDate(transactions: Transaction[]): { date: string; rows: Transaction[] }[] {
+  const groups: { date: string; rows: Transaction[] }[] = [];
+
+  for (const tx of transactions) {
+    const last = groups[groups.length - 1];
+    if (last && last.date === tx.date) last.rows.push(tx);
+    else groups.push({ date: tx.date, rows: [tx] });
+  }
+
+  return groups;
+}
+
+/** One transaction as a card — the phone stand-in for a table row. */
+function TransactionCard({
+  transaction,
+  onCategoryChange,
+}: {
+  transaction: Transaction;
+  onCategoryChange: (id: string, category: Category | null) => void;
+}) {
+  const debit = isNegative(transaction.amount);
+
+  return (
+    <li className="list-row flex items-center justify-between gap-2.5 border-b border-cream-mid px-3.5 py-2.5 last:border-b-0">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm text-charcoal" title={transaction.description}>
+          {transaction.description}
+        </p>
+        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
+          <CategoryCell transaction={transaction} onCategoryChange={onCategoryChange} />
+          <SourceBadge source={transaction.source} />
+        </div>
+      </div>
+      <span className={`shrink-0 font-mono text-sm ${debit ? 'text-bark-light' : 'text-sage-deep'}`}>
+        {debit ? '−' : '+'}${formatAmount(transaction.amount)}
+      </span>
+    </li>
+  );
+}
+
+/**
+ * The phone sort control.
+ *
+ * The table sorts from its column headers, which a card list does not have.
+ * Parity means sorting cannot quietly become a desktop-only capability, so the
+ * same `onSort` callback is driven from a select and a direction toggle.
+ *
+ * `onSort` flips direction when handed the column already sorted by, which is
+ * exactly what the toggle needs and why it passes `sortBy` straight back.
+ */
+function CardSortControl({
+  sortBy,
+  sortDir,
+  onSort,
+}: {
+  sortBy: string;
+  sortDir: string;
+  onSort: (column: string) => void;
+}) {
+  const sortable = COLUMNS.filter((col) => col.sortable);
+  const current = sortable.find((col) => col.key === sortBy);
+
+  return (
+    <div className="mb-2.5 flex items-center gap-2">
+      <label
+        htmlFor="card-sort"
+        className="font-mono text-[10px] uppercase tracking-label-wide text-stone"
+      >
+        Sort
+      </label>
+      <select
+        id="card-sort"
+        value={sortBy}
+        onChange={(e) => onSort(e.target.value)}
+        className="hit-target min-w-0 flex-1 rounded-full border border-cream-mid bg-surface px-3.5 py-1.5 text-[13px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+      >
+        {sortable.map((col) => (
+          <option key={col.key} value={col.key}>
+            {col.label}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={() => onSort(sortBy)}
+        aria-label={`Sort ${current?.label ?? sortBy} ${
+          sortDir === 'asc' ? 'descending' : 'ascending'
+        }`}
+        className="hit-target flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream-mid bg-surface text-bark transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+      >
+        <span aria-hidden="true">{sortDir === 'asc' ? '↑' : '↓'}</span>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Transactions, sortable and with inline category editing.
+ *
+ * One of the five viewport seams. A `<td>` cannot become a card in CSS, and
+ * rendering the table and the cards together would double the accessible row
+ * count — every transaction announced twice.
  */
 export function TransactionsTable({
   transactions,
@@ -105,6 +214,8 @@ export function TransactionsTable({
   onCategoryChange,
   isFiltered = false,
 }: TransactionsTableProps) {
+  const isPhone = useIsPhone();
+
   if (transactions.length === 0) {
     return (
       <div className="rounded-lg border border-cream-mid bg-surface px-[18px] py-12">
@@ -113,6 +224,46 @@ export function TransactionsTable({
             ? 'No transactions match the current filters.'
             : 'No transactions found for the selected date range.'}
         </p>
+      </div>
+    );
+  }
+
+  if (isPhone) {
+    // Day headers only mean something while the rows are in date order.
+    // Sorted by amount, every row would carry its own header.
+    const grouped = sortBy === 'date';
+    const groups = grouped ? groupByDate(transactions) : [{ date: '', rows: transactions }];
+
+    return (
+      <div>
+        <CardSortControl sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
+
+        <div
+          data-testid="transaction-cards"
+          className="overflow-hidden rounded-lg border border-cream-mid bg-surface"
+        >
+          {groups.map((group) => (
+            <section
+              key={group.date || 'all'}
+              aria-label={group.date ? formatDayGroup(group.date) : undefined}
+            >
+              {grouped && (
+                <h3 className="sticky top-0 z-10 border-b border-cream-mid bg-cream px-3.5 py-2 font-mono text-[10px] uppercase tracking-label-wide text-stone">
+                  {formatDayGroup(group.date)}
+                </h3>
+              )}
+              <ul>
+                {group.rows.map((tx) => (
+                  <TransactionCard
+                    key={tx.id}
+                    transaction={tx}
+                    onCategoryChange={onCategoryChange}
+                  />
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       </div>
     );
   }

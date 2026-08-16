@@ -24,6 +24,22 @@ export function formatShortDate(date: string): string {
   return `${month} ${Number(parts[2])}`;
 }
 
+const SHORT_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/**
+ * "2026-08-15" → "Sat · Aug 15", for the phone list's day headers.
+ *
+ * `Date.UTC` and `getUTCDay` rather than `new Date(string)`: the constructor
+ * parses a bare date as UTC midnight and then reports it in local time, which
+ * is a day earlier anywhere west of Greenwich. Building and reading the date
+ * in the same frame keeps the weekday and the number describing the same day.
+ */
+export function formatDayGroup(date: string): string {
+  const [year, month, day] = date.split('-').map(Number) as [number, number, number];
+  const weekday = SHORT_WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
+  return `${weekday} · ${formatShortDate(date)}`;
+}
+
 /** "2026-08-01" → "AUG 1", for the chart axis. */
 export function formatAxisDate(date: string): string {
   return formatShortDate(date).toUpperCase();

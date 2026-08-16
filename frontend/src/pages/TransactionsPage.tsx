@@ -145,13 +145,13 @@ export function TransactionsPage() {
   const categoryLabel = batchPrompt?.category ?? 'Uncategorized';
 
   return (
-    <div className="mx-auto max-w-shell px-6 py-6">
-      <h1 className="font-display text-4xl text-bark-dark">Transactions</h1>
-      <p className="mt-1 text-[15px] text-stone">
+    <div className="mx-auto max-w-shell px-4 py-4 sm:px-6 sm:py-6">
+      <h1 className="font-display text-2xl text-bark-dark sm:text-4xl">Transactions</h1>
+      <p className="mt-1 text-[13px] text-stone sm:text-[15px]">
         {formatDateRange(startDate, endDate)} · {accountName}
       </p>
 
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <SummaryCards summary={summary} />
       </div>
 
@@ -173,7 +173,7 @@ export function TransactionsPage() {
           placeholder="Search descriptions"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="hit-target ml-auto w-[220px] rounded-full border border-cream-mid bg-surface px-3.5 py-[9px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:border-sage focus-visible:ring-2 focus-visible:ring-sage"
+          className="hit-target w-full rounded-full sm:ml-auto sm:w-[220px] border border-cream-mid bg-surface px-3.5 py-[9px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:border-sage focus-visible:ring-2 focus-visible:ring-sage"
         />
       </div>
 

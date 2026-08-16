@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  formatDayGroup,
   formatShortDate,
   formatAxisDate,
   formatMonthTitle,
@@ -130,5 +131,35 @@ describe('formatDateRange', () => {
 
   it('collapses a single-day range to one date', () => {
     expect(formatDateRange('2026-08-15', '2026-08-15')).toBe('Aug 15, 2026');
+  });
+});
+
+describe('formatDayGroup', () => {
+  it('names the weekday and the short date', () => {
+    // 2026-08-15 is a Saturday.
+    expect(formatDayGroup('2026-08-15')).toBe('Sat · Aug 15');
+  });
+
+  it('covers every weekday across one week', () => {
+    expect(formatDayGroup('2026-08-09')).toBe('Sun · Aug 9');
+    expect(formatDayGroup('2026-08-10')).toBe('Mon · Aug 10');
+    expect(formatDayGroup('2026-08-11')).toBe('Tue · Aug 11');
+    expect(formatDayGroup('2026-08-12')).toBe('Wed · Aug 12');
+    expect(formatDayGroup('2026-08-13')).toBe('Thu · Aug 13');
+    expect(formatDayGroup('2026-08-14')).toBe('Fri · Aug 14');
+    expect(formatDayGroup('2026-08-15')).toBe('Sat · Aug 15');
+  });
+
+  it('gets the weekday right across a leap day', () => {
+    // 2028-02-29 is a Tuesday. A naive day-count that skips leap years lands
+    // on the wrong weekday for the rest of that year.
+    expect(formatDayGroup('2028-02-29')).toBe('Tue · Feb 29');
+    expect(formatDayGroup('2028-03-01')).toBe('Wed · Mar 1');
+  });
+
+  it('does not shift a date west of Greenwich', () => {
+    // The whole reason this module splits strings instead of parsing them:
+    // `new Date('2026-01-01')` is UTC midnight, which is Dec 31 locally.
+    expect(formatDayGroup('2026-01-01')).toBe('Thu · Jan 1');
   });
 });

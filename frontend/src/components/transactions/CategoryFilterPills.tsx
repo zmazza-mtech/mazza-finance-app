@@ -29,12 +29,12 @@ export function CategoryFilterPills({
   onChange,
 }: CategoryFilterPillsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="-mx-4 flex snap-x items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:gap-2.5 sm:overflow-visible sm:px-0 sm:pb-0">
       <button
         type="button"
         aria-pressed={value === 'all'}
         onClick={() => onChange('all')}
-        className={`hit-target rounded-full border px-3.5 py-[7px] text-[13px] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
+        className={`hit-target shrink-0 snap-start rounded-full border px-3.5 py-[7px] text-[13px] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
           value === 'all' ? ACTIVE : INACTIVE
         }`}
       >
@@ -47,7 +47,7 @@ export function CategoryFilterPills({
           type="button"
           aria-pressed={value === cat}
           onClick={() => onChange(cat)}
-          className={`hit-target inline-flex items-center gap-1.5 rounded-full border px-3.5 py-[7px] text-[13px] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
+          className={`hit-target inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-[7px] text-[13px] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
             value === cat ? ACTIVE : INACTIVE
           }`}
         >
