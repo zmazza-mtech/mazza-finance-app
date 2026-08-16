@@ -81,7 +81,7 @@ export function ConfirmDialog({
           <button
             onClick={onConfirm}
             className={`hit-target rounded-full px-[18px] py-[9px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
-              destructive ? 'bg-error hover:bg-[#A8483D]' : 'bg-sage-dark hover:bg-sage-deep'
+              destructive ? 'bg-error hover:bg-error-dark' : 'bg-sage-dark hover:bg-sage-deep'
             }`}
           >
             {confirmLabel}

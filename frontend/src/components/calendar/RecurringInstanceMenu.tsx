@@ -57,20 +57,20 @@ export function RecurringInstanceMenu({
             ref={menuRef}
             role="menu"
             aria-label="Edit recurring transaction"
-            className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 min-w-[240px]"
+            className="absolute z-50 min-w-[240px] rounded-md border border-cream-mid bg-white py-1 shadow-lg"
           >
             <button
               ref={firstButtonRef}
               role="menuitem"
               onClick={onEditThis}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="hit-target w-full px-4 py-2 text-left text-sm text-charcoal transition-colors duration-150 hover:bg-cream focus:bg-cream focus:outline-none"
             >
               Edit this occurrence
             </button>
             <button
               role="menuitem"
               onClick={onEditAllFuture}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="hit-target w-full px-4 py-2 text-left text-sm text-charcoal transition-colors duration-150 hover:bg-cream focus:bg-cream focus:outline-none"
             >
               Edit this and all future occurrences
             </button>

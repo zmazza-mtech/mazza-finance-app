@@ -43,6 +43,9 @@ const config: Config = {
         charcoal: '#3A3530',
         espresso: '#2A2420',
         error: '#C1574A',
+        // Body-text weight: `error` clears 3:1 on cream but only 3.86:1 on the
+        // critical alert tint, short of the 4.5:1 text minimum.
+        'error-dark': '#A8483D',
         'border-mid': '#E3DDD2',
 
         // Balance health — contrast on cream is at least 4.5:1 for all three.

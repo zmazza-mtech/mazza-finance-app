@@ -70,8 +70,8 @@ export function BalanceAlertBanner({
 
   const isCritical = alertDay.health === 'critical';
   const bgClass = isCritical
-    ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
-    : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200';
+    ? 'border-[#E8D3CE] bg-[#F7EDEB] text-error-dark'
+    : 'border-[#EBD5BE] bg-[#FAF0E6] text-copper-dark';
 
   const label = isCritical ? 'Critical balance' : 'Low balance';
 
@@ -84,7 +84,7 @@ export function BalanceAlertBanner({
     <div
       role="alert"
       aria-label={`${label} alert`}
-      className={`border-b px-4 py-2 flex items-center justify-between gap-3 ${bgClass}`}
+      className={`flex items-center justify-between gap-3 border-b px-6 py-2.5 ${bgClass}`}
     >
       <p className="text-sm">
         <span className="font-semibold">{label}:</span>{' '}
@@ -93,7 +93,7 @@ export function BalanceAlertBanner({
         <button
           type="button"
           onClick={() => onViewDate(alertDay.date)}
-          className="underline font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-current rounded"
+          className="rounded font-medium underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-1"
         >
           {formatDate(alertDay.date)}
         </button>
@@ -103,7 +103,7 @@ export function BalanceAlertBanner({
         type="button"
         aria-label="Dismiss balance alert"
         onClick={handleDismiss}
-        className="shrink-0 text-sm underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-current rounded"
+        className="hit-target shrink-0 rounded text-sm underline underline-offset-2 hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
       >
         Dismiss
       </button>
