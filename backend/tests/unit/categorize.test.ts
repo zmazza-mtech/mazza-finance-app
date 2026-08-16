@@ -94,6 +94,45 @@ describe('categorize', () => {
     expect(categorize('ICLOUD STORAGE')).toBe('Subscriptions');
   });
 
+  // Squeezed statement descriptors
+  //
+  // A merchant's statement descriptor often omits the spaces in its trading
+  // name, or abbreviates it outright, so a multi-word keyword never matches.
+  // The keyword list carries both forms rather than the matcher closing up
+  // spacing, which would let a keyword match across a word boundary.
+  it('categorizes squeezed grocery descriptors', () => {
+    expect(categorize('WHOLEFDS MKT 10241')).toBe('Groceries');
+    expect(categorize('WHOLEFOODS MKT')).toBe('Groceries');
+    expect(categorize("TRADERJOE'S #567")).toBe('Groceries');
+  });
+
+  it('categorizes squeezed retail descriptors', () => {
+    expect(categorize('BESTBUY.COM 888-BESTBUY')).toBe('Shopping');
+    expect(categorize('HOMEDEPOT.COM')).toBe('Shopping');
+    expect(categorize('DOLLARGENERAL #1234')).toBe('Shopping');
+    expect(categorize('DOLLARTREE #5678')).toBe('Shopping');
+    expect(categorize('FAMILYDOLLAR #90')).toBe('Shopping');
+    expect(categorize('FIVEBELOW 123')).toBe('Shopping');
+    expect(categorize('OLDNAVY.COM')).toBe('Shopping');
+  });
+
+  it('categorizes squeezed dining descriptors', () => {
+    expect(categorize('CHICKFILA #01234')).toBe('Dining');
+    expect(categorize('TACOBELL #1234')).toBe('Dining');
+    expect(categorize('PANDAEXPRESS #999')).toBe('Dining');
+  });
+
+  it('categorizes squeezed fitness and insurance descriptors', () => {
+    expect(categorize('PF*PLANETFITNESS')).toBe('Fitness');
+    expect(categorize('LIBERTYMUTUAL INS PREM')).toBe('Insurance');
+  });
+
+  // Loan Payments ahead of Transfers
+  it('categorizes a card payment as Loan Payments even when it says transfer', () => {
+    expect(categorize('ONLINE TRANSFER CRCARDPMT')).toBe('Loan Payments');
+    expect(categorize('CCPYMT WELLS FARGO CARD')).toBe('Loan Payments');
+  });
+
   // Transfers
   it('categorizes transfers', () => {
     expect(categorize('ZELLE PAYMENT TO JOHN')).toBe('Transfers');
@@ -140,6 +179,19 @@ describe('normalizeDescription', () => {
   it('strips CHECKCARD prefix', () => {
     expect(normalizeDescription('CHECKCARD 1234 TARGET #5678'))
       .toBe('TARGET #5678');
+  });
+
+  it('strips DDA B/P bill-pay prefix', () => {
+    expect(normalizeDescription('DDA B/P 1234 56789012 MERCHANT NAME'))
+      .toBe('MERCHANT NAME');
+  });
+
+  it('strips a bare numeric time and reference prefix', () => {
+    expect(normalizeDescription('1933 20370891 FOOD CITY')).toBe('FOOD CITY');
+  });
+
+  it('strips a trailing card number suffix', () => {
+    expect(normalizeDescription('SOME VENDOR CARD# 1234')).toBe('SOME VENDOR');
   });
 
   it('leaves clean descriptions unchanged', () => {
