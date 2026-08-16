@@ -41,6 +41,8 @@ function renderTimeline(overrides: Partial<React.ComponentProps<typeof CalendarT
     onNextMonth: vi.fn(),
     onToday: vi.fn(),
     onAddTransaction: vi.fn(),
+    requestedDate: null as string | null,
+    onRequestedDateHandled: vi.fn(),
     ...overrides,
   };
   return { ...render(<CalendarTimeline {...props} />), props };
@@ -233,5 +235,43 @@ describe('CalendarTimeline — add transaction', () => {
     await userEvent.click(cell('2026-08-22'));
     await userEvent.click(screen.getByRole('button', { name: 'Add transaction' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// requestedDate — the entry point the balance banner's "View" link drives
+// ---------------------------------------------------------------------------
+
+describe('CalendarTimeline requestedDate', () => {
+  it('selects the requested day and opens the panel on it', () => {
+    renderTimeline({ requestedDate: '2026-08-22' });
+
+    expect(within(panel()).getByText('Saturday, August 22')).toBeInTheDocument();
+    expect(cell('2026-08-22')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('moves DOM focus to the requested cell, not just the ring', () => {
+    renderTimeline({ requestedDate: '2026-08-22' });
+
+    expect(document.activeElement).toBe(cell('2026-08-22'));
+  });
+
+  it('tells the parent it handled the request, so the same date can be asked for twice', () => {
+    const { props } = renderTimeline({ requestedDate: '2026-08-22' });
+
+    expect(props.onRequestedDateHandled).toHaveBeenCalled();
+  });
+
+  it('ignores a date outside the visible month rather than selecting nothing', () => {
+    renderTimeline({ requestedDate: '2026-09-04' });
+
+    // The default selection for the month stands.
+    expect(within(panel()).getByText('Saturday, August 15')).toBeInTheDocument();
+  });
+
+  it('leaves the default selection alone when no date is requested', () => {
+    renderTimeline({ requestedDate: null });
+
+    expect(within(panel()).getByText('Saturday, August 15')).toBeInTheDocument();
   });
 });

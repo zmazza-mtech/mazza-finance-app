@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ToastProvider } from '@/components/shared/Toast';
 import { CalendarPage } from '@/pages/CalendarPage';
 import { RecurringPage } from '@/pages/RecurringPage';
 import { TransactionsPage } from '@/pages/TransactionsPage';
@@ -78,17 +79,19 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AccountContext.Provider value={{ selectedAccountId, setSelectedAccountId }}>
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route index element={<CalendarPage />} />
-              <Route path="transactions" element={<TransactionsPage />} />
-              <Route path="recurring" element={<RecurringPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route index element={<CalendarPage />} />
+                <Route path="transactions" element={<TransactionsPage />} />
+                <Route path="recurring" element={<RecurringPage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ToastProvider>
       </AccountContext.Provider>
     </QueryClientProvider>
   );
