@@ -27,9 +27,9 @@ export function AmountField({ value, onChange, id, disabled }: AmountFieldProps)
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+      <div className="flex items-center overflow-hidden rounded-md border border-cream-mid focus-within:ring-2 focus-within:ring-sage">
         <span
-          className="px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-r border-gray-300 dark:border-gray-600 select-none"
+          className="select-none border-r border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-warm-gray"
           aria-hidden="true"
         >
           $
@@ -46,11 +46,11 @@ export function AmountField({ value, onChange, id, disabled }: AmountFieldProps)
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           placeholder="0.00"
-          className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none min-w-0 disabled:opacity-50"
+          className="min-w-0 flex-1 bg-cream px-3.5 py-[11px] text-[15px] text-charcoal outline-none placeholder:text-warm-gray disabled:opacity-50"
         />
       </div>
       {hasError && (
-        <p id={errorId} role="alert" className="text-sm text-red-700 dark:text-red-400">
+        <p id={errorId} role="alert" className="text-sm text-error">
           Enter a positive amount. Use the Debit/Deposit selector to indicate direction.
         </p>
       )}

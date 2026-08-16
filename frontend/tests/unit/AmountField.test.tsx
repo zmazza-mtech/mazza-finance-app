@@ -50,6 +50,11 @@ describe('AmountField', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('renders the error in the error color', () => {
+    render(<AmountField value="-10" onChange={() => {}} />);
+    expect(screen.getByRole('alert')).toHaveClass('text-error');
+  });
+
   it('has proper aria-label', () => {
     render(<AmountField value="" onChange={() => {}} />);
     expect(screen.getByRole('textbox')).toHaveAttribute('aria-label', 'Amount in dollars');
