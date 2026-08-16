@@ -255,6 +255,25 @@ export async function overrideInstance(
 }
 
 /**
+ * Adds one transaction to an already-seeded account.
+ *
+ * Created through `POST /transactions` like the rest of the seed, so it goes
+ * through the same auto-categorization the real path does — a description the
+ * keyword map cannot place arrives uncategorized, which is the state the
+ * review surface exists for.
+ */
+export async function seedTransaction(
+  accountId: string,
+  tx: { date: string; description: string; amount: string },
+): Promise<string> {
+  const created = await api<{ id: string }>('/transactions', {
+    method: 'POST',
+    body: JSON.stringify({ accountId, ...tx }),
+  });
+  return created.id;
+}
+
+/**
  * Removes every transaction on the fixture account, including any the test
  * created through the UI.
  *

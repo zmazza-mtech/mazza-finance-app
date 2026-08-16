@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js';
+import { normalizeDescription } from './categorize';
 
 export interface CategoryTotal {
   category: string;
@@ -107,4 +108,70 @@ export function splitByCategory(rows: RawCategoryRow[]): CategorySplit {
   }
 
   return { income, expenses, transfers };
+}
+
+// ---------------------------------------------------------------------------
+// Uncategorized review
+// ---------------------------------------------------------------------------
+
+/** A transaction with no useful category, as the review surface needs it. */
+export interface UncategorizedRow {
+  description: string;
+  amount: string;
+}
+
+export interface UncategorizedGroup {
+  /** Normalized description — the key batch-categorize matches on. */
+  description: string;
+  count: number;
+  total: string;
+}
+
+export interface UncategorizedGroups {
+  total: string;
+  groups: UncategorizedGroup[];
+}
+
+/**
+ * Collapses uncategorized transactions into one group per merchant.
+ *
+ * The grouping key is `normalizeDescription` lowercased — the same key
+ * `POST /transactions/batch-categorize` matches on. Anything else would let a
+ * group report a count that the bulk assignment then fails to honour, so the
+ * two must not drift apart.
+ *
+ * Groups come back largest first by absolute amount: the point of the surface
+ * is to put the biggest chunk of unclassified money at the top, and a signed
+ * sort would bury a $500 charge under a $5 one. Ties break alphabetically so
+ * the order does not wobble between requests.
+ */
+export function groupUncategorized(rows: UncategorizedRow[]): UncategorizedGroups {
+  const byKey = new Map<string, { description: string; count: number; total: Decimal }>();
+
+  for (const row of rows) {
+    const normalized = normalizeDescription(row.description);
+    const key = normalized.toLowerCase();
+    const group = byKey.get(key) ?? { description: normalized, count: 0, total: new Decimal(0) };
+
+    group.count += 1;
+    group.total = group.total.plus(new Decimal(row.amount));
+    byKey.set(key, group);
+  }
+
+  const groups = [...byKey.values()]
+    .sort((a, b) => {
+      const bySize = b.total.abs().comparedTo(a.total.abs());
+      return bySize !== 0 ? bySize : a.description.localeCompare(b.description);
+    })
+    .map((group) => ({
+      description: group.description,
+      count: group.count,
+      total: group.total.toFixed(2),
+    }));
+
+  const total = rows
+    .reduce((sum, row) => sum.plus(new Decimal(row.amount)), new Decimal(0))
+    .toFixed(2);
+
+  return { total, groups };
 }

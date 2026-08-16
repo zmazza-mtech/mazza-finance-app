@@ -218,3 +218,21 @@ export interface CategoryTrendResponse {
   /** Newest first; index 0 contains the requested `asOf`. */
   months: CategoryTrendMonth[];
 }
+
+/** One merchant's worth of transactions that nothing has categorized yet. */
+export interface UncategorizedGroup {
+  /**
+   * The normalized description. Sending this back to batch-categorize is what
+   * assigns the whole group, so it is the group's identity, not a label.
+   */
+  description: string;
+  count: number;
+  total: string;
+}
+
+export interface UncategorizedResponse {
+  /** Every uncategorized amount summed, as a decimal string. */
+  total: string;
+  /** Largest first by size of amount. */
+  groups: UncategorizedGroup[];
+}

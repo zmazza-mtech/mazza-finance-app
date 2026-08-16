@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { computeTrendBuckets, splitByCategory } from '../../src/services/reports';
+import { computeTrendBuckets, groupUncategorized, splitByCategory } from '../../src/services/reports';
+import { normalizeDescription } from '../../src/services/categorize';
 
 describe('computeTrendBuckets', () => {
   it('returns a single bucket running month-start through asOf', () => {
@@ -141,5 +142,95 @@ describe('splitByCategory', () => {
   it('preserves the decimal string exactly as stored', () => {
     const result = splitByCategory([{ category: 'Housing', total: '-1850.00' }]);
     expect(result.expenses[0].total).toBe('-1850.00');
+  });
+});
+
+describe('groupUncategorized', () => {
+  it('collapses descriptions that differ only in a stripped card prefix', () => {
+    const result = groupUncategorized([
+      { description: 'DBT CRD 0407 27105864 TSTDRIP KITCHEN', amount: '-12.00' },
+      { description: 'DBT CRD 0937 88104412 TSTDRIP KITCHEN', amount: '-18.00' },
+    ]);
+
+    expect(result.groups).toHaveLength(1);
+    expect(result.groups[0].count).toBe(2);
+  });
+
+  it('sums a group as an exact decimal string', () => {
+    const result = groupUncategorized([
+      { description: 'POS DEBIT 1234 PEPO SHOP', amount: '-0.10' },
+      { description: 'POS DEBIT 5678 PEPO SHOP', amount: '-0.20' },
+    ]);
+
+    expect(result.groups[0].total).toBe('-0.30');
+  });
+
+  it('keeps distinct merchants in separate groups', () => {
+    const result = groupUncategorized([
+      { description: 'ACH DEBIT PEPO SHOP', amount: '-12.00' },
+      { description: 'ACH DEBIT ODDS AND ENDS', amount: '-18.00' },
+    ]);
+
+    expect(result.groups).toHaveLength(2);
+  });
+
+  it('groups case-insensitively, matching what batch-categorize matches on', () => {
+    const result = groupUncategorized([
+      { description: 'pepo shop', amount: '-12.00' },
+      { description: 'PEPO SHOP', amount: '-18.00' },
+    ]);
+
+    expect(result.groups).toHaveLength(1);
+  });
+
+  it('orders groups by the size of the amount, largest first', () => {
+    const result = groupUncategorized([
+      { description: 'SMALL CO', amount: '-5.00' },
+      { description: 'BIG CO', amount: '-500.00' },
+      { description: 'MID CO', amount: '-50.00' },
+    ]);
+
+    expect(result.groups.map((g) => g.description)).toEqual(['BIG CO', 'MID CO', 'SMALL CO']);
+  });
+
+  it('ranks a large deposit above a small charge, ignoring sign', () => {
+    const result = groupUncategorized([
+      { description: 'SMALL CO', amount: '-5.00' },
+      { description: 'MYSTERY DEPOSIT', amount: '900.00' },
+    ]);
+
+    expect(result.groups[0].description).toBe('MYSTERY DEPOSIT');
+  });
+
+  it('reports the description in the form batch-categorize will re-normalize to the same group', () => {
+    const result = groupUncategorized([
+      { description: 'DBT CRD 0407 27105864 TSTDRIP KITCHEN', amount: '-12.00' },
+    ]);
+
+    expect(normalizeDescription(result.groups[0].description).toLowerCase()).toBe(
+      normalizeDescription('DBT CRD 0407 27105864 TSTDRIP KITCHEN').toLowerCase(),
+    );
+  });
+
+  it('totals every group into one figure as a decimal string', () => {
+    const result = groupUncategorized([
+      { description: 'SMALL CO', amount: '-5.05' },
+      { description: 'BIG CO', amount: '-500.50' },
+    ]);
+
+    expect(result.total).toBe('-505.55');
+  });
+
+  it('reports an empty set as a zero total and no groups', () => {
+    expect(groupUncategorized([])).toEqual({ total: '0.00', groups: [] });
+  });
+
+  it('breaks a tie on total alphabetically, so the order is stable', () => {
+    const result = groupUncategorized([
+      { description: 'ZEBRA CO', amount: '-10.00' },
+      { description: 'ALPHA CO', amount: '-10.00' },
+    ]);
+
+    expect(result.groups.map((g) => g.description)).toEqual(['ALPHA CO', 'ZEBRA CO']);
   });
 });

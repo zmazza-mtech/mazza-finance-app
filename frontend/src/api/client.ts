@@ -272,7 +272,12 @@ export async function importTransactions(body: ImportBody): Promise<ImportResult
 // Reports
 // ---------------------------------------------------------------------------
 
-import type { Category, CategorySummaryResponse, CategoryTrendResponse } from './types';
+import type {
+  Category,
+  CategorySummaryResponse,
+  CategoryTrendResponse,
+  UncategorizedResponse,
+} from './types';
 
 export async function getCategorySummary(params: {
   accountId: string;
@@ -302,6 +307,19 @@ export async function getCategoryTrend(params: {
   }).toString();
   const res = await request<CategoryTrendResponse>(`/reports/category-trend?${query}`);
   if (res.error) throw new Error(res.error);
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
+/**
+ * Everything with no useful category, grouped by merchant, largest first.
+ *
+ * Takes no account: the bulk assignment it feeds matches across every account,
+ * so a scoped list would understate what assigning a group changes.
+ */
+export async function getUncategorized(): Promise<UncategorizedResponse> {
+  const res = await request<UncategorizedResponse>('/reports/uncategorized');
+  if (res.error) throw new Error(String(res.error));
   if (!res.data) throw new Error('No data returned');
   return res.data;
 }

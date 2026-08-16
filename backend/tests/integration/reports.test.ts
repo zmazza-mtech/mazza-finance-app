@@ -20,6 +20,7 @@ import { resetDb, seedAccount, seedTransactions, ABSENT_UUID } from '../helpers/
 const request = supertest(app);
 const SUMMARY = '/api/v1/reports/category-summary';
 const TREND = '/api/v1/reports/category-trend';
+const UNCATEGORIZED = '/api/v1/reports/uncategorized';
 
 let accountId: string;
 
@@ -274,5 +275,143 @@ describe('GET /reports/category-trend', () => {
   it('rejects a malformed asOf', async () => {
     const res = await request.get(TREND).query({ accountId, asOf: 'August', months: 3 });
     expect(res.status).toBe(400);
+  });
+});
+
+/**
+ * The uncategorized review surface. A row needs review when nothing useful has
+ * been decided about it and nobody decided it: `category` null or `Other`, with
+ * `categorySource` still 'auto'. A user who deliberately chose `Other`, or
+ * deliberately cleared the category, has made a decision — putting it back in
+ * the review queue would nag them about a choice they already made.
+ */
+describe('GET /reports/uncategorized', () => {
+  it('collapses descriptions that differ only in a stripped prefix', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'DBT CRD 0407 27105864 TSTDRIP KITCHEN', amount: '-12.00' },
+      { date: '2026-08-02', description: 'DBT CRD 0937 88104412 TSTDRIP KITCHEN', amount: '-18.00' },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.groups).toHaveLength(1);
+    expect(res.body.data.groups[0].count).toBe(2);
+    expect(res.body.data.groups[0].total).toBe('-30.00');
+  });
+
+  it('includes a row auto-assigned to Other', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'MYSTERY CO', amount: '-40.00', category: 'Other' },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.groups).toHaveLength(1);
+  });
+
+  it('leaves out a row the user deliberately filed under Other', async () => {
+    await seedTransactions(accountId, [
+      {
+        date: '2026-08-01',
+        description: 'MYSTERY CO',
+        amount: '-40.00',
+        category: 'Other',
+        categorySource: 'user',
+      },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.groups).toEqual([]);
+  });
+
+  it('leaves out a row whose category the user deliberately cleared', async () => {
+    await seedTransactions(accountId, [
+      {
+        date: '2026-08-01',
+        description: 'MYSTERY CO',
+        amount: '-40.00',
+        category: null,
+        categorySource: 'user',
+      },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.groups).toEqual([]);
+  });
+
+  it('leaves out a row that already has a real category', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'KROGER 123', amount: '-40.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.groups).toEqual([]);
+  });
+
+  it('reports the money sitting uncategorized as an exact decimal string', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'ONE CO', amount: '-0.10' },
+      { date: '2026-08-02', description: 'TWO CO', amount: '-0.20' },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.total).toBe('-0.30');
+  });
+
+  it('returns nothing to review when everything is categorized', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'KROGER 123', amount: '-40.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data).toEqual({ total: '0.00', groups: [] });
+  });
+
+  it('counts every account, because bulk assignment is not scoped to one', async () => {
+    const otherAccount = (await seedAccount({ name: 'Savings' })).id;
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'PEPO SHOP', amount: '-10.00' },
+    ]);
+    await seedTransactions(otherAccount, [
+      { date: '2026-08-02', description: 'PEPO SHOP', amount: '-20.00' },
+    ]);
+
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.groups).toHaveLength(1);
+    expect(res.body.data.groups[0].count).toBe(2);
+  });
+
+  it('reports a group under a description that batch-categorize then matches', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'DBT CRD 0407 27105864 TSTDRIP KITCHEN', amount: '-12.00' },
+      { date: '2026-08-02', description: 'DBT CRD 0937 88104412 TSTDRIP KITCHEN', amount: '-18.00' },
+    ]);
+
+    const review = await request.get(UNCATEGORIZED);
+    const assign = await request
+      .post('/api/v1/transactions/batch-categorize')
+      .send({ description: review.body.data.groups[0].description, category: 'Dining' });
+
+    expect(assign.body.data.updated).toBe(2);
+  });
+
+  it('drops a group once its transactions are assigned', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'TSTDRIP KITCHEN', amount: '-12.00' },
+    ]);
+
+    await request
+      .post('/api/v1/transactions/batch-categorize')
+      .send({ description: 'TSTDRIP KITCHEN', category: 'Dining' });
+    const res = await request.get(UNCATEGORIZED);
+
+    expect(res.body.data.groups).toEqual([]);
   });
 });

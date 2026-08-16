@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { and, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, eq, gte, isNull, lte, or, sql } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { transactions } from '../db/schema';
 import { ReportQuerySchema, CategoryTrendQuerySchema } from '../lib/validate';
-import { computeTrendBuckets, splitByCategory } from '../services/reports';
+import { computeTrendBuckets, groupUncategorized, splitByCategory } from '../services/reports';
 import { logger } from '../lib/logger';
 
 const router = Router();
@@ -70,6 +70,41 @@ router.get('/category-trend', async (req: Request, res: Response) => {
     res.json({ data: { months }, error: null });
   } catch (err) {
     logger.error('GET /reports/category-trend failed', { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ data: null, error: 'Internal server error' });
+  }
+});
+
+// GET /reports/uncategorized
+//
+// Everything with no useful category, grouped by merchant, biggest first.
+//
+// Deliberately unscoped by account: `POST /transactions/batch-categorize`
+// matches on normalized description across every account, so a per-account
+// count here would promise a smaller change than the assignment makes.
+//
+// A row qualifies only while `categorySource` is still 'auto'. A user who
+// filed something under Other, or cleared its category outright, has decided —
+// re-listing it would nag them about their own choice, the same principle that
+// keeps re-categorization off a corrected row.
+router.get('/uncategorized', async (_req: Request, res: Response) => {
+  try {
+    const db = getDb();
+    const rows = await db
+      .select({
+        description: transactions.description,
+        amount: transactions.amount,
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.categorySource, 'auto'),
+          or(isNull(transactions.category), eq(transactions.category, 'Other')),
+        ),
+      );
+
+    res.json({ data: groupUncategorized(rows), error: null });
+  } catch (err) {
+    logger.error('GET /reports/uncategorized failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

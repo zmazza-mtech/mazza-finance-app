@@ -57,6 +57,7 @@ export interface TransactionSeed {
   description: string;
   amount: string;
   category?: string | null;
+  categorySource?: string;
   type?: string;
   status?: string;
 }
@@ -74,6 +75,7 @@ export async function seedTransactions(
       description: row.description,
       amount: row.amount,
       category: row.category ?? null,
+      categorySource: row.categorySource ?? 'auto',
       type: row.type ?? 'manual',
       status: row.status ?? 'posted',
     })),
