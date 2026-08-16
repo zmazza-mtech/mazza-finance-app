@@ -17,6 +17,7 @@ import {
   allTransactions,
   ABSENT_UUID,
 } from '../helpers/db';
+import { parseCsvRecords } from '../helpers/csv';
 
 const request = supertest(app);
 const IMPORT = '/api/v1/import/csv';
@@ -285,5 +286,109 @@ describe('POST /import/csv — size limits', () => {
 
     expect(res.status).toBe(413);
     expect(await allTransactions(accountId)).toHaveLength(0);
+  });
+});
+
+/**
+ * Export and re-import, the property that makes the data portable rather than
+ * merely visible: what comes out of the export must go back in unchanged.
+ *
+ * The CSV is read back with the test's own reader — see `helpers/csv.ts` for
+ * why there is no production one on this side. A description containing a
+ * newline is deliberately not exercised here: `toCsv` quotes it correctly, but
+ * the browser's importer reads line by line and cannot reassemble it, so a pass
+ * here would claim a round trip the application cannot actually perform.
+ */
+describe('export and re-import', () => {
+  const EXPORT = '/api/v1/reports/transactions.csv';
+
+  async function exportCsv(id: string): Promise<string> {
+    const res = await request
+      .get(EXPORT)
+      .query({ accountId: id, startDate: '2026-08-01', endDate: '2026-08-31' });
+    expect(res.status).toBe(200);
+    return res.text;
+  }
+
+  it('reproduces the original transaction set in an empty account', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Whole Foods', amount: '-84.21', category: 'Groceries' },
+      { date: '2026-08-12', description: 'Paycheck', amount: '2400.00', category: 'Income' },
+    ]);
+
+    const emptyAccount = (await seedAccount({ name: 'Restored' })).id;
+    const res = await request.post(IMPORT).send({
+      accountId: emptyAccount,
+      transactions: parseCsvRecords(await exportCsv(accountId)).map((r) => ({
+        date: r['date']!,
+        description: r['description']!,
+        amount: r['amount']!,
+      })),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.imported).toBe(2);
+
+    const restored = await allTransactions(emptyAccount);
+    expect(restored.map((t) => [String(t.date), t.description, String(t.amount)])).toEqual([
+      ['2026-08-10', 'Whole Foods', '-84.21'],
+      ['2026-08-12', 'Paycheck', '2400.00'],
+    ]);
+  });
+
+  it('carries a description with a comma and a quote through unchanged', async () => {
+    const awkward = 'Smith, "Bob" & Co';
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: awkward, amount: '-10.00', category: null },
+    ]);
+
+    const emptyAccount = (await seedAccount({ name: 'Restored' })).id;
+    await request.post(IMPORT).send({
+      accountId: emptyAccount,
+      transactions: parseCsvRecords(await exportCsv(accountId)).map((r) => ({
+        date: r['date']!,
+        description: r['description']!,
+        amount: r['amount']!,
+      })),
+    });
+
+    const [restored] = await allTransactions(emptyAccount);
+    expect(restored!.description).toBe(awkward);
+  });
+
+  it('keeps an amount to the cent through the round trip', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Rent', amount: '-1250.00', category: 'Housing' },
+    ]);
+
+    const emptyAccount = (await seedAccount({ name: 'Restored' })).id;
+    await request.post(IMPORT).send({
+      accountId: emptyAccount,
+      transactions: parseCsvRecords(await exportCsv(accountId)).map((r) => ({
+        date: r['date']!,
+        description: r['description']!,
+        amount: r['amount']!,
+      })),
+    });
+
+    const [restored] = await allTransactions(emptyAccount);
+    expect(String(restored!.amount)).toBe('-1250.00');
+  });
+
+  it('re-imports into the same account as nothing new, having deduplicated', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Whole Foods', amount: '-84.21', category: 'Groceries' },
+    ]);
+
+    const res = await request.post(IMPORT).send({
+      accountId,
+      transactions: parseCsvRecords(await exportCsv(accountId)).map((r) => ({
+        date: r['date']!,
+        description: r['description']!,
+        amount: r['amount']!,
+      })),
+    });
+
+    expect(res.body.data).toMatchObject({ imported: 0, skipped: 1 });
   });
 });

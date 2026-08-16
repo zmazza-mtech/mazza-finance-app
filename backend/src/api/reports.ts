@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import Decimal from 'decimal.js';
-import { and, eq, gte, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { transactions } from '../db/schema';
 import {
@@ -16,6 +16,7 @@ import {
   monthRange,
   splitByCategory,
 } from '../services/reports';
+import { toCsv } from '../lib/csv';
 import { logger } from '../lib/logger';
 
 const router = Router();
@@ -87,6 +88,88 @@ router.get('/category-trend', async (req: Request, res: Response) => {
     res.json({ data: { months }, error: null });
   } catch (err) {
     logger.error('GET /reports/category-trend failed', { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ data: null, error: 'Internal server error' });
+  }
+});
+
+/** Sends a CSV document as a download rather than as a page. */
+function sendCsv(res: Response, filename: string, body: string): void {
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(body);
+}
+
+// GET /reports/transactions.csv?accountId=&startDate=&endDate=
+//
+// The same account and date filters the reports page uses, so what is exported
+// is what is displayed. Columns are named for what `POST /import/csv` reads,
+// and amounts are written exactly as the API states them — an export that
+// prettified them into "$1,250.00" would not import back.
+router.get('/transactions.csv', async (req: Request, res: Response) => {
+  const parsed = ReportQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({ data: null, error: parsed.error.flatten() });
+  }
+
+  const { accountId, startDate, endDate } = parsed.data;
+
+  try {
+    const db = getDb();
+    const rows = await db
+      .select({
+        date: transactions.date,
+        description: transactions.description,
+        amount: transactions.amount,
+        category: transactions.category,
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.accountId, accountId),
+          gte(transactions.date, startDate),
+          lte(transactions.date, endDate),
+        ),
+      )
+      .orderBy(asc(transactions.date), asc(transactions.description));
+
+    const body = toCsv(
+      ['date', 'description', 'amount', 'category'],
+      rows.map((row) => [String(row.date), row.description, String(row.amount), row.category ?? '']),
+    );
+
+    sendCsv(res, `transactions-${startDate}-to-${endDate}.csv`, body);
+  } catch (err) {
+    logger.error('GET /reports/transactions.csv failed', { message: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({ data: null, error: 'Internal server error' });
+  }
+});
+
+// GET /reports/category-summary.csv?accountId=&startDate=&endDate=
+//
+// The same split the reports page renders, with the section named on every row
+// so income, expenses and transfers stay distinguishable in a spreadsheet that
+// knows nothing about the sign convention.
+router.get('/category-summary.csv', async (req: Request, res: Response) => {
+  const parsed = ReportQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({ data: null, error: parsed.error.flatten() });
+  }
+
+  const { accountId, startDate, endDate } = parsed.data;
+
+  try {
+    const split = splitByCategory(await categoryTotals(accountId, startDate, endDate));
+    const rows = (['income', 'expenses', 'transfers'] as const).flatMap((section) =>
+      split[section].map((item) => [section, item.category, item.total]),
+    );
+
+    sendCsv(
+      res,
+      `category-summary-${startDate}-to-${endDate}.csv`,
+      toCsv(['section', 'category', 'total'], rows),
+    );
+  } catch (err) {
+    logger.error('GET /reports/category-summary.csv failed', { message: err instanceof Error ? err.message : String(err) });
     res.status(500).json({ data: null, error: 'Internal server error' });
   }
 });

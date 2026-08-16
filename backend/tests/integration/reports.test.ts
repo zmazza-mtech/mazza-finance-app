@@ -22,6 +22,8 @@ const SUMMARY = '/api/v1/reports/category-summary';
 const TREND = '/api/v1/reports/category-trend';
 const UNCATEGORIZED = '/api/v1/reports/uncategorized';
 const MONTHLY = '/api/v1/reports/monthly';
+const TRANSACTIONS_CSV = '/api/v1/reports/transactions.csv';
+const SUMMARY_CSV = '/api/v1/reports/category-summary.csv';
 
 let accountId: string;
 
@@ -631,5 +633,201 @@ describe('GET /reports/monthly', () => {
     });
 
     expect(res.body.data.months[0].categories[0].category).toBe('Other');
+  });
+});
+
+/**
+ * CSV export. The application takes data in and, until this, never gave any
+ * back — for a self-hosted ledger that is a lock-in problem, so what comes out
+ * has to be exactly what went in.
+ */
+describe('GET /reports/transactions.csv', () => {
+  it('rejects a missing accountId', async () => {
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('answers as a CSV file, not as a page', async () => {
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/text\/csv/);
+    expect(res.headers['content-disposition']).toMatch(/attachment; filename="[^"]+\.csv"/);
+  });
+
+  it('names the columns the import path reads', async () => {
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text.split('\n')[0]).toBe('date,description,amount,category');
+  });
+
+  it('writes a header and nothing else when the range is empty', async () => {
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toBe('date,description,amount,category\n');
+  });
+
+  it('writes one row per transaction, oldest first', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-20', description: 'Later', amount: '-20.00', category: 'Dining' },
+      { date: '2026-08-10', description: 'Earlier', amount: '-10.00', category: 'Dining' },
+    ]);
+
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toBe(
+      'date,description,amount,category\n' +
+        '2026-08-10,Earlier,-10.00,Dining\n' +
+        '2026-08-20,Later,-20.00,Dining\n',
+    );
+  });
+
+  it('carries an amount exactly as the API states it', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Rent', amount: '-1250.00', category: 'Housing' },
+    ]);
+
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toContain(',-1250.00,');
+  });
+
+  it('quotes a description carrying a comma, a quote and a newline', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Smith, "Bob"\n& Co', amount: '-10.00', category: null },
+    ]);
+
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toBe(
+      'date,description,amount,category\n' + '2026-08-10,"Smith, ""Bob""\n& Co",-10.00,\n',
+    );
+  });
+
+  it('leaves the category field empty when nothing has categorized the row', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Mystery', amount: '-10.00', category: null },
+    ]);
+
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toContain('2026-08-10,Mystery,-10.00,\n');
+  });
+
+  it('applies the same date filter the reports page applies', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-07-31', description: 'Before', amount: '-10.00', category: 'Dining' },
+      { date: '2026-08-10', description: 'Inside', amount: '-10.00', category: 'Dining' },
+      { date: '2026-09-01', description: 'After', amount: '-10.00', category: 'Dining' },
+    ]);
+
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toContain('Inside');
+    expect(res.text).not.toContain('Before');
+    expect(res.text).not.toContain('After');
+  });
+
+  it('exports only the requested account', async () => {
+    const otherAccount = (await seedAccount({ name: 'Savings' })).id;
+    await seedTransactions(otherAccount, [
+      { date: '2026-08-10', description: 'Not mine', amount: '-10.00', category: 'Dining' },
+    ]);
+
+    const res = await request.get(TRANSACTIONS_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).not.toContain('Not mine');
+  });
+});
+
+describe('GET /reports/category-summary.csv', () => {
+  it('rejects a malformed date', async () => {
+    const res = await request.get(SUMMARY_CSV).query({
+      accountId,
+      startDate: '08/01/2026',
+      endDate: '2026-08-31',
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('answers as a CSV file', async () => {
+    const res = await request.get(SUMMARY_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/text\/csv/);
+  });
+
+  it('names each total by the section it belongs to', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'Payroll', amount: '2400.00', category: 'Income' },
+      { date: '2026-08-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+      { date: '2026-08-11', description: 'To savings', amount: '-500.00', category: 'Transfers' },
+    ]);
+
+    const res = await request.get(SUMMARY_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toBe(
+      'section,category,total\n' +
+        'income,Income,2400.00\n' +
+        'expenses,Groceries,-100.00\n' +
+        'transfers,Transfers,-500.00\n',
+    );
+  });
+
+  it('writes a header and nothing else when the range is empty', async () => {
+    const res = await request.get(SUMMARY_CSV).query({
+      accountId,
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+
+    expect(res.text).toBe('section,category,total\n');
   });
 });

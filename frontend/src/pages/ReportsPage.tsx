@@ -6,6 +6,7 @@ import { ReportsChartCard } from '@/components/reports/ReportsChartCard';
 import { CategorySummaryTable } from '@/components/reports/CategorySummaryTable';
 import { MonthRangePicker } from '@/components/reports/MonthRangePicker';
 import { MonthlyComparison } from '@/components/reports/MonthlyComparison';
+import { ExportControls } from '@/components/reports/ExportControls';
 import { formatDateRange } from '@/lib/dates';
 import { useCategorySummary, useMonthlySummary } from '@/hooks/useReports';
 
@@ -26,17 +27,20 @@ function monthFromNow(offset: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-type View = 'breakdown' | 'monthly';
+type View = 'summary' | 'monthly';
 
+// "Summary", not "Breakdown": the chart card inside this view already has a
+// Sankey/Breakdown toggle of its own, and two controls offering the same word
+// for different things is ambiguous to read and to click.
 const VIEWS = [
-  { value: 'breakdown' as const, label: 'Breakdown' },
+  { value: 'summary' as const, label: 'Summary' },
   { value: 'monthly' as const, label: 'Monthly' },
 ];
 
 /**
  * Reports, in two views over two time granularities.
  *
- * `Breakdown` answers "where did the money go over this window" and needs an
+ * `Summary` answers "where did the money go over this window" and needs an
  * arbitrary range. `Monthly` answers "is this month worse than last" and only
  * means anything over whole calendar months. Each view carries its own picker,
  * because one control cannot express both without lying about the other: a
@@ -45,15 +49,15 @@ const VIEWS = [
  */
 export function ReportsPage() {
   const { selectedAccountId } = useContext(AccountContext);
-  const [view, setView] = useState<View>('breakdown');
+  const [view, setView] = useState<View>('summary');
 
   const [startDate, setStartDate] = useState(defaultStartDate);
   const [endDate, setEndDate] = useState(defaultEndDate);
   const [startMonth, setStartMonth] = useState(() => monthFromNow(-5));
   const [endMonth, setEndMonth] = useState(() => monthFromNow(0));
 
-  const breakdown = useCategorySummary({
-    accountId: view === 'breakdown' ? selectedAccountId : '',
+  const summary = useCategorySummary({
+    accountId: view === 'summary' ? selectedAccountId : '',
     startDate,
     endDate,
   });
@@ -64,13 +68,13 @@ export function ReportsPage() {
     endMonth,
   });
 
-  const { isLoading, error } = view === 'breakdown' ? breakdown : monthly;
+  const { isLoading, error } = view === 'summary' ? summary : monthly;
 
   return (
     <div className="mx-auto max-w-shell px-6 py-6">
       <h1 className="font-display text-4xl text-bark-dark">Reports</h1>
       <p className="mt-1 text-[15px] text-stone">
-        {view === 'breakdown'
+        {view === 'summary'
           ? `${formatDateRange(startDate, endDate)} · settled transactions only`
           : 'Whole calendar months · transfers excluded'}
       </p>
@@ -84,13 +88,26 @@ export function ReportsPage() {
           name="report-view"
         />
 
-        {view === 'breakdown' ? (
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-          />
+        {view === 'summary' ? (
+          <>
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+            {/*
+              Export sits with the summary, whose range is exactly what the
+              endpoints take. Offering it on the monthly view would export one
+              flat span for a screen showing month-by-month columns — what came
+              out would not be what was displayed.
+            */}
+            <ExportControls
+              accountId={selectedAccountId}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </>
         ) : (
           <MonthRangePicker
             startMonth={startMonth}
@@ -113,13 +130,13 @@ export function ReportsPage() {
         </p>
       )}
 
-      {view === 'breakdown' && breakdown.data && (
+      {view === 'summary' && summary.data && (
         <div className="space-y-4">
-          <ReportsChartCard data={breakdown.data} />
+          <ReportsChartCard data={summary.data} />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <CategorySummaryTable title="Income" items={breakdown.data.income} />
-            <CategorySummaryTable title="Expenses" items={breakdown.data.expenses} />
+            <CategorySummaryTable title="Income" items={summary.data.income} />
+            <CategorySummaryTable title="Expenses" items={summary.data.expenses} />
           </div>
         </div>
       )}

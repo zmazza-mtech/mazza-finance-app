@@ -1,4 +1,5 @@
-import { test, expect } from './fixtures';
+import { readFile } from 'node:fs/promises';
+import { test, expect, fixtureDate } from './fixtures';
 
 /**
  * The Reports page against the real API.
@@ -25,10 +26,10 @@ test.describe('reports', () => {
   // `calendar` is requested for its side effect: it seeds an account and pins
   // it as the selection before the app loads. Without it the page would report
   // on whichever account sorts first, which is some other test's.
-  test('opens on the breakdown view', async ({ page, calendar: _calendar }) => {
+  test('opens on the summary view', async ({ page, calendar: _calendar }) => {
     await page.goto('/reports');
 
-    await expect(page.getByRole('radio', { name: 'Breakdown' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Summary' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
@@ -64,5 +65,40 @@ test.describe('reports', () => {
 
     const row = page.getByRole('row', { name: /Income/ });
     await expect(row).toContainText('$2,400.00');
+  });
+});
+
+test.describe('csv export', () => {
+  test('exports the transactions on screen, quoting included', async ({ page, calendar }) => {
+    await page.goto('/reports');
+
+    // The seed lives one month ahead; the breakdown opens on the current month.
+    await page.getByLabel('From').fill(fixtureDate(calendar.month, 1));
+    await page.getByLabel('To').fill(fixtureDate(calendar.month, 28));
+
+    const downloading = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Transactions CSV' }).click();
+    const download = await downloading;
+
+    const path = await download.path();
+    const csv = await readFile(path, 'utf8');
+
+    expect(csv.split('\n')[0]).toBe('date,description,amount,category');
+    expect(csv).toContain('E2E Fixture Rent');
+    expect(csv).toContain('-1250.00');
+  });
+
+  test('names the file after the range it covers', async ({ page, calendar }) => {
+    await page.goto('/reports');
+    await page.getByLabel('From').fill(fixtureDate(calendar.month, 1));
+    await page.getByLabel('To').fill(fixtureDate(calendar.month, 28));
+
+    const downloading = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Category summary CSV' }).click();
+    const download = await downloading;
+
+    expect(download.suggestedFilename()).toBe(
+      `category-summary-${fixtureDate(calendar.month, 1)}-to-${fixtureDate(calendar.month, 28)}.csv`,
+    );
   });
 });

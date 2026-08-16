@@ -313,6 +313,20 @@ export async function getCategoryTrend(params: {
 }
 
 /**
+ * The URL of a CSV export, for a link the browser downloads directly.
+ *
+ * A fetch would have to be turned back into a file by hand; a plain link lets
+ * the browser do what it already knows how to do, and the request carries the
+ * same session the rest of the app uses.
+ */
+export function reportExportUrl(
+  report: 'transactions' | 'category-summary',
+  params: { accountId: string; startDate: string; endDate: string },
+): string {
+  return `${BASE_URL}/reports/${report}.csv?${new URLSearchParams(params).toString()}`;
+}
+
+/**
  * Whole calendar months with per-category totals and month-over-month
  * movement. Months are `YYYY-MM`; every month in the range comes back, empty
  * or not.
