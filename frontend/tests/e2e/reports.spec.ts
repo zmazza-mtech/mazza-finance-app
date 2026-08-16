@@ -26,10 +26,10 @@ test.describe('reports', () => {
   // `calendar` is requested for its side effect: it seeds an account and pins
   // it as the selection before the app loads. Without it the page would report
   // on whichever account sorts first, which is some other test's.
-  test('opens on the breakdown view', async ({ page, calendar: _calendar }) => {
+  test('opens on the summary view', async ({ page, calendar: _calendar }) => {
     await page.goto('/reports');
 
-    await expect(page.getByRole('radio', { name: 'Breakdown' })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: 'Summary' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
