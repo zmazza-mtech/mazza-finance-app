@@ -1,0 +1,106 @@
+# The stack the Playwright E2E suite drives.
+#
+# Separate from docker-compose.yml on purpose, for the same reason
+# docker-compose.test.yml is separate: the production database holds real bank
+# transactions behind a volume with no `ports:` mapping, and a suite that seeds
+# accounts and creates and deletes transactions has no business touching it.
+#
+# What this keeps from production, because the flow should exercise the shape
+# that ships: the same backend image, the same Caddy reverse proxy with the same
+# CSP headers, and the same Vite production build served as static files.
+#
+# What it drops, because neither is under test and both only add credential
+# handling to the harness: TLS and Basic Auth. See Caddyfile.e2e.
+#
+# `frontend/tests/e2e/global-setup.ts` starts it, so `npm run e2e` needs no
+# preamble. Stop it with `npm run e2e:down`.
+
+# Its own project name, so it never mingles with the application stack.
+name: mazza-finance-e2e
+
+services:
+  # Builds the frontend into the shared volume Caddy serves. Run to completion
+  # before the rest of the stack comes up — see global-setup.ts.
+  frontend-build:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+      args:
+        # Same-origin, so the CSP's `connect-src 'self'` holds exactly as it
+        # does in production.
+        - VITE_API_BASE_URL=/api/v1
+    volumes:
+      - frontend_build:/app/dist
+    restart: "no"
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "127.0.0.1:5599:80"
+    volumes:
+      - ./Caddyfile.e2e:/etc/caddy/Caddyfile:ro
+      - frontend_build:/usr/share/caddy:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:80/health"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://e2e:e2e@postgres:5432/mazza_e2e
+      # The suite never syncs — SimpleFIN allows 24 polls a day and a test run
+      # must not spend any of them. This satisfies the startup check and is
+      # never dialled.
+      - SIMPLEFIN_ACCESS_URL=https://e2e:e2e@simplefin.invalid/simplefin
+      - PORT=3001
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://127.0.0.1:5599
+    expose:
+      - "3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # The backend migrates on boot; healthy means migrations finished.
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3001/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 1s
+      timeout: 3s
+      retries: 60
+
+  postgres:
+    image: postgres:16-alpine
+    # 55433, not 5432 and not the backend tests' 55432 — the two suites can run
+    # side by side without colliding.
+    ports:
+      - "127.0.0.1:55433:5432"
+    environment:
+      POSTGRES_USER: e2e
+      POSTGRES_PASSWORD: e2e
+      POSTGRES_DB: mazza_e2e
+      # No durability needed; the volume is gone at the end of the run anyway.
+      POSTGRES_INITDB_ARGS: "--nosync"
+    # In memory. Faster, and nothing survives a restart to leak between runs.
+    tmpfs:
+      - /var/lib/postgresql/data
+    command: >
+      postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U e2e -d mazza_e2e"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  frontend_build:

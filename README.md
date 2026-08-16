@@ -126,6 +126,48 @@ Database migrations run automatically on container startup.
 
 ---
 
+## Running the Tests
+
+None of the suites touch the application stack. Each brings up its own
+throwaway Postgres on its own port under its own Compose project name, so they
+can run while `docker compose up` is running — or while it is not — and the
+production `postgres_data` volume is never opened either way.
+
+**Backend — unit and integration:**
+```bash
+cd backend && npm test
+```
+Starts the database in `docker-compose.test.yml` on first run and migrates it.
+Locally the container is left running so the next run starts in about a second;
+stop it with `npm run test:db:down`. Point `TEST_DATABASE_URL` at an existing
+instance to skip Docker entirely.
+
+**Frontend — unit:**
+```bash
+cd frontend && npm test
+```
+
+**End-to-end (Playwright):**
+```bash
+cd frontend && npm run e2e
+```
+Needs Docker running, and nothing else. The suite builds the frontend, brings up
+`docker-compose.e2e.yml` — Postgres on tmpfs, the backend image, Caddy serving
+the production build behind the production CSP — runs against it, and tears it
+down with its volumes. It starts from an empty database every time, so two runs
+in a row give the same answer.
+
+To iterate on a spec without paying for the build and container start each time,
+run the stack yourself and tell the suite to leave it alone:
+```bash
+docker compose -f docker-compose.e2e.yml up --build   # in one terminal
+cd frontend && E2E_SKIP_STACK=1 npm run e2e           # in another
+```
+Note that the seeded data then accumulates across runs. Take it down with
+`npm run e2e:down`.
+
+---
+
 ## Troubleshooting
 
 **View logs:**

@@ -14,6 +14,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    // Vitest's default include matches *.spec.ts, which would sweep the
+    // Playwright suite into the jsdom run. Those belong to `npm run e2e`.
+    exclude: ['node_modules/**', 'dist/**', 'tests/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

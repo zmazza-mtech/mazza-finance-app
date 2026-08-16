@@ -40,3 +40,8 @@ Thumbs.db
 
 # Playwright MCP scratch output
 .playwright-mcp/
+
+# Playwright run output — traces and screenshots from failed E2E runs
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
