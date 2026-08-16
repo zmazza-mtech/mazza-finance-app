@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 /**
  * Core fetch wrapper.
- * - Always parses JSON as { data, error }
+ * - Parses JSON as { data, error }
  * - Throws on network errors
  * - Returns ApiResponse<T> for all responses
  */
@@ -20,6 +20,13 @@ async function request<T>(
     },
     ...options,
   });
+
+  // Every DELETE in the API answers 204, which carries no body. Parsing that as
+  // JSON throws, and the throw surfaces as a failed mutation on a request the
+  // server handled — see issue #30.
+  if (response.status === 204) {
+    return { data: null, error: null };
+  }
 
   const json = (await response.json()) as ApiResponse<T>;
   return json;
