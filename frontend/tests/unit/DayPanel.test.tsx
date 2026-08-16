@@ -33,6 +33,12 @@ const baseProps = {
   greenThreshold: '1000',
   criticalThreshold: '200',
   onAddTransaction: vi.fn(),
+  // These drive the phone sheet only. jsdom's matchMedia answers "no" to the
+  // phone query, so every test in this file renders the desktop `<aside>`,
+  // which ignores both. The phone presentation is covered by the mobile
+  // Playwright project, where a real viewport decides.
+  isOpen: true,
+  onClose: vi.fn(),
 };
 
 describe('DayPanel — heading', () => {

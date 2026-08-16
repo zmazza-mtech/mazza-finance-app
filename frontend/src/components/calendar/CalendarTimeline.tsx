@@ -78,6 +78,15 @@ export function CalendarTimeline({
   const [modalDate, setModalDate] = useState<string | null>(null);
   /** Phone only: the search field is behind a toggle below `sm`. */
   const [searchOpen, setSearchOpen] = useState(false);
+  /*
+   * Phone only: whether the day sheet is raised.
+   *
+   * Separate from `selectedDate` because on a phone the two mean different
+   * things. Selecting a day updates a persistent panel on desktop, but opens
+   * something modal on a phone — so closing the sheet has to leave the day
+   * selected, or returning to the calendar would lose the reader's place.
+   */
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -97,6 +106,7 @@ export function CalendarTimeline({
     const preferredFocus = todayDate.slice(0, 7) === currentMonth ? todayDate : null;
     setRovingState(createRovingState(allIds, preferredFocus ?? allIds[0] ?? todayDate));
     setSelectedDate(defaultSelection(allIds, todayDate, currentMonth));
+    setSheetOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth]);
 
@@ -122,6 +132,10 @@ export function CalendarTimeline({
   /** Opens the modal, remembering what to give focus back to on close. */
   const openModal = useCallback((date: string) => {
     modalTrigger.current = document.activeElement as HTMLElement | null;
+    // On a phone the entry point is inside the day sheet. Two stacked sheets
+    // would trap focus in the lower one and hide the form behind it. On
+    // desktop this is a no-op — the panel ignores `sheetOpen`.
+    setSheetOpen(false);
     setModalDate(date);
   }, []);
 
@@ -317,7 +331,10 @@ export function CalendarTimeline({
             searchQuery={searchQuery}
             matchingDates={matchingDates}
             onFocusDate={(date) => setRovingState((prev) => ({ ...prev, focusedId: date }))}
-            onSelectDate={setSelectedDate}
+            onSelectDate={(date) => {
+              setSelectedDate(date);
+              setSheetOpen(true);
+            }}
             onActivateDate={openModal}
           />
 
@@ -339,6 +356,8 @@ export function CalendarTimeline({
             greenThreshold={greenThreshold}
             criticalThreshold={criticalThreshold}
             onAddTransaction={openModal}
+            isOpen={sheetOpen}
+            onClose={() => setSheetOpen(false)}
           />
         </div>
       </div>

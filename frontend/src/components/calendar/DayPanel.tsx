@@ -1,5 +1,8 @@
 import Decimal from 'decimal.js';
 import { SourceBadge } from '@/components/shared/SourceBadge';
+import { Sheet } from '@/components/shared/Sheet';
+import { Icon } from '@/components/shared/Icon';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import {
   formatCurrency,
   formatAmount,
@@ -19,6 +22,9 @@ interface DayPanelProps {
   greenThreshold: string;
   criticalThreshold: string;
   onAddTransaction: (date: string) => void;
+  /** Phone only: whether the sheet is raised. The desktop panel is always shown. */
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 function kindLabel(date: string, todayDate: string): string {
@@ -47,11 +53,18 @@ function StatTile({
 }
 
 /**
- * Persistent detail for the selected day, replacing the hover popover.
+ * Detail for the selected day.
  *
  * Everything the cell could not fit lives here: the full transaction list with
  * no overflow cut, each row's category and source, and the add-transaction
- * entry point.
+ * entry point. On a phone the cell fits far less, so this carries more of the
+ * weight there than it does on desktop.
+ *
+ * One of the five viewport seams. On desktop it is a persistent `<aside>`
+ * beside the grid and selecting a day merely updates it. On a phone there is
+ * no room beside anything, so it is a bottom sheet and selecting a day opens
+ * something modal — which is why the caller tracks "selected" and "open"
+ * separately.
  */
 export function DayPanel({
   date,
@@ -60,7 +73,10 @@ export function DayPanel({
   greenThreshold,
   criticalThreshold,
   onAddTransaction,
+  isOpen,
+  onClose,
 }: DayPanelProps) {
+  const isPhone = useIsPhone();
   const transactions = day?.transactions ?? [];
   const dailyNet = day?.dailyNet ?? '0';
   const runningBalance = day?.runningBalance ?? '';
@@ -72,17 +88,35 @@ export function DayPanel({
     ? getBalanceHealth(runningBalance, greenThreshold, criticalThreshold)
     : null;
 
-  return (
-    <aside
-      aria-label={`Detail for ${formatFullDate(date)}`}
-      className="sticky top-[88px] w-full rounded-lg border border-cream-mid bg-surface p-5"
-    >
-      <p className="font-mono text-[10px] uppercase tracking-label-wide text-warm-gray">
-        {kindLabel(date, todayDate)}
-      </p>
-      <h3 className="mt-1 font-display text-2xl text-bark-dark">{formatFullDate(date)}</h3>
+  const body = (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-mono text-[10px] uppercase tracking-label-wide text-warm-gray">
+            {kindLabel(date, todayDate)}
+          </p>
+          <h3 id="day-panel-title" className="mt-1 font-display text-2xl text-bark-dark">
+            {formatFullDate(date)}
+          </h3>
+        </div>
 
-      <div className="mt-4 flex gap-2.5">
+        {/*
+          Phone only. The desktop panel is persistent — there is nothing to
+          dismiss, and a close button there would imply otherwise.
+        */}
+        {isPhone && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close day detail"
+            className="hit-target flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream-mid bg-surface text-stone transition-colors duration-150 hover:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+          >
+            <Icon name="close" size={15} />
+          </button>
+        )}
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
         <StatTile
           label="Day net"
           value={netIsZero ? '—' : `${netNegative ? '−' : '+'}$${formatAmount(dailyNet)}`}
@@ -142,6 +176,23 @@ export function DayPanel({
       >
         Add transaction
       </button>
+    </>
+  );
+
+  if (isPhone) {
+    return (
+      <Sheet isOpen={isOpen} onClose={onClose} labelledBy="day-panel-title" className="px-4 pb-4">
+        {body}
+      </Sheet>
+    );
+  }
+
+  return (
+    <aside
+      aria-label={`Detail for ${formatFullDate(date)}`}
+      className="sticky top-[88px] w-full rounded-lg border border-cream-mid bg-surface p-5"
+    >
+      {body}
     </aside>
   );
 }
