@@ -1,10 +1,12 @@
 import { useContext, useMemo, useState } from 'react';
 import { CalendarTimeline } from '@/components/calendar/CalendarTimeline';
-import { BalanceAlertBanner } from '@/components/layout/BalanceAlertBanner';
+import { ProjectionPanel } from '@/components/calendar/ProjectionPanel';
 import { useForecast, useAddTransaction } from '@/hooks/useForecast';
 import { useThresholds } from '@/hooks/useSettings';
+import { useCategoryTrend } from '@/hooks/useReports';
 import { AccountContext } from '@/App';
 import { findMatchingDates } from '@/lib/search';
+import { todayIso, lastDayOfMonth } from '@/lib/dates';
 
 /**
  * Calendar page — shows a monthly grid view centered on currentMonth.
@@ -31,6 +33,19 @@ export function CalendarPage() {
     [forecastDays, searchQuery],
   );
 
+  // The projection panel covers the viewed month only, not the ±3 window.
+  const monthDays = useMemo(
+    () => forecastDays.filter((d) => d.date.startsWith(currentMonth)),
+    [forecastDays, currentMonth],
+  );
+
+  // Four buckets: the viewed month plus the three it is compared against.
+  const { data: trend } = useCategoryTrend({
+    accountId: selectedAccountId,
+    asOf: trendAsOf(currentMonth, todayIso()),
+    months: 4,
+  });
+
   const addTransaction = useAddTransaction(selectedAccountId, startDate, endDate);
 
   function handleAddTransaction(data: {
@@ -48,7 +63,7 @@ export function CalendarPage() {
 
   if (!selectedAccountId) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+      <div className="flex h-64 items-center justify-center text-stone">
         <p>Select an account to view the forecast.</p>
       </div>
     );
@@ -56,36 +71,27 @@ export function CalendarPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div
-          className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
-          role="status"
-          aria-label="Loading forecast"
-        />
+      <div className="flex h-64 items-center justify-center">
+        <div className="spinner-sage" role="status" aria-label="Loading forecast" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div
-        role="alert"
-        className="p-4 text-center text-red-700 dark:text-red-400"
-      >
+      <div role="alert" className="p-4 text-center text-error">
         Failed to load forecast. Please try refreshing.
       </div>
     );
   }
 
   return (
-    <>
-      <BalanceAlertBanner
-        forecastDays={forecastDays}
-        greenThreshold={greenThreshold}
-        criticalThreshold={criticalThreshold}
-        onViewDate={() => {
-          // TODO: navigate calendar to target date
-        }}
+    <div className="mx-auto max-w-shell px-6 py-6">
+      <ProjectionPanel
+        days={monthDays}
+        todayDate={todayIso()}
+        comfortFloor={greenThreshold}
+        trendMonths={trend?.months ?? []}
       />
 
       <CalendarTimeline
@@ -103,7 +109,7 @@ export function CalendarPage() {
         onNextMonth={() => setCurrentMonth((m) => addMonths(m, 1))}
         onToday={() => setCurrentMonth(todayIso().slice(0, 7))}
       />
-    </>
+    </div>
   );
 }
 
@@ -111,17 +117,19 @@ export function CalendarPage() {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function firstDayOfMonth(yearMonth: string): string {
   return yearMonth + '-01';
 }
 
-function lastDayOfMonth(yearMonth: string): string {
-  const [y, m] = yearMonth.split('-').map(Number) as [number, number];
-  return new Date(y, m, 0).toISOString().slice(0, 10);
+/**
+ * The date the trend buckets are measured to.
+ *
+ * For the current month that is today, so the comparison is month-to-date
+ * against the same span of earlier months. For any other month it is that
+ * month's last day, so the bucket covers the whole month being viewed.
+ */
+function trendAsOf(yearMonth: string, today: string): string {
+  return today.startsWith(yearMonth) ? today : lastDayOfMonth(yearMonth);
 }
 
 function addMonths(yearMonth: string, n: number): string {

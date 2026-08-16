@@ -60,6 +60,18 @@ export function formatCurrency(amount: string): string {
 }
 
 /**
+ * Formats a decimal string as whole dollars: "$244", "$1,244".
+ *
+ * For rates and averages, where cents are false precision — a burn rate is a
+ * derived average, not an amount anyone was charged.
+ */
+export function formatWholeCurrency(amount: string): string {
+  const rounded = new Decimal(amount).toDecimalPlaces(0);
+  const withCommas = rounded.abs().toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return rounded.isNegative() && !rounded.isZero() ? `-$${withCommas}` : `$${withCommas}`;
+}
+
+/**
  * Returns true if the decimal string represents a negative value.
  */
 export function isNegative(amount: string): boolean {

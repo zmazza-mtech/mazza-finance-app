@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getBalanceHealth,
   getBalanceHealthClasses,
+  formatWholeCurrency,
   getBalanceHealthLabel,
   formatAmount,
   formatCurrency,
@@ -94,6 +95,31 @@ describe('formatCurrency', () => {
 
   it('formats zero', () => {
     expect(formatCurrency('0')).toBe('$0.00');
+  });
+});
+
+describe('formatWholeCurrency', () => {
+  it('drops the cents', () => {
+    expect(formatWholeCurrency('244.00')).toBe('$244');
+  });
+
+  it('rounds to the nearest dollar', () => {
+    expect(formatWholeCurrency('244.62')).toBe('$245');
+    expect(formatWholeCurrency('244.49')).toBe('$244');
+  });
+
+  it('adds thousands separators', () => {
+    expect(formatWholeCurrency('1244.00')).toBe('$1,244');
+    expect(formatWholeCurrency('1234567.89')).toBe('$1,234,568');
+  });
+
+  it('formats zero without a sign', () => {
+    expect(formatWholeCurrency('0')).toBe('$0');
+    expect(formatWholeCurrency('-0.004')).toBe('$0');
+  });
+
+  it('formats a negative value with a leading sign', () => {
+    expect(formatWholeCurrency('-244.00')).toBe('-$244');
   });
 });
 
