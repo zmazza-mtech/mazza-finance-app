@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalendarTimeline } from '@/components/calendar/CalendarTimeline';
 import type { ForecastDay } from '@/api/types';
@@ -54,6 +54,14 @@ function cell(date: string) {
   return document.querySelector(`[data-date="${date}"]`) as HTMLElement;
 }
 
+/**
+ * Focusing a cell is what a Tab into the grid does, and it sets the roving
+ * state on the way in — so it is a state update and has to be wrapped.
+ */
+function focusCell(date: string) {
+  act(() => cell(date).focus());
+}
+
 describe('CalendarTimeline — day selection', () => {
   it('opens on today', () => {
     renderTimeline();
@@ -88,21 +96,21 @@ describe('CalendarTimeline — day selection', () => {
 describe('CalendarTimeline — keyboard', () => {
   it('moves the focus ring with the arrow keys', async () => {
     renderTimeline();
-    cell(TODAY).focus();
+    focusCell(TODAY);
     await userEvent.keyboard('{ArrowRight}');
     expect(cell('2026-08-16')).toHaveAttribute('tabindex', '0');
   });
 
   it('moves a week with the vertical arrows', async () => {
     renderTimeline();
-    cell(TODAY).focus();
+    focusCell(TODAY);
     await userEvent.keyboard('{ArrowDown}');
     expect(cell('2026-08-22')).toHaveAttribute('tabindex', '0');
   });
 
   it('leaves the panel alone when focus moves, so scanning does not lose the detail', async () => {
     renderTimeline();
-    cell(TODAY).focus();
+    focusCell(TODAY);
     await userEvent.keyboard('{ArrowRight}{ArrowRight}');
     // Focus has moved to the 17th; selection is still the 15th.
     expect(cell('2026-08-17')).toHaveAttribute('tabindex', '0');
@@ -112,7 +120,7 @@ describe('CalendarTimeline — keyboard', () => {
   it('jumps to today with T', async () => {
     const onToday = vi.fn();
     renderTimeline({ onToday });
-    cell('2026-08-01').focus();
+    focusCell('2026-08-01');
     await userEvent.keyboard('t');
     expect(onToday).toHaveBeenCalled();
     expect(within(panel()).getByText('Saturday, August 15')).toBeInTheDocument();
@@ -120,23 +128,60 @@ describe('CalendarTimeline — keyboard', () => {
 
   it('opens the add-transaction modal on Enter', async () => {
     renderTimeline();
-    cell(TODAY).focus();
+    focusCell(TODAY);
     await userEvent.keyboard('{Enter}');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it('closes the modal on Escape', async () => {
     renderTimeline();
-    cell(TODAY).focus();
+    focusCell(TODAY);
     await userEvent.keyboard('{Enter}');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('moves DOM focus with the ring, not just the tabindex', async () => {
+    renderTimeline();
+    focusCell(TODAY);
+    await userEvent.keyboard('{ArrowRight}');
+    expect(cell('2026-08-16')).toHaveFocus();
+  });
+
+  it('carries focus to today when T crosses to another cell', async () => {
+    renderTimeline();
+    focusCell('2026-08-01');
+    await userEvent.keyboard('t');
+    expect(cell(TODAY)).toHaveFocus();
+  });
+
+  it('leaves focus alone until a key asks for it', () => {
+    renderTimeline();
+    // A fresh calendar must not pull focus off whatever the user was on.
+    expect(document.body).toHaveFocus();
+    expect(cell(TODAY)).toHaveAttribute('tabindex', '0');
+  });
+
+  it('returns focus to the day cell when the modal closes on Escape', async () => {
+    renderTimeline();
+    focusCell(TODAY);
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Escape}');
+    expect(cell(TODAY)).toHaveFocus();
+  });
+
+  it('returns focus to the panel button when the modal closes on Cancel', async () => {
+    renderTimeline();
+    const trigger = screen.getByRole('button', { name: 'Add transaction' });
+    await userEvent.click(trigger);
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    expect(trigger).toHaveFocus();
+  });
+
   it('focuses the search field with a slash', async () => {
     renderTimeline();
-    cell(TODAY).focus();
+    focusCell(TODAY);
     await userEvent.keyboard('/');
     expect(screen.getByLabelText('Search transactions')).toHaveFocus();
   });
@@ -145,7 +190,7 @@ describe('CalendarTimeline — keyboard', () => {
     const onSearchChange = vi.fn();
     renderTimeline({ searchQuery: 'netflix', onSearchChange });
     const input = screen.getByLabelText('Search transactions');
-    input.focus();
+    act(() => input.focus());
     await userEvent.keyboard('{Escape}');
     expect(onSearchChange).toHaveBeenCalledWith('');
   });

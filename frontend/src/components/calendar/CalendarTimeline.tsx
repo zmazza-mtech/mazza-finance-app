@@ -42,6 +42,10 @@ function defaultSelection(monthDates: string[], todayDate: string, currentMonth:
  * through the grid moves the focus ring without disturbing the panel, so a
  * keyboard user can scan the month while keeping one day's detail on screen.
  *
+ * DOM focus follows the ring, but only when a key moved it. A month change the
+ * user made with the mouse, or a first render, must not pull focus away from
+ * wherever it already is.
+ *
  * Keyboard shortcuts:
  * - Arrow keys: move the focus ring between day cells
  * - T: jump to today, and to today's month
@@ -74,6 +78,17 @@ export function CalendarTimeline({
   const [modalDate, setModalDate] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Set by every shortcut that moves the ring, and consumed by the effect that
+   * moves DOM focus after it. A ref rather than state: it must not itself cause
+   * a render, and it has to survive the one the shortcut triggers.
+   */
+  const focusFollowsKey = useRef(false);
+
+  /** The element the transaction modal was opened from, to hand focus back to. */
+  const modalTrigger = useRef<HTMLElement | null>(null);
 
   // Reset focus and selection when the visible month changes.
   useEffect(() => {
@@ -83,16 +98,59 @@ export function CalendarTimeline({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMonth]);
 
+  /*
+   * Move DOM focus onto the cell carrying the ring.
+   *
+   * The roving tabindex pattern requires the two together: a ring that moves
+   * while focus stays behind announces nothing to a screen reader, and leaves
+   * the next Tab departing from a cell the user cannot see.
+   *
+   * `currentMonth` is a dependency because T crosses months — the cell to focus
+   * does not exist until the new month has rendered.
+   */
+  useEffect(() => {
+    if (!focusFollowsKey.current) return;
+    focusFollowsKey.current = false;
+
+    const date = rovingState.focusedId;
+    if (!date) return;
+    gridRef.current?.querySelector<HTMLElement>(`[data-date="${date}"]`)?.focus();
+  }, [rovingState.focusedId, currentMonth]);
+
+  /** Opens the modal, remembering what to give focus back to on close. */
+  const openModal = useCallback((date: string) => {
+    modalTrigger.current = document.activeElement as HTMLElement | null;
+    setModalDate(date);
+  }, []);
+
+  /** Closes the modal and returns focus to whatever opened it (PRD §5.2). */
+  const closeModal = useCallback(() => {
+    setModalDate(null);
+    modalTrigger.current?.focus();
+    modalTrigger.current = null;
+  }, []);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      /*
+       * While the modal is open every key belongs to it, including its own
+       * Escape. Keys reach this handler at all only because the modal renders
+       * inside the grid — without this guard an arrow key typed in the
+       * description field would move the ring behind the modal, and take focus
+       * out of the field with it.
+       */
+      if (modalDate) return;
+
       const direction = keyToDirection(e.key);
       if (direction) {
         e.preventDefault();
+        focusFollowsKey.current = true;
         setRovingState((prev) => moveFocus(prev, direction));
         return;
       }
 
       if (e.key === 'T' || e.key === 't') {
+        focusFollowsKey.current = true;
         setRovingState((prev) => ({ ...prev, focusedId: todayDate }));
         setSelectedDate(todayDate);
         onToday();
@@ -102,33 +160,34 @@ export function CalendarTimeline({
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         if (rovingState.focusedId) {
-          setModalDate(rovingState.focusedId);
-        }
-        return;
-      }
-
-      if (e.key === '/' && !modalDate) {
-        const target = e.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          e.preventDefault();
-          searchInputRef.current?.focus();
+          openModal(rovingState.focusedId);
         }
         return;
       }
 
       // Escape inside the search field is handled on the input itself.
-      if (e.key === 'Escape' && modalDate) {
-        setModalDate(null);
+      if (e.key === '/') {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+        }
       }
     },
-    [rovingState.focusedId, todayDate, onToday, modalDate, onSearchChange],
+    [rovingState.focusedId, todayDate, onToday, modalDate, onSearchChange, openModal, closeModal],
   );
 
   const selectedDay = days.find((d) => d.date === selectedDate) ?? null;
   const isCurrentMonth = todayDate.slice(0, 7) === currentMonth;
 
   return (
-    <div role="grid" aria-label="Cash flow calendar" onKeyDown={handleKeyDown} className="outline-none">
+    <div
+      ref={gridRef}
+      role="grid"
+      aria-label="Cash flow calendar"
+      onKeyDown={handleKeyDown}
+      className="outline-none"
+    >
       <div className="mb-3 flex flex-wrap items-end justify-between gap-4">
         <h3 className="font-display text-2xl text-bark-dark">
           {formatMonthTitle(currentMonth)}, day by day
@@ -225,7 +284,7 @@ export function CalendarTimeline({
             matchingDates={matchingDates}
             onFocusDate={(date) => setRovingState((prev) => ({ ...prev, focusedId: date }))}
             onSelectDate={setSelectedDate}
-            onActivateDate={(date) => setModalDate(date)}
+            onActivateDate={openModal}
           />
         </div>
 
@@ -236,7 +295,7 @@ export function CalendarTimeline({
             todayDate={todayDate}
             greenThreshold={greenThreshold}
             criticalThreshold={criticalThreshold}
-            onAddTransaction={(date) => setModalDate(date)}
+            onAddTransaction={openModal}
           />
         </div>
       </div>
@@ -248,9 +307,9 @@ export function CalendarTimeline({
         onSubmit={(data) => {
           if (!modalDate) return;
           onAddTransaction({ accountId, date: modalDate, ...data });
-          setModalDate(null);
+          closeModal();
         }}
-        onClose={() => setModalDate(null)}
+        onClose={closeModal}
       />
     </div>
   );
