@@ -31,6 +31,29 @@ export interface Account {
   includeInView: boolean;
 }
 
+/**
+ * A `transactions` row exactly as the API sends it.
+ *
+ * Kept separate from `Transaction` because the two disagree on one field: the
+ * stored column is `type`, while the app — and the forecast endpoint, which
+ * does this translation server-side — calls it `source`. `toTransaction` in
+ * `mappers.ts` is the only place that gap is crossed.
+ */
+export interface ApiTransaction {
+  id: string;
+  accountId: string;
+  simplefinId: string | null;
+  date: string; // YYYY-MM-DD
+  description: string;
+  amount: string; // decimal string, negative = debit
+  category: Category | null;
+  categorySource: CategorySource;
+  type: 'actual' | 'manual';
+  status: 'posted' | 'pending';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Transaction {
   id: string;
   accountId: string;
@@ -44,7 +67,6 @@ export interface Transaction {
    * correction survives the next sync.
    */
   categorySource: CategorySource;
-  recurringId: string | null;
 }
 
 export interface ForecastTransaction {

@@ -72,10 +72,12 @@ export async function updateAccount(
 // ---------------------------------------------------------------------------
 
 import type {
+  ApiTransaction,
   Transaction,
   CreateTransactionBody,
   UpdateTransactionBody,
 } from './types';
+import { toTransaction } from './mappers';
 
 export async function getTransactions(params: {
   accountId?: string;
@@ -89,34 +91,34 @@ export async function getTransactions(params: {
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined) query.set(k, v);
   }
-  const res = await request<Transaction[]>(`/transactions?${query}`);
+  const res = await request<ApiTransaction[]>(`/transactions?${query}`);
   if (res.error) throw new Error(res.error);
-  return res.data ?? [];
+  return (res.data ?? []).map(toTransaction);
 }
 
 export async function createTransaction(
   body: CreateTransactionBody,
 ): Promise<Transaction> {
-  const res = await request<Transaction>('/transactions', {
+  const res = await request<ApiTransaction>('/transactions', {
     method: 'POST',
     body: JSON.stringify(body),
   });
   if (res.error) throw new Error(res.error);
   if (!res.data) throw new Error('No data returned');
-  return res.data;
+  return toTransaction(res.data);
 }
 
 export async function updateTransaction(
   id: string,
   body: UpdateTransactionBody,
 ): Promise<Transaction> {
-  const res = await request<Transaction>(`/transactions/${id}`, {
+  const res = await request<ApiTransaction>(`/transactions/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   });
   if (res.error) throw new Error(res.error);
   if (!res.data) throw new Error('No data returned');
-  return res.data;
+  return toTransaction(res.data);
 }
 
 export async function deleteTransaction(id: string): Promise<void> {
