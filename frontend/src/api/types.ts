@@ -219,6 +219,36 @@ export interface CategoryTrendResponse {
   months: CategoryTrendMonth[];
 }
 
+/** One category's total for a month, with its movement against the month before. */
+export interface MonthlyCategory {
+  category: string;
+  total: string;
+  /**
+   * Movement against the prior month, on magnitudes: a bigger charge reads as
+   * an increase. Null when the prior month had no such category — an absence
+   * is not a change from zero.
+   */
+  change: string | null;
+  /** That movement as a percent. Null when there is no prior figure, or it was zero. */
+  changePercent: string | null;
+}
+
+/** One whole calendar month. Present even when it holds nothing. */
+export interface MonthlySummaryMonth {
+  /** YYYY-MM */
+  month: string;
+  /** Transfers excluded from all three. */
+  income: string;
+  expenses: string;
+  net: string;
+  categories: MonthlyCategory[];
+}
+
+export interface MonthlySummaryResponse {
+  /** Oldest first. */
+  months: MonthlySummaryMonth[];
+}
+
 /** One merchant's worth of transactions that nothing has categorized yet. */
 export interface UncategorizedGroup {
   /**

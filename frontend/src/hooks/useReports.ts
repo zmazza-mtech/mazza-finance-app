@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { batchCategorize, getCategorySummary, getCategoryTrend, getUncategorized } from '@/api/client';
+import {
+  batchCategorize,
+  getCategorySummary,
+  getCategoryTrend,
+  getMonthlySummary,
+  getUncategorized,
+} from '@/api/client';
 import type { Category } from '@/api/types';
 
 /** Query key for the uncategorized review surface. */
@@ -35,6 +41,22 @@ export function useCategoryTrend(params: {
     queryKey: ['categoryTrend', params],
     queryFn: () => getCategoryTrend(params),
     enabled: Boolean(params.accountId && params.asOf && params.months > 0),
+    staleTime: 60 * 1000,
+  });
+}
+
+/**
+ * Fetches whole calendar months with their month-over-month movement.
+ */
+export function useMonthlySummary(params: {
+  accountId: string;
+  startMonth: string;
+  endMonth: string;
+}) {
+  return useQuery({
+    queryKey: ['monthlySummary', params],
+    queryFn: () => getMonthlySummary(params),
+    enabled: Boolean(params.accountId && params.startMonth && params.endMonth),
     staleTime: 60 * 1000,
   });
 }

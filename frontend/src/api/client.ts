@@ -276,6 +276,7 @@ import type {
   Category,
   CategorySummaryResponse,
   CategoryTrendResponse,
+  MonthlySummaryResponse,
   UncategorizedResponse,
 } from './types';
 
@@ -307,6 +308,23 @@ export async function getCategoryTrend(params: {
   }).toString();
   const res = await request<CategoryTrendResponse>(`/reports/category-trend?${query}`);
   if (res.error) throw new Error(res.error);
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
+/**
+ * Whole calendar months with per-category totals and month-over-month
+ * movement. Months are `YYYY-MM`; every month in the range comes back, empty
+ * or not.
+ */
+export async function getMonthlySummary(params: {
+  accountId: string;
+  startMonth: string;
+  endMonth: string;
+}): Promise<MonthlySummaryResponse> {
+  const query = new URLSearchParams(params).toString();
+  const res = await request<MonthlySummaryResponse>(`/reports/monthly?${query}`);
+  if (res.error) throw new Error(String(res.error));
   if (!res.data) throw new Error('No data returned');
   return res.data;
 }
