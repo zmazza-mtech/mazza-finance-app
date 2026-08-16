@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { and, asc, desc, eq, gte, isNull, lte } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { transactions } from '../db/schema';
-import { categorize, normalizeDescription } from '../services/categorize';
+import { categorize, normalizeDescription, isRecategorizable } from '../services/categorize';
 import {
   CreateManualTransactionSchema,
   UpdateManualTransactionSchema,
@@ -127,7 +127,12 @@ router.patch('/:id', async (req: Request, res: Response) => {
     if (parsed.data.date !== undefined) setFields['date'] = parsed.data.date;
     if (parsed.data.description !== undefined) setFields['description'] = parsed.data.description;
     if (parsed.data.amount !== undefined) setFields['amount'] = parsed.data.amount;
-    if ('category' in parsed.data) setFields['category'] = parsed.data.category;
+    // A category arriving here was chosen by the user, including a deliberate
+    // clear to null — auto-categorization must not fill it back in later.
+    if ('category' in parsed.data) {
+      setFields['category'] = parsed.data.category;
+      setFields['categorySource'] = 'user';
+    }
 
     const rows = await db
       .update(transactions)
@@ -203,11 +208,13 @@ router.post('/batch-categorize', async (req: Request, res: Response) => {
       return res.json({ data: { updated: 0 }, error: null });
     }
 
+    // A batch correction is as deliberate as a single one, so the rows it
+    // touches are user-set and stay out of reach of re-categorization.
     let updated = 0;
     for (const id of matchingIds) {
       await db
         .update(transactions)
-        .set({ category, updatedAt: new Date() })
+        .set({ category, categorySource: 'user', updatedAt: new Date() })
         .where(eq(transactions.id, id));
       updated++;
     }
@@ -224,12 +231,19 @@ router.post('/backfill-categories', async (_req: Request, res: Response) => {
   try {
     const db = getDb();
     const uncategorized = await db
-      .select({ id: transactions.id, description: transactions.description })
+      .select({
+        id: transactions.id,
+        description: transactions.description,
+        categorySource: transactions.categorySource,
+      })
       .from(transactions)
       .where(isNull(transactions.category));
 
     let updated = 0;
     for (const row of uncategorized) {
+      // A null category the user chose is a decision, not a gap to fill.
+      if (!isRecategorizable(row.categorySource)) continue;
+
       const cat = categorize(row.description);
       if (cat) {
         await db

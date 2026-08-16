@@ -11,6 +11,9 @@ export type Category =
   | 'Subscriptions' | 'Loan Payments' | 'Taxes' | 'Fitness'
   | 'Transfers' | 'Other';
 
+/** Who chose a transaction's category. */
+export type CategorySource = 'auto' | 'user';
+
 export interface ApiResponse<T> {
   data: T | null;
   error: string | null;
@@ -36,6 +39,11 @@ export interface Transaction {
   amount: string; // decimal string, negative = debit
   source: TransactionSource;
   category: Category | null;
+  /**
+   * Who chose the category. A `user` row is never re-categorized, so a
+   * correction survives the next sync.
+   */
+  categorySource: CategorySource;
   recurringId: string | null;
 }
 

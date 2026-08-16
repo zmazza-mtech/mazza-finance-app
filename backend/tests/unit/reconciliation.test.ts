@@ -138,6 +138,20 @@ describe('reconcileTransactions', () => {
     expect(result.toUpdate[0]!.id).toBe('my-uuid');
   });
 
+  it('never carries a category, so a correction survives a re-sync that touches the row', () => {
+    // The bank revised the description, so this row is re-synced and updated.
+    // The update must stay off the category column: writing it here would
+    // revert a correction made through PATCH /transactions/:id, which is the
+    // one failure the correction feature exists to prevent.
+    const { toUpdate } = reconcileTransactions(
+      [makeIncoming({ description: 'NETFLIX.COM MONTHLY' })],
+      [stored({ description: 'Netflix' })],
+    );
+
+    expect(toUpdate).toHaveLength(1);
+    expect(Object.keys(toUpdate[0]!.updates)).toEqual(['description']);
+  });
+
   it('returns empty results for empty inputs', () => {
     const result = reconcileTransactions([], []);
     expect(result.toInsert).toHaveLength(0);

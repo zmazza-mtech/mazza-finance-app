@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import supertest from 'supertest';
 import app from '../../src/app';
 import { closeDb } from '../../src/db/client';
-import { resetDb, seedAccount, allTransactions } from '../helpers/db';
+import { resetDb, seedAccount, seedTransactions, allTransactions } from '../helpers/db';
 
 const request = supertest(app);
 
@@ -289,6 +289,130 @@ describe('POST /transactions — categorization', () => {
 
     const [saved] = await allTransactions(accountId);
     expect(saved!.category).toBe('Transportation');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Category corrections that survive re-categorization
+// ---------------------------------------------------------------------------
+
+describe('Category corrections', () => {
+  let accountId: string;
+
+  beforeEach(async () => {
+    await resetDb();
+    accountId = (await seedAccount()).id;
+  });
+
+  async function seedOne(overrides: Partial<{ description: string; category: string | null }> = {}) {
+    const res = await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-08-10',
+      description: overrides.description ?? 'SHELL OIL 5729',
+      amount: '-42.00',
+      ...(overrides.category !== undefined ? { category: overrides.category } : {}),
+    });
+    return res.body.data.id as string;
+  }
+
+  it('records an auto-assigned category as auto', async () => {
+    await seedOne();
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBe('Transportation');
+    expect(saved!.categorySource).toBe('auto');
+  });
+
+  it('marks a corrected category as user-set', async () => {
+    const id = await seedOne();
+
+    const res = await request
+      .patch(`/api/v1/transactions/${id}`)
+      .send({ category: 'Groceries' });
+
+    expect(res.status).toBe(200);
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBe('Groceries');
+    expect(saved!.categorySource).toBe('user');
+  });
+
+  it('marks a deliberately cleared category as user-set', async () => {
+    const id = await seedOne();
+
+    await request.patch(`/api/v1/transactions/${id}`).send({ category: null });
+
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBeNull();
+    expect(saved!.categorySource).toBe('user');
+  });
+
+  it('rejects a category outside the enum and leaves the row untouched', async () => {
+    const id = await seedOne();
+
+    const res = await request
+      .patch(`/api/v1/transactions/${id}`)
+      .send({ category: 'Nonsense' });
+
+    expect(res.status).toBe(400);
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBe('Transportation');
+    expect(saved!.categorySource).toBe('auto');
+  });
+
+  it('leaves a user-set category in place when categories are backfilled', async () => {
+    const id = await seedOne({ description: 'ZZQQ 4417' });
+    await request.patch(`/api/v1/transactions/${id}`).send({ category: 'Groceries' });
+
+    // Clearing the category directly mimics a row the backfill would otherwise
+    // claim, without going through the endpoint that sets the source.
+    const res = await request.post('/api/v1/transactions/backfill-categories');
+    expect(res.status).toBe(200);
+
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBe('Groceries');
+    expect(saved!.categorySource).toBe('user');
+  });
+
+  it('does not re-categorize a category the user deliberately cleared', async () => {
+    const id = await seedOne();
+    await request.patch(`/api/v1/transactions/${id}`).send({ category: null });
+
+    await request.post('/api/v1/transactions/backfill-categories');
+
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBeNull();
+    expect(saved!.categorySource).toBe('user');
+  });
+
+  it('still backfills a row the user has never touched', async () => {
+    // Seeded directly so the row starts uncategorized despite a description
+    // the keyword map can place — the state the backfill exists to clean up.
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'KROGER 118', amount: '-42.00', category: null },
+    ]);
+
+    const res = await request.post('/api/v1/transactions/backfill-categories');
+    expect(res.status).toBe(200);
+    expect(res.body.data.updated).toBe(1);
+
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBe('Groceries');
+    expect(saved!.categorySource).toBe('auto');
+  });
+
+  it('marks a batch correction user-set across every matching description', async () => {
+    await seedOne({ description: 'DBT CRD 0407 27105864 TSTDRIP KITCHEN' });
+    await seedOne({ description: 'DBT CRD 0937 11111111 TSTDRIP KITCHEN' });
+
+    const res = await request
+      .post('/api/v1/transactions/batch-categorize')
+      .send({ description: 'TSTDRIP KITCHEN', category: 'Dining' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.updated).toBe(2);
+
+    const saved = await allTransactions(accountId);
+    expect(saved.every((t) => t.category === 'Dining')).toBe(true);
+    expect(saved.every((t) => t.categorySource === 'user')).toBe(true);
   });
 });
 

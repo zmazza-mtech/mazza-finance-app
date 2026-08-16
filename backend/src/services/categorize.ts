@@ -19,6 +19,23 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number];
 
+/** Who chose a transaction's category. */
+export const CATEGORY_SOURCES = ['auto', 'user'] as const;
+
+export type CategorySource = (typeof CATEGORY_SOURCES)[number];
+
+/**
+ * Whether a re-run of categorization may set this transaction's category.
+ *
+ * A user correction is final. Re-running the keyword map over a row the user
+ * has already fixed would silently revert it — the fix would appear to take,
+ * then vanish, and the column would stop being worth correcting at all. A row
+ * with no source predates the column and is treated as auto-assigned.
+ */
+export function isRecategorizable(categorySource: string | null): boolean {
+  return categorySource !== 'user';
+}
+
 // ---------------------------------------------------------------------------
 // Description normalization — strip bank transaction prefixes
 // ---------------------------------------------------------------------------
