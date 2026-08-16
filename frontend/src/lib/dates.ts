@@ -35,8 +35,26 @@ export function formatMonthTitle(yearMonth: string): string {
   return FULL_MONTHS[Number(parts[1]) - 1];
 }
 
+const WEEKDAYS = [
+  'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+];
+
 function pad(value: number): string {
   return String(value).padStart(2, '0');
+}
+
+/**
+ * "2026-08-15" → "Saturday, August 15", for the day panel heading.
+ *
+ * The weekday comes from a UTC-constructed date so the calendar day cannot
+ * shift under the viewer's timezone.
+ */
+export function formatFullDate(date: string): string {
+  const parts = date.split('-');
+  const weekday = new Date(
+    Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])),
+  ).getUTCDay();
+  return `${WEEKDAYS[weekday]}, ${FULL_MONTHS[Number(parts[1]) - 1]} ${Number(parts[2])}`;
 }
 
 /**

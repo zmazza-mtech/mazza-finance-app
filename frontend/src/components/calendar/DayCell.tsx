@@ -1,49 +1,73 @@
+import Decimal from 'decimal.js';
 import { TransactionItem } from './TransactionItem';
-import { formatCurrency, getBalanceHealth, getBalanceHealthClasses } from '@/lib/balance';
+import { formatCurrency, formatAmount, getBalanceHealth, getBalanceHealthClasses, isNegative } from '@/lib/balance';
+import { daySpend, spendIntensity, spendLevel } from '@/lib/metrics';
+import { spendBarHeight } from '@/lib/chart';
 import { transactionMatchesQuery } from '@/lib/search';
-import type { ForecastTransaction } from '@/api/types';
+import type { ForecastDay, ForecastTransaction } from '@/api/types';
 
-const MAX_VISIBLE = 2;
+const MAX_VISIBLE = 3;
+
+const SPEND_BAR_COLORS = {
+  heavy: '#C1574A',
+  moderate: '#C17D4A',
+  light: '#A3BFA3',
+} as const;
 
 interface DayCellProps {
   date: string; // YYYY-MM-DD
   transactions: ForecastTransaction[];
   runningBalance: string; // empty string if no data for this day
+  dailyNet: string; // empty string if no data for this day
+  /** Heaviest single-day spend in the month, for the bar scale. */
+  maxDailySpend: string;
+  todayDate: string;
   isToday: boolean;
   isFocused: boolean;
+  isSelected: boolean;
   greenThreshold: string;
   criticalThreshold: string;
   isSearchActive: boolean;
   hasSearchMatch: boolean;
   searchQuery: string;
   onFocus: (date: string) => void;
+  onSelect: (date: string) => void;
   onActivate: (date: string) => void;
-  onAddTransaction: (date: string) => void;
-  onShowMore: (date: string, anchor: HTMLElement) => void;
 }
 
 /**
  * A single day cell in the monthly calendar grid.
- * - Participates in roving tabindex (tabIndex controlled by parent)
- * - Date number top-left; running balance bottom-right with health color
- * - Shows first 2 transactions; "N more" button triggers a positioned popover
- * - Today's cell has a blue ring inset and blue date number
+ *
+ * Top to bottom: a day chip and the running balance, up to three named
+ * transactions, a foot row carrying the overflow count and the day net, and a
+ * spend-intensity bar.
+ *
+ * Every text span truncates and every flex row sets a zero min-width. Without
+ * that the running balance paints over the neighbouring cell once the grid
+ * narrows.
+ *
+ * Clicking anywhere selects the day, which drives the day panel. Enter and
+ * Space still open the add-transaction modal, so keyboard entry keeps working
+ * without a visible button in the cell.
  */
 export function DayCell({
   date,
   transactions,
   runningBalance,
+  dailyNet,
+  maxDailySpend,
+  todayDate,
   isToday,
   isFocused,
+  isSelected,
   greenThreshold,
   criticalThreshold,
   isSearchActive,
   hasSearchMatch,
   searchQuery,
   onFocus,
+  onSelect,
   onActivate,
-  onAddTransaction,
-  onShowMore,
 }: DayCellProps) {
   const dayOfMonth = parseInt(date.split('-')[2]!, 10);
   const visible = transactions.slice(0, MAX_VISIBLE);
@@ -52,15 +76,25 @@ export function DayCell({
   const health = runningBalance
     ? getBalanceHealth(runningBalance, greenThreshold, criticalThreshold)
     : null;
-  const balanceClasses = health ? getBalanceHealthClasses(health) : 'text-gray-400 dark:text-gray-600';
+  const balanceClasses = health ? getBalanceHealthClasses(health) : 'text-warm-gray';
+
+  const asDay: ForecastDay = { date, transactions, dailyNet: dailyNet || '0', runningBalance };
+  const spend = daySpend(asDay);
+  const intensity = spendIntensity(spend, maxDailySpend);
+  const barHeight = spendBarHeight(intensity);
+
+  const netIsNegative = dailyNet ? isNegative(dailyNet) : false;
+  const showNet = dailyNet !== '' && !new Decimal(dailyNet).isZero();
 
   return (
     <div
       data-date={date}
       role="gridcell"
       aria-label={`${date}${isToday ? ', today' : ''}`}
+      aria-selected={isSelected}
       tabIndex={isFocused ? 0 : -1}
       onFocus={() => onFocus(date)}
+      onClick={() => onSelect(date)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -68,54 +102,34 @@ export function DayCell({
         }
       }}
       className={[
-        'group relative flex flex-col border-r border-b border-gray-200 dark:border-gray-700',
-        'min-h-[100px] p-1.5 focus:outline-none transition-opacity',
-        isToday
-          ? 'ring-2 ring-inset ring-blue-500 bg-blue-50/20 dark:bg-blue-950/10'
-          : 'hover:bg-gray-50/60 dark:hover:bg-gray-800/40',
-        isFocused && !isToday
-          ? 'ring-2 ring-inset ring-blue-400'
-          : '',
+        'flex min-h-[126px] cursor-pointer flex-col border-b border-r border-cream-mid',
+        'px-2.5 pt-[9px] transition-colors duration-150 ease-out focus:outline-none',
+        isSelected ? 'bg-cream shadow-[inset_0_0_0_2px_#7B9E7B]' : 'hover:bg-cream',
+        isFocused && !isSelected ? 'shadow-[inset_0_0_0_1px_#A3BFA3]' : '',
         isSearchActive && !hasSearchMatch ? 'opacity-40' : '',
       ].join(' ')}
     >
-      {/* Top row: date number + add button */}
-      <div className="flex items-start justify-between mb-1">
+      <div className="flex min-w-0 items-center justify-between gap-1">
         <span
           className={[
-            'text-sm font-semibold leading-none',
-            isToday
-              ? 'text-blue-600 dark:text-blue-400'
-              : 'text-gray-800 dark:text-gray-200',
+            'inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full px-[5px] font-mono text-xs',
+            isToday ? 'bg-bark text-cream' : date > todayDate ? 'text-stone' : 'text-charcoal',
           ].join(' ')}
         >
           {dayOfMonth}
         </span>
 
-        <button
-          type="button"
-          aria-label={`Add transaction for ${date}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddTransaction(date);
-          }}
-          className="opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center justify-center w-5 h-5 rounded-full text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition-all focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <span aria-hidden="true" className="text-xs leading-none">+</span>
-        </button>
+        {runningBalance && (
+          <span
+            className={`min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-right font-mono text-[11px] ${balanceClasses}`}
+          >
+            {formatCurrency(runningBalance)}
+          </span>
+        )}
       </div>
 
-      {/* Transaction list — clickable to expand full details */}
       {visible.length > 0 && (
-        <ul
-          className="space-y-0.5 flex-1 min-w-0 cursor-pointer rounded hover:bg-gray-50/60 dark:hover:bg-gray-700/30 transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            onShowMore(date, e.currentTarget.closest('[role="gridcell"]') as HTMLElement);
-          }}
-          role="button"
-          aria-label={`View all transactions for ${date}`}
-        >
+        <ul className="mt-1 flex min-w-0 flex-col gap-0.5">
           {visible.map((tx) => (
             <TransactionItem
               key={tx.id}
@@ -126,28 +140,29 @@ export function DayCell({
         </ul>
       )}
 
-      {/* Bottom row: overflow button + running balance */}
-      <div className="flex items-end justify-between mt-auto pt-1">
-        {overflowCount > 0 ? (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onShowMore(date, e.currentTarget.closest('[role="gridcell"]') as HTMLElement);
-            }}
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-1 focus:ring-blue-500 rounded leading-none"
-            aria-label={`Show ${overflowCount} more transactions for ${date}`}
-          >
-            {overflowCount} more...
-          </button>
-        ) : (
-          <span />
-        )}
+      <div className="mt-auto flex min-w-0 items-baseline justify-between gap-1">
+        <span className="min-w-0 truncate font-mono text-[10px] tracking-[0.08em] text-warm-gray">
+          {overflowCount > 0 ? `+${overflowCount} MORE` : ''}
+        </span>
+        <span
+          className={`min-w-0 truncate font-mono text-[10px] ${
+            netIsNegative ? 'text-stone' : 'text-sage-deep'
+          }`}
+        >
+          {showNet ? `NET ${netIsNegative ? '−' : '+'}$${formatAmount(dailyNet)}` : ''}
+        </span>
+      </div>
 
-        {runningBalance && (
-          <span className={`text-xs font-medium leading-none ${balanceClasses}`}>
-            {formatCurrency(runningBalance)}
-          </span>
+      <div className="flex h-[26px] items-end px-1.5">
+        {barHeight > 0 && (
+          <div
+            aria-hidden="true"
+            className="w-full rounded-t-sm"
+            style={{
+              height: `${barHeight}px`,
+              backgroundColor: SPEND_BAR_COLORS[spendLevel(intensity)],
+            }}
+          />
         )}
       </div>
     </div>

@@ -5,6 +5,7 @@ import {
   CHART_WIDTH,
   CHART_HEIGHT,
   CHART_INSET,
+  spendBarHeight,
 } from '@/lib/chart';
 
 function day(date: string, runningBalance: string): ForecastDay {
@@ -212,5 +213,28 @@ describe('buildBalanceChart — low point marker', () => {
     const days = august(['10.00', '9.00']);
     const g = buildBalanceChart({ days, todayDate: '2026-08-01', comfortFloor: '0' });
     expect(g.lowPoint?.x).toBe(g.points[1].x);
+  });
+});
+
+describe('spendBarHeight', () => {
+  it('gives no bar to a day with no spend', () => {
+    expect(spendBarHeight(0)).toBe(0);
+  });
+
+  it('gives the heaviest day the full height', () => {
+    expect(spendBarHeight(1)).toBe(24);
+  });
+
+  it('scales proportionally in between', () => {
+    expect(spendBarHeight(0.5)).toBe(12);
+  });
+
+  it('floors a tiny spend at three pixels so it stays visible', () => {
+    expect(spendBarHeight(0.01)).toBe(3);
+    expect(spendBarHeight(0.0001)).toBe(3);
+  });
+
+  it('treats a negative intensity as no spend rather than an inverted bar', () => {
+    expect(spendBarHeight(-1)).toBe(0);
   });
 });

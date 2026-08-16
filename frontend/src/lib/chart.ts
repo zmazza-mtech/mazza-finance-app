@@ -14,6 +14,24 @@ export const CHART_WIDTH = 1140;
 export const CHART_HEIGHT = 190;
 export const CHART_INSET = 6;
 
+/** Tallest a day cell's spend bar can grow. */
+export const SPEND_BAR_MAX = 24;
+
+/** Shortest a bar may be while still reading as a bar. */
+const SPEND_BAR_MIN = 3;
+
+/**
+ * Pixel height of a day cell's spend bar.
+ *
+ * A day with no spend gets nothing. Any spend at all gets at least three
+ * pixels, so a small purchase is still visible next to a rent payment instead
+ * of collapsing into the cell floor.
+ */
+export function spendBarHeight(intensity: number): number {
+  if (intensity <= 0) return 0;
+  return Math.max(SPEND_BAR_MIN, Math.round(intensity * SPEND_BAR_MAX));
+}
+
 export interface ChartPoint {
   x: number;
   y: number;

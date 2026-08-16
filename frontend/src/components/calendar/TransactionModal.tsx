@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { AmountField } from '@/components/shared/AmountField';
 import { SegmentedControl } from '@/components/shared/SegmentedControl';
+import { formatFullDate } from '@/lib/dates';
 import Decimal from 'decimal.js';
 
 type Direction = 'debit' | 'deposit';
@@ -36,10 +37,7 @@ export function TransactionModal({
   const descriptionRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString(
-    undefined,
-    { weekday: 'long', month: 'long', day: 'numeric' },
-  );
+  const formattedDate = formatFullDate(date);
 
   useEffect(() => {
     if (isOpen) {
@@ -103,7 +101,7 @@ export function TransactionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-bark-dark/40"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -112,20 +110,20 @@ export function TransactionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="transaction-modal-title"
-        className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
+        className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-white p-6 shadow-xl"
       >
         <h2
           id="transaction-modal-title"
-          className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4"
+          className="mb-4 font-display text-xl text-bark-dark"
         >
-          Add Transaction — {formattedDate}
+          Add transaction — {formattedDate}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="modal-description"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Description
             </label>
@@ -137,14 +135,14 @@ export function TransactionModal({
               onChange={(e) => setDescription(e.target.value)}
               maxLength={255}
               placeholder="e.g. Grocery run"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             />
           </div>
 
           <div>
             <label
               htmlFor="modal-amount"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Amount
             </label>
@@ -167,16 +165,16 @@ export function TransactionModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="hit-target rounded-full border border-cream-mid bg-white px-4 py-2 text-sm text-stone transition-colors duration-150 hover:bg-cream-mid focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!description.trim() || !isAmountValid()}
-              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="hit-target rounded-full bg-copper px-4 py-2 text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
-              Add Transaction
+              Add transaction
             </button>
           </div>
         </form>

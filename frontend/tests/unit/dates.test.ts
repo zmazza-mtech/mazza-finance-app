@@ -5,6 +5,7 @@ import {
   formatMonthTitle,
   lastDayOfMonth,
   todayIso,
+  formatFullDate,
 } from '@/lib/dates';
 
 describe('formatShortDate', () => {
@@ -87,5 +88,24 @@ describe('todayIso', () => {
 
   it('returns a YYYY-MM-DD string', () => {
     expect(todayIso()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe('formatFullDate', () => {
+  it('renders weekday, month and day', () => {
+    expect(formatFullDate('2026-08-15')).toBe('Saturday, August 15');
+  });
+
+  it('drops the leading zero from a single-digit day', () => {
+    expect(formatFullDate('2026-08-01')).toBe('Saturday, August 1');
+  });
+
+  it('gets the weekday right across a year boundary', () => {
+    expect(formatFullDate('2026-01-01')).toBe('Thursday, January 1');
+    expect(formatFullDate('2025-12-31')).toBe('Wednesday, December 31');
+  });
+
+  it('gets the weekday right on a leap day', () => {
+    expect(formatFullDate('2024-02-29')).toBe('Thursday, February 29');
   });
 });

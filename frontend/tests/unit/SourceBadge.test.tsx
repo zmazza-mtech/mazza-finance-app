@@ -8,9 +8,9 @@ describe('SourceBadge', () => {
     expect(screen.getByText('Actual')).toBeInTheDocument();
   });
 
-  it('renders "Forecasted" label for forecast source', () => {
+  it('renders "Forecast" label for forecast source', () => {
     render(<SourceBadge source="forecast" />);
-    expect(screen.getByText('Forecasted')).toBeInTheDocument();
+    expect(screen.getByText('Forecast')).toBeInTheDocument();
   });
 
   it('renders "Manual" label for manual source', () => {

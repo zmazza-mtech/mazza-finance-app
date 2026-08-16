@@ -1,50 +1,43 @@
-import { SourceBadge } from '@/components/shared/SourceBadge';
 import { formatAmount, isNegative } from '@/lib/balance';
 import type { ForecastTransaction } from '@/api/types';
 
 interface TransactionItemProps {
   transaction: ForecastTransaction;
-  onClick?: () => void;
-  /** When true, description wraps instead of truncating. */
-  wrap?: boolean;
   /** When true, highlights this transaction as a search match. */
   isMatch?: boolean;
 }
 
 /**
- * Renders a single forecast transaction.
- * - Color paired with direction icon (never color alone)
- * - aria-label: "[name], $[amount], [debit|deposit], [source]"
+ * One transaction line inside a day cell.
+ *
+ * Description truncates on the left, amount sits right in mono. The source
+ * badge and direction arrow both moved to the day panel — at eleven pixels in
+ * a 126px cell there is only room for the name and the number, and the sign
+ * already carries the direction.
  */
-export function TransactionItem({ transaction, onClick, wrap, isMatch }: TransactionItemProps) {
+export function TransactionItem({ transaction, isMatch }: TransactionItemProps) {
   const { description, amount, source } = transaction;
   const debit = isNegative(amount);
   const formattedAmount = formatAmount(amount);
   const direction = debit ? 'debit' : 'deposit';
 
-  const ariaLabel = `${description}, $${formattedAmount}, ${direction}, ${source}`;
-
   return (
     <li
-      aria-label={ariaLabel}
-      className={`flex ${wrap ? 'items-start' : 'items-center'} justify-between gap-2 text-xs py-0.5 ${
-        onClick ? 'cursor-pointer hover:underline' : ''
-      } ${debit ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'} ${
-        isMatch ? 'bg-yellow-100 dark:bg-yellow-900/30 rounded px-0.5' : ''
+      aria-label={`${description}, $${formattedAmount}, ${direction}, ${source}`}
+      className={`flex min-w-0 items-baseline justify-between gap-1.5 text-[11px] leading-[1.35] ${
+        isMatch ? 'rounded-sm bg-sage-lighter px-0.5' : ''
       }`}
-      onClick={onClick}
     >
-      <span className="flex items-center gap-1 min-w-0">
-        <span aria-hidden="true" className="shrink-0">
-          {debit ? '↓' : '↑'}
-        </span>
-        <span className={`${wrap ? '' : 'truncate'} text-gray-800 dark:text-gray-200`} title={wrap ? undefined : description}>
-          {description}
-        </span>
+      <span className="min-w-0 truncate text-charcoal" title={description}>
+        {description}
       </span>
-      <span className="flex items-center gap-1 shrink-0">
-        <span className="font-medium">${formattedAmount}</span>
-        <SourceBadge source={source} />
+      <span
+        className={`min-w-0 shrink-0 truncate font-mono ${
+          debit ? 'text-bark-light' : 'text-sage-deep'
+        }`}
+      >
+        {/* U+2212 minus, not a hyphen. */}
+        {debit ? '−' : '+'}${formattedAmount}
       </span>
     </li>
   );
