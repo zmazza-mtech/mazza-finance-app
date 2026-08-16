@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { categorize, normalizeDescription, CATEGORIES } from '../../src/services/categorize';
+import {
+  categorize,
+  normalizeDescription,
+  isRecategorizable,
+  CATEGORIES,
+  CATEGORY_SOURCES,
+} from '../../src/services/categorize';
 
 describe('categorize', () => {
   it('returns null for unknown descriptions', () => {
@@ -157,6 +163,24 @@ describe('categorize', () => {
     expect(CATEGORIES).toContain('Taxes');
     expect(CATEGORIES).toContain('Fitness');
     expect(CATEGORIES).toContain('Other');
+  });
+});
+
+describe('isRecategorizable', () => {
+  it('lists auto and user as the only sources', () => {
+    expect([...CATEGORY_SOURCES]).toEqual(['auto', 'user']);
+  });
+
+  it('allows re-categorizing an auto-assigned category', () => {
+    expect(isRecategorizable('auto')).toBe(true);
+  });
+
+  it('refuses to re-categorize a user-set category', () => {
+    expect(isRecategorizable('user')).toBe(false);
+  });
+
+  it('treats an absent source as auto, so pre-migration rows stay categorizable', () => {
+    expect(isRecategorizable(null)).toBe(true);
   });
 });
 

@@ -62,6 +62,10 @@ export const transactions = pgTable(
     type: text('type').notNull(), // actual | manual
     status: text('status').notNull().default('posted'), // posted | pending
     category: text('category'), // nullable — null means uncategorized
+    // Who chose the category. A 'user' row is never re-categorized: reverting a
+    // correction on the next sync would teach the user the column cannot be
+    // trusted. Rows that predate this column read as 'auto'.
+    categorySource: text('category_source').notNull().default('auto'), // auto | user
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -73,6 +77,10 @@ export const transactions = pgTable(
     idxTransactionsAccountDate: index('idx_transactions_account_date').on(t.accountId, t.date),
     transactionsTypeCheck: check('transactions_type_check', sql`${t.type} IN ('actual', 'manual')`),
     transactionsStatusCheck: check('transactions_status_check', sql`${t.status} IN ('posted', 'pending')`),
+    transactionsCategorySourceCheck: check(
+      'transactions_category_source_check',
+      sql`${t.categorySource} IN ('auto', 'user')`,
+    ),
   })
 );
 
