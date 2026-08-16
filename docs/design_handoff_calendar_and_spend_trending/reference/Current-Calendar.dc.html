@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; background: #F9FAFB; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111827; }
+  a { color: #2563EB; text-decoration: none; }
+  a:hover { color: #1D4ED8; text-decoration: underline; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#F9FAFB;color:#111827">
+  <header style="position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #E5E7EB;box-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05)">
+    <div style="max-width:1024px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;gap:16px">
+      <span style="font-weight:700;color:#2563EB;flex-shrink:0">Mazza Finance</span>
+      <nav aria-label="Main navigation" style="display:flex;gap:4px">
+        <span style="padding:6px 12px;font-size:14px;line-height:20px;border-radius:6px;background:#EFF6FF;color:#1D4ED8;font-weight:500">Calendar</span>
+        <span style="padding:6px 12px;font-size:14px;line-height:20px;border-radius:6px;color:#4B5563">Transactions</span>
+        <span style="padding:6px 12px;font-size:14px;line-height:20px;border-radius:6px;color:#4B5563">Recurring</span>
+        <span style="padding:6px 12px;font-size:14px;line-height:20px;border-radius:6px;color:#4B5563">Reports</span>
+        <span style="padding:6px 12px;font-size:14px;line-height:20px;border-radius:6px;color:#4B5563">Settings</span>
+      </nav>
+      <div style="flex:1"></div>
+      <select aria-label="Select account" style="max-height:44px;padding:6px 8px;font-size:14px;border:1px solid #D1D5DB;border-radius:6px;background:#fff;color:#111827">
+        <option>Home Federal — Joint Checking</option>
+      </select>
+      <span style="font-size:12px;line-height:16px;color:#9CA3AF;flex-shrink:0">Synced 07:14 (21/24)</span>
+      <button type="button" style="padding:6px 12px;font-size:14px;line-height:20px;font-weight:500;background:#2563EB;color:#fff;border:0;border-radius:6px;cursor:pointer">Sync</button>
+      <button type="button" aria-label="Switch to dark mode" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:#4B5563;background:transparent;border:0;cursor:pointer">🌙</button>
+    </div>
+  </header>
+
+  <div role="alert" style="border-bottom:1px solid #FDE68A;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#FFFBEB;color:#92400E">
+    <p style="margin:0;font-size:14px;line-height:20px;max-width:none">
+      <span style="font-weight:600">Low balance:</span> Your balance is projected to reach low levels on
+      <span style="text-decoration:underline;font-weight:500">Aug 27</span>.
+    </p>
+    <button type="button" style="flex-shrink:0;font-size:14px;text-decoration:underline;background:transparent;border:0;color:inherit;cursor:pointer">Dismiss</button>
+  </div>
+
+  <main>
+    <div style="background:#fff">
+      <div style="position:relative;display:flex;align-items:center;justify-content:center;padding:24px 16px 8px">
+        <button type="button" aria-label="Previous month" style="position:absolute;left:16px;padding:8px;color:#6B7280;background:transparent;border:0;border-radius:8px;font-size:16px;cursor:pointer">‹</button>
+        <div style="text-align:center">
+          <h2 style="margin:0;font-size:30px;line-height:36px;font-weight:700;letter-spacing:0.1em;color:#111827;text-transform:uppercase;font-family:inherit">AUGUST</h2>
+          <p style="margin:2px 0 0;font-size:14px;line-height:20px;font-weight:400;letter-spacing:0.1em;color:#6B7280;max-width:none">2026</p>
+        </div>
+        <div style="position:absolute;right:16px;display:flex;align-items:center;gap:8px">
+          <div style="position:relative">
+            <input type="text" placeholder="Search... ( / )" aria-label="Search transactions" style="width:160px;padding:4px 8px;font-size:12px;line-height:16px;border:1px solid #D1D5DB;border-radius:6px;background:#fff;color:#111827" />
+          </div>
+          <button type="button" aria-label="Next month" style="padding:8px;color:#6B7280;background:transparent;border:0;border-radius:8px;font-size:16px;cursor:pointer">›</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;margin-top:8px">
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">SUN</div>
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">MON</div>
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">TUE</div>
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">WED</div>
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">THU</div>
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">FRI</div>
+        <div style="padding:8px 0;text-align:center;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.1em;color:#6B7280">SAT</div>
+      </div>
+
+      <div role="grid" aria-label="August 2026" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1px solid #E5E7EB">
+        <sc-for list="{{ cells }}" as="c" hint-placeholder-count="42">
+          <div style="position:relative;display:flex;flex-direction:column;border-right:1px solid #E5E7EB;border-bottom:1px solid #E5E7EB;min-height:100px;padding:6px;background: {{ c.bg }}; box-shadow: {{ c.ring }}">
+            <sc-if value="{{ c.isDay }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:14px;font-weight:600;line-height:1;color: {{ c.numColor }}">{{ c.dayNum }}</span>
+                </div>
+                <ul style="margin:0;padding:0;list-style:none;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <sc-for list="{{ c.visible }}" as="tx" hint-placeholder-count="2">
+                    <li style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;line-height:16px;padding:2px 0;color: {{ tx.color }}">
+                      <span style="display:flex;align-items:center;gap:4px;min-width:0">
+                        <span aria-hidden="true" style="flex-shrink:0">{{ tx.arrow }}</span>
+                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1F2937">{{ tx.description }}</span>
+                      </span>
+                      <span style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+                        <span style="font-weight:500">{{ tx.amountText }}</span>
+                        <span style="display:inline-flex;align-items:center;padding:1px 6px;border-radius:4px;font-size:12px;line-height:16px;font-weight:500;background: {{ tx.badgeBg }}; color: {{ tx.badgeFg }}">{{ tx.badgeLabel }}</span>
+                      </span>
+                    </li>
+                  </sc-for>
+                </ul>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto;padding-top:4px">
+                  <span style="font-size:12px;line-height:1;color:#2563EB;text-decoration:underline">{{ c.moreText }}</span>
+                  <span style="font-size:12px;font-weight:500;line-height:1;color: {{ c.balColor }}">{{ c.balanceText }}</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const RAW = {
+  1: [['Kroger', -112.38, 'actual'], ['Netflix', -17.99, 'actual']],
+  3: [['Mortgage — Home Federal', -1842.00, 'actual'], ['Athens Water Dept', -64.20, 'actual']],
+  4: [['Shell', -48.10, 'actual']],
+  5: [['Payroll — Volunteer Health', 2418.66, 'actual'], ['Verizon Wireless', -132.44, 'actual']],
+  6: [['Amazon', -39.87, 'actual']],
+  7: [["Puleo's Grille", -74.20, 'actual']],
+  8: [['Kroger', -96.15, 'actual'], ['Athens Utilities', -188.02, 'actual']],
+  10: [['State Farm', -214.00, 'actual'], ['Starbucks', -8.75, 'actual']],
+  11: [['Target', -142.66, 'actual']],
+  12: [['Car payment — Ally', -486.11, 'actual'], ['Spotify', -11.99, 'actual']],
+  13: [['Kroger', -83.44, 'actual']],
+  15: [['Payroll — Volunteer Health', 2418.66, 'actual'], ['Planet Fitness', -42.00, 'actual'], ['Los Portales', -58.90, 'actual']],
+  16: [['Spectrum Internet', -89.99, 'forecast']],
+  18: [['Kroger', -95.00, 'forecast']],
+  19: [['Credit card payment', -650.00, 'forecast']],
+  21: [['Athens Utilities', -176.00, 'forecast'], ['Kroger', -95.00, 'forecast']],
+  22: [['Dinner out', -60.00, 'manual']],
+  24: [['Vet — Momo', -180.00, 'manual']],
+  25: [['Kroger', -95.00, 'forecast'], ['Verizon Wireless', -132.44, 'forecast'], ['Athens Water Dept', -64.00, 'forecast']],
+  27: [['Mortgage — Home Federal', -1842.00, 'forecast']],
+  29: [['Payroll — Volunteer Health', 2418.66, 'forecast'], ['Car payment — Ally', -486.11, 'forecast']],
+  30: [['Kroger', -95.00, 'forecast']],
+  31: [['State Farm', -214.00, 'forecast'], ['Netflix', -17.99, 'forecast']],
+};
+
+const BADGE = {
+  actual: ['#DBEAFE', '#1E40AF', 'Actual'],
+  forecast: ['#F3E8FF', '#6B21A8', 'Forecasted'],
+  manual: ['#F3F4F6', '#374151', 'Manual'],
+};
+
+const OPENING = 3142.00;
+const TODAY = 15;
+const START_PAD = 6;
+const DAYS = 31;
+
+function money(n) {
+  const s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (n < 0 ? '-$' : '$') + s;
+}
+
+class Component extends DCLogic {
+  buildCells() {
+    const cells = [];
+    for (let i = 0; i < START_PAD; i++) {
+      cells.push({ isDay: false, bg: '#F9FAFB', ring: 'none' });
+    }
+    let bal = OPENING;
+    for (let d = 1; d <= DAYS; d++) {
+      const txs = RAW[d] || [];
+      for (const t of txs) bal += t[1];
+      const isToday = d === TODAY;
+      const health = bal > 1000 ? '#15803D' : bal > 200 ? '#B45309' : '#B91C1C';
+      const visible = txs.slice(0, 2).map(([description, amount, source]) => {
+        const b = BADGE[source];
+        return {
+          description,
+          amountText: '$' + Math.abs(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','),
+          color: amount < 0 ? '#B91C1C' : '#15803D',
+          arrow: amount < 0 ? '↓' : '↑',
+          badgeBg: b[0], badgeFg: b[1], badgeLabel: b[2],
+        };
+      });
+      const over = txs.length - 2;
+      cells.push({
+        isDay: true,
+        dayNum: String(d),
+        visible,
+        moreText: over > 0 ? over + ' more...' : '',
+        balanceText: money(bal),
+        balColor: health,
+        numColor: isToday ? '#2563EB' : '#1F2937',
+        bg: isToday ? 'rgba(239,246,255,0.6)' : '#ffffff',
+        ring: isToday ? 'inset 0 0 0 2px #3B82F6' : 'none',
+      });
+    }
+    while (cells.length % 7 !== 0) cells.push({ isDay: false, bg: '#F9FAFB', ring: 'none' });
+    return cells;
+  }
+  renderVals() {
+    return { cells: this.buildCells() };
+  }
+}
+</script>
+</body>
+</html>

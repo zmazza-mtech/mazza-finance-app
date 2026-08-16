@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<style>
+  body { margin:0; background:#FAF7F2; font-family:'Instrument Sans',system-ui,sans-serif; color:#3A3530; -webkit-font-smoothing:antialiased; }
+  a { color:#5A7A5A; text-decoration:none; }
+  a:hover { color:#5D4037; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#FAF7F2">
+  <header style="position:sticky;top:0;z-index:30;background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid #F0EBE3">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px">
+      <span style="font-family:'Bricolage Grotesque',serif;font-weight:700;font-size:19px;letter-spacing:-0.02em;color:#3E2723">Mazza Finance</span>
+      <nav aria-label="Main navigation" style="display:flex;gap:4px">
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;background:#D4E4D4;color:#3D5C3D;font-weight:600">Calendar</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Transactions</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Recurring</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Reports</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Settings</span>
+      </nav>
+      <div style="flex:1"></div>
+      <span style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;color:#3A3530">Joint Checking <span style="color:#B5AEA4">·</span> <span style="font-family:'JetBrains Mono',monospace">$3,142.00</span></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4">Synced 07:14 · 21/24</span>
+      <button type="button" style="padding:8px 16px;font-size:14px;font-weight:600;background:#5D4037;color:#FAF7F2;border:0;border-radius:9999px;cursor:pointer" style-hover="background:#3E2723;transform:translateY(-1px)">Sync</button>
+    </div>
+  </header>
+
+  <div style="max-width:1200px;margin:0 auto;padding:28px 24px 64px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:20px">
+      <div>
+        <p style="margin:0 0 6px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">Cash flow · 30-day outlook</p>
+        <h2 style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:2.441rem;line-height:1.1;letter-spacing:-0.02em;color:#3E2723">August 2026</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" aria-label="Previous month" style="width:38px;height:38px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#5D4037;font-size:16px;cursor:pointer">‹</button>
+        <button type="button" style="padding:9px 18px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;font-weight:600;color:#5D4037;cursor:pointer">Today</button>
+        <button type="button" aria-label="Next month" style="width:38px;height:38px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#5D4037;font-size:16px;cursor:pointer">›</button>
+      </div>
+    </div>
+
+    <section aria-label="Spend trend" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 1.5fr;gap:12px;margin-bottom:24px">
+      <div style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:18px">
+        <p style="margin:0 0 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">Projected end of month</p>
+        <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.563rem;font-weight:500;color:#3E2723;max-width:none">{{ eomBalance }}</p>
+        <p style="margin:8px 0 0;font-size:12px;line-height:1.4;color:#C17D4A;max-width:none">Dips to {{ lowBalance }} on {{ lowDate }}</p>
+      </div>
+      <div style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:18px">
+        <p style="margin:0 0 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">Burn rate</p>
+        <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.563rem;font-weight:500;color:#3E2723;max-width:none">{{ burnRate }}<span style="font-size:13px;color:#8A8279">/day</span></p>
+        <p style="margin:8px 0 0;font-size:12px;line-height:1.4;color:#8A8279;max-width:none">{{ runwayDays }} days of runway at this pace</p>
+      </div>
+      <div style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:18px">
+        <p style="margin:0 0 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">Spent month to date</p>
+        <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.563rem;font-weight:500;color:#3E2723;max-width:none">{{ mtdSpend }}</p>
+        <p style="margin:8px 0 0;font-size:12px;line-height:1.4;color:#C1574A;max-width:none">▲ 12% vs. 3-month average</p>
+      </div>
+      <div style="background:#5D4037;border:1px solid #5D4037;border-radius:16px;padding:18px">
+        <p style="margin:0 0 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#A3BFA3;max-width:none">Biggest mover</p>
+        <p style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:1.25rem;font-weight:600;color:#FAF7F2;max-width:none">Healthcare</p>
+        <p style="margin:8px 0 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:#D4E4D4;max-width:none">+$180.00 vs. July</p>
+      </div>
+      <div style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:18px 18px 12px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+          <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">Rolling 30-day spend</p>
+          <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:12px;color:#5A7A5A;max-width:none">{{ rollingTotal }}</p>
+        </div>
+        <svg viewBox="0 0 320 68" preserveAspectRatio="none" style="width:100%;height:68px;margin-top:10px;overflow:visible">
+          <path d="{{ sparkArea }}" fill="#D4E4D4" opacity="0.55"></path>
+          <path d="{{ sparkPath }}" fill="none" stroke="#5A7A5A" stroke-width="2" stroke-linecap="round"></path>
+          <circle cx="{{ sparkLastX }}" cy="{{ sparkLastY }}" r="3.5" fill="#C17D4A"></circle>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#B5AEA4">
+          <span>JUL 17</span><span>TODAY</span>
+        </div>
+      </div>
+    </section>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:16px;align-items:start">
+      <section aria-label="Calendar" style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#FAF7F2;border-bottom:1px solid #F0EBE3">
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">SUN</div>
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">MON</div>
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">TUE</div>
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">WED</div>
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">THU</div>
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">FRI</div>
+          <div style="padding:10px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">SAT</div>
+        </div>
+        <div role="grid" aria-label="August 2026" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr))">
+          <sc-for list="{{ cells }}" as="c" hint-placeholder-count="42">
+            <div role="gridcell" onClick="{{ c.select }}" style="position:relative;display:flex;flex-direction:column;gap:6px;min-height:124px;padding:10px 10px 8px;border-right:1px solid #F0EBE3;border-bottom:1px solid #F0EBE3;cursor:pointer;background: {{ c.bg }}; box-shadow: {{ c.ring }}" style-hover="background:#FAF7F2">
+              <sc-if value="{{ c.isDay }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-height:0">
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;background: {{ c.numBg }}; color: {{ c.numColor }}">{{ c.dayNum }}</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color: {{ c.netColor }}">{{ c.netText }}</span>
+                  </div>
+                  <div style="height:4px;border-radius:9999px;background:#F0EBE3;overflow:hidden">
+                    <div style="height:4px;border-radius:9999px;background: {{ c.barColor }}; width: {{ c.barWidth }}"></div>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;align-content:flex-start">
+                    <sc-for list="{{ c.dots }}" as="d" hint-placeholder-count="2">
+                      <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:9999px;font-size:11px;line-height:1.3;background:#FAF7F2;border:1px solid #F0EBE3;color:#3A3530;max-width:100%">
+                        <span style="width:6px;height:6px;border-radius:9999px;flex-shrink:0;background: {{ d.color }}"></span>
+                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.label }}</span>
+                      </span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color: {{ c.balColor }}">{{ c.balanceText }}</span>
+                    <span style="font-size:11px;color:#C17D4A">{{ c.flag }}</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <aside aria-label="Selected day" style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:20px;position:sticky;top:88px">
+        <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">{{ panelKind }}</p>
+        <h3 style="margin:0 0 16px;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;line-height:1.15;letter-spacing:-0.01em;color:#3E2723">{{ panelDate }}</h3>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+          <div style="background:#FAF7F2;border-radius:8px;padding:12px">
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Day net</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color: {{ panelNetColor }};max-width:none">{{ panelNet }}</p>
+          </div>
+          <div style="background:#FAF7F2;border-radius:8px;padding:12px">
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Balance after</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color: {{ panelBalColor }};max-width:none">{{ panelBalance }}</p>
+          </div>
+        </div>
+
+        <ul style="margin:0 0 18px;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ panelTxs }}" as="tx" hint-placeholder-count="3">
+            <li style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #F0EBE3">
+              <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                <span style="font-size:14px;line-height:1.3;color:#3A3530">{{ tx.description }}</span>
+                <span style="display:flex;align-items:center;gap:6px">
+                  <span style="display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8A8279">
+                    <span style="width:6px;height:6px;border-radius:9999px;background: {{ tx.catColor }}"></span>{{ tx.category }}
+                  </span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:1px 6px;border-radius:9999px;background: {{ tx.srcBg }}; color: {{ tx.srcFg }}">{{ tx.srcLabel }}</span>
+                </span>
+              </span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;flex-shrink:0;color: {{ tx.color }}">{{ tx.amountText }}</span>
+            </li>
+          </sc-for>
+        </ul>
+        <p style="margin:0 0 18px;font-size:13px;color:#8A8279;max-width:none">{{ panelEmpty }}</p>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button type="button" style="padding:11px 18px;border:0;border-radius:9999px;background:#C17D4A;color:#fff;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#9B5F30;transform:translateY(-1px)">Add transaction</button>
+          <button type="button" style="padding:11px 18px;border:1px solid #F0EBE3;border-radius:9999px;background:#fff;color:#5D4037;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#F0EBE3">Add recurring series</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1180}}">
+const RAW = {
+  1: [['Kroger', -112.38, 'actual', 'Groceries'], ['Netflix', -17.99, 'actual', 'Subscriptions']],
+  3: [['Mortgage — Home Federal', -1842.00, 'actual', 'Housing'], ['Athens Water Dept', -64.20, 'actual', 'Utilities']],
+  4: [['Shell', -48.10, 'actual', 'Transportation']],
+  5: [['Payroll — Volunteer Health', 2418.66, 'actual', 'Income'], ['Verizon Wireless', -132.44, 'actual', 'Utilities']],
+  6: [['Amazon', -39.87, 'actual', 'Shopping']],
+  7: [["Puleo's Grille", -74.20, 'actual', 'Dining']],
+  8: [['Kroger', -96.15, 'actual', 'Groceries'], ['Athens Utilities', -188.02, 'actual', 'Utilities']],
+  10: [['State Farm', -214.00, 'actual', 'Insurance'], ['Starbucks', -8.75, 'actual', 'Dining']],
+  11: [['Target', -142.66, 'actual', 'Shopping']],
+  12: [['Car payment — Ally', -486.11, 'actual', 'Transportation'], ['Spotify', -11.99, 'actual', 'Subscriptions']],
+  13: [['Kroger', -83.44, 'actual', 'Groceries']],
+  15: [['Payroll — Volunteer Health', 2418.66, 'actual', 'Income'], ['Planet Fitness', -42.00, 'actual', 'Healthcare'], ['Los Portales', -58.90, 'actual', 'Dining']],
+  16: [['Spectrum Internet', -89.99, 'forecast', 'Utilities']],
+  18: [['Kroger', -95.00, 'forecast', 'Groceries']],
+  19: [['Credit card payment', -650.00, 'forecast', 'Transfers']],
+  21: [['Athens Utilities', -176.00, 'forecast', 'Utilities'], ['Kroger', -95.00, 'forecast', 'Groceries']],
+  22: [['Dinner out', -60.00, 'manual', 'Dining']],
+  24: [['Vet — Momo', -180.00, 'manual', 'Healthcare']],
+  25: [['Kroger', -95.00, 'forecast', 'Groceries'], ['Verizon Wireless', -132.44, 'forecast', 'Utilities'], ['Athens Water Dept', -64.00, 'forecast', 'Utilities']],
+  27: [['Mortgage — Home Federal', -1842.00, 'forecast', 'Housing']],
+  29: [['Payroll — Volunteer Health', 2418.66, 'forecast', 'Income'], ['Car payment — Ally', -486.11, 'forecast', 'Transportation']],
+  30: [['Kroger', -95.00, 'forecast', 'Groceries']],
+  31: [['State Farm', -214.00, 'forecast', 'Insurance'], ['Netflix', -17.99, 'forecast', 'Subscriptions']],
+};
+
+const CAT_COLOR = {
+  Income: '#5A7A5A', Housing: '#5D4037', Utilities: '#7B9E7B', Groceries: '#A3BFA3',
+  Transportation: '#C17D4A', Insurance: '#8A8279', Healthcare: '#C1574A',
+  Entertainment: '#A68B7B', Dining: '#D9A373', Shopping: '#7B5B4F',
+  Subscriptions: '#B5AEA4', Transfers: '#3D5C3D', Other: '#B5AEA4',
+};
+const SRC = {
+  actual: ['#D4E4D4', '#3D5C3D', 'Actual'],
+  forecast: ['#F0EBE3', '#7B5B4F', 'Forecast'],
+  manual: ['#FAF7F2', '#8A8279', 'Manual'],
+};
+
+const OPENING = 3142.00, TODAY = 15, START_PAD = 6, DAYS = 31;
+const GREEN = 1000, CRITICAL = 200;
+const MONTH_DAY = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
+
+function money(n, sign) {
+  const s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (sign) return (n < 0 ? '−$' : '+$') + s;
+  return (n < 0 ? '−$' : '$') + s;
+}
+function healthColor(b) { return b > GREEN ? '#3D5C3D' : b > CRITICAL ? '#C17D4A' : '#C1574A'; }
+function weekday(d) { return MONTH_DAY[(d - 1) % 7]; }
+
+class Component extends DCLogic {
+  state = { selected: TODAY };
+
+  series() {
+    let bal = OPENING;
+    const out = [];
+    for (let d = 1; d <= DAYS; d++) {
+      const txs = RAW[d] || [];
+      let net = 0, spend = 0;
+      for (const t of txs) { net += t[1]; if (t[1] < 0) spend += -t[1]; }
+      bal += net;
+      out.push({ d, txs, net, spend, bal });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const s = this.series();
+    const maxSpend = Math.max.apply(null, s.map(x => x.spend)) || 1;
+    const cells = [];
+    for (let i = 0; i < START_PAD; i++) cells.push({ isDay: false, bg: '#FDFCFA', ring: 'none' });
+    for (const day of s) {
+      const isToday = day.d === TODAY;
+      const isSel = day.d === this.state.selected;
+      const future = day.d > TODAY;
+      const dots = day.txs.slice(0, 3).map(t => ({ color: CAT_COLOR[t[3]], label: t[0] }));
+      if (day.txs.length > 3) dots.push({ color: '#B5AEA4', label: '+' + (day.txs.length - 3) + ' more' });
+      cells.push({
+        isDay: true,
+        dayNum: String(day.d),
+        netText: day.net === 0 ? '—' : money(day.net, true),
+        netColor: day.net === 0 ? '#B5AEA4' : day.net < 0 ? '#7B5B4F' : '#3D5C3D',
+        barWidth: Math.round((day.spend / maxSpend) * 100) + '%',
+        barColor: day.spend / maxSpend > 0.55 ? '#C1574A' : day.spend / maxSpend > 0.25 ? '#C17D4A' : '#A3BFA3',
+        dots,
+        balanceText: money(day.bal),
+        balColor: healthColor(day.bal),
+        flag: day.bal <= CRITICAL ? 'Below floor' : day.bal <= GREEN ? 'Low' : '',
+        numBg: isToday ? '#5D4037' : 'transparent',
+        numColor: isToday ? '#FAF7F2' : future ? '#8A8279' : '#3A3530',
+        bg: isSel ? '#FAF7F2' : '#ffffff',
+        ring: isSel ? 'inset 0 0 0 2px #7B9E7B' : 'none',
+        select: () => this.setState({ selected: day.d }),
+      });
+    }
+    while (cells.length % 7 !== 0) cells.push({ isDay: false, bg: '#FDFCFA', ring: 'none' });
+
+    const sel = s[this.state.selected - 1];
+    const panelTxs = sel.txs.map(([description, amount, source, category]) => {
+      const b = SRC[source];
+      return {
+        description, category, catColor: CAT_COLOR[category],
+        amountText: money(amount, true),
+        color: amount < 0 ? '#7B5B4F' : '#3D5C3D',
+        srcBg: b[0], srcFg: b[1], srcLabel: b[2],
+      };
+    });
+
+    const mtd = s.slice(0, TODAY).reduce((a, x) => a + x.spend, 0);
+    const burn = mtd / TODAY;
+    const low = s.reduce((m, x) => (x.bal < m.bal ? x : m), s[0]);
+    const spark = s.slice(0, TODAY).map(x => x.spend);
+    let run = 0;
+    const cum = spark.map(v => (run += v));
+    const maxCum = cum[cum.length - 1] || 1;
+    const pts = cum.map((v, i) => [(i / (cum.length - 1)) * 320, 68 - (v / maxCum) * 60]);
+    const path = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+
+    return {
+      cells,
+      panelKind: this.state.selected > TODAY ? 'Forecast day' : this.state.selected === TODAY ? 'Today' : 'Settled day',
+      panelDate: weekday(this.state.selected) + ', August ' + this.state.selected,
+      panelNet: sel.net === 0 ? '—' : money(sel.net, true),
+      panelNetColor: sel.net < 0 ? '#7B5B4F' : '#3D5C3D',
+      panelBalance: money(sel.bal),
+      panelBalColor: healthColor(sel.bal),
+      panelTxs,
+      panelEmpty: sel.txs.length ? '' : 'Nothing scheduled. Balance carries forward.',
+      eomBalance: money(s[DAYS - 1].bal),
+      lowBalance: money(low.bal),
+      lowDate: 'Aug ' + low.d,
+      burnRate: '$' + burn.toFixed(0),
+      runwayDays: Math.floor(s[DAYS - 1].bal / burn),
+      mtdSpend: money(mtd),
+      rollingTotal: money(maxCum),
+      sparkPath: path,
+      sparkArea: path + ' L320 68 L0 68 Z',
+      sparkLastX: pts[pts.length - 1][0].toFixed(1),
+      sparkLastY: pts[pts.length - 1][1].toFixed(1),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<style>
+  body { margin:0; background:#FAF7F2; font-family:'Instrument Sans',system-ui,sans-serif; color:#3A3530; -webkit-font-smoothing:antialiased; }
+  a { color:#5A7A5A; text-decoration:none; }
+  a:hover { color:#5D4037; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#FAF7F2">
+  <header style="position:sticky;top:0;z-index:30;background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid #F0EBE3">
+    <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px">
+      <span style="font-family:'Bricolage Grotesque',serif;font-weight:700;font-size:19px;letter-spacing:-0.02em;color:#3E2723">Mazza Finance</span>
+      <nav aria-label="Main navigation" style="display:flex;gap:4px">
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;background:#D4E4D4;color:#3D5C3D;font-weight:600">Calendar</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Transactions</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Recurring</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Reports</span>
+        <span style="padding:7px 14px;font-size:14px;border-radius:9999px;color:#8A8279">Settings</span>
+      </nav>
+      <div style="flex:1"></div>
+      <span style="display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;color:#3A3530">Joint Checking <span style="color:#B5AEA4">·</span> <span style="font-family:'JetBrains Mono',monospace">$3,142.00</span></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4">Synced 07:14 · 21/24</span>
+      <button type="button" style="padding:8px 16px;font-size:14px;font-weight:600;background:#5D4037;color:#FAF7F2;border:0;border-radius:9999px;cursor:pointer" style-hover="background:#3E2723;transform:translateY(-1px)">Sync</button>
+    </div>
+  </header>
+
+  <div style="max-width:1200px;margin:0 auto;padding:28px 24px 64px">
+    <section aria-label="Spend trend" style="display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;margin-bottom:24px">
+      <div style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:16px">
+        <div>
+          <p style="margin:0 0 6px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">Projected Aug 31</p>
+          <p style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:2.441rem;line-height:1;letter-spacing:-0.02em;color:#3E2723;max-width:none">{{ eomBalance }}</p>
+          <p style="margin:8px 0 0;font-size:13px;line-height:1.45;color:#C17D4A;max-width:none">Low point {{ lowBalance }} on {{ lowDate }}</p>
+        </div>
+        <div style="height:1px;background:#F0EBE3"></div>
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <div>
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Burn rate</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color:#3E2723;max-width:none">{{ burnRate }}<span style="font-size:11px;color:#8A8279">/day</span></p>
+          </div>
+          <div>
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Runway</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color:#3E2723;max-width:none">{{ runwayDays }} d</p>
+          </div>
+          <div>
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Spent MTD</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color:#3E2723;max-width:none">{{ mtdSpend }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:20px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px">
+          <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">This month vs. 3-month average</p>
+          <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A8279;max-width:none">Bar = this month · tick = average</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ catRows }}" as="r" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:104px minmax(0,1fr) 88px 62px;align-items:center;gap:12px">
+              <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:#3A3530;min-width:0">
+                <span style="width:7px;height:7px;border-radius:9999px;flex-shrink:0;background: {{ r.color }}"></span>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.category }}</span>
+              </span>
+              <span style="position:relative;height:14px;border-radius:9999px;background:#FAF7F2;display:block">
+                <span style="position:absolute;left:0;top:0;height:14px;border-radius:9999px;background: {{ r.color }}; width: {{ r.width }}"></span>
+                <span style="position:absolute;top:-3px;width:2px;height:20px;background:#5D4037;opacity:0.55;left: {{ r.avgLeft }}"></span>
+              </span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;text-align:right;color:#3A3530">{{ r.amount }}</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;text-align:right;color: {{ r.deltaColor }}">{{ r.delta }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:12px">
+      <h3 style="margin:0;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;letter-spacing:-0.01em;color:#3E2723">August 2026</h3>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button type="button" aria-label="Previous month" style="width:36px;height:36px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#5D4037;cursor:pointer">‹</button>
+        <button type="button" style="padding:8px 16px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;font-size:13px;font-weight:600;color:#5D4037;cursor:pointer">Today</button>
+        <button type="button" aria-label="Next month" style="width:36px;height:36px;border:1px solid #F0EBE3;background:#fff;border-radius:9999px;color:#5D4037;cursor:pointer">›</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:16px;align-items:start">
+      <section aria-label="Calendar" style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:0 2px">
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">SUN</div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">MON</div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">TUE</div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">WED</div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">THU</div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">FRI</div>
+          <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;color:#8A8279">SAT</div>
+        </div>
+        <sc-for list="{{ weeks }}" as="w" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ w.cells }}" as="c" hint-placeholder-count="7">
+              <div role="gridcell" onClick="{{ c.select }}" style="display:flex;flex-direction:column;gap:7px;min-height:132px;padding:10px;border-radius:8px;cursor:pointer;border:1px solid {{ c.border }}; background: {{ c.bg }}" style-hover="border-color:#A3BFA3">
+                <sc-if value="{{ c.isDay }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:7px;flex:1;min-height:0">
+                    <div style="display:flex;align-items:center;justify-content:space-between">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:12px;background: {{ c.numBg }}; color: {{ c.numColor }}">{{ c.dayNum }}</span>
+                      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em;color: {{ c.balColor }}">{{ c.balanceText }}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-height:0">
+                      <sc-for list="{{ c.lines }}" as="l" hint-placeholder-count="2">
+                        <span style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:1.3">
+                          <span style="width:6px;height:6px;border-radius:9999px;flex-shrink:0;background: {{ l.color }}"></span>
+                          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3A3530;flex:1">{{ l.label }}</span>
+                          <span style="font-family:'JetBrains Mono',monospace;flex-shrink:0;color: {{ l.amountColor }}">{{ l.amount }}</span>
+                        </span>
+                      </sc-for>
+                    </div>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:#B5AEA4">{{ c.footText }}</span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </section>
+
+      <aside aria-label="Selected day" style="background:#fff;border:1px solid #F0EBE3;border-radius:16px;padding:20px;position:sticky;top:88px">
+        <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#B5AEA4;max-width:none">{{ panelKind }}</p>
+        <h3 style="margin:0 0 16px;font-family:'Bricolage Grotesque',serif;font-size:1.563rem;line-height:1.15;color:#3E2723">{{ panelDate }}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+          <div style="background:#FAF7F2;border-radius:8px;padding:12px">
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Day net</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color: {{ panelNetColor }};max-width:none">{{ panelNet }}</p>
+          </div>
+          <div style="background:#FAF7F2;border-radius:8px;padding:12px">
+            <p style="margin:0 0 4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#B5AEA4;max-width:none">Balance after</p>
+            <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:1.125rem;color: {{ panelBalColor }};max-width:none">{{ panelBalance }}</p>
+          </div>
+        </div>
+        <ul style="margin:0 0 18px;padding:0;list-style:none">
+          <sc-for list="{{ panelTxs }}" as="tx" hint-placeholder-count="3">
+            <li style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #F0EBE3">
+              <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                <span style="font-size:14px;line-height:1.3;color:#3A3530">{{ tx.description }}</span>
+                <span style="display:flex;align-items:center;gap:6px">
+                  <span style="display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8A8279">
+                    <span style="width:6px;height:6px;border-radius:9999px;background: {{ tx.catColor }}"></span>{{ tx.category }}
+                  </span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:1px 6px;border-radius:9999px;background: {{ tx.srcBg }}; color: {{ tx.srcFg }}">{{ tx.srcLabel }}</span>
+                </span>
+              </span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;flex-shrink:0;color: {{ tx.color }}">{{ tx.amountText }}</span>
+            </li>
+          </sc-for>
+        </ul>
+        <p style="margin:0 0 18px;font-size:13px;color:#8A8279;max-width:none">{{ panelEmpty }}</p>
+        <button type="button" style="width:100%;padding:11px 18px;border:0;border-radius:9999px;background:#C17D4A;color:#fff;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#9B5F30;transform:translateY(-1px)">Add transaction</button>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1240}}">
+const RAW = {
+  1: [['Kroger', -112.38, 'actual', 'Groceries'], ['Netflix', -17.99, 'actual', 'Subscriptions']],
+  3: [['Mortgage', -1842.00, 'actual', 'Housing'], ['Athens Water', -64.20, 'actual', 'Utilities']],
+  4: [['Shell', -48.10, 'actual', 'Transportation']],
+  5: [['Payroll', 2418.66, 'actual', 'Income'], ['Verizon', -132.44, 'actual', 'Utilities']],
+  6: [['Amazon', -39.87, 'actual', 'Shopping']],
+  7: [["Puleo's Grille", -74.20, 'actual', 'Dining']],
+  8: [['Kroger', -96.15, 'actual', 'Groceries'], ['Athens Utilities', -188.02, 'actual', 'Utilities']],
+  10: [['State Farm', -214.00, 'actual', 'Insurance'], ['Starbucks', -8.75, 'actual', 'Dining']],
+  11: [['Target', -142.66, 'actual', 'Shopping']],
+  12: [['Car payment', -486.11, 'actual', 'Transportation'], ['Spotify', -11.99, 'actual', 'Subscriptions']],
+  13: [['Kroger', -83.44, 'actual', 'Groceries']],
+  15: [['Payroll', 2418.66, 'actual', 'Income'], ['Planet Fitness', -42.00, 'actual', 'Healthcare'], ['Los Portales', -58.90, 'actual', 'Dining']],
+  16: [['Spectrum', -89.99, 'forecast', 'Utilities']],
+  18: [['Kroger', -95.00, 'forecast', 'Groceries']],
+  19: [['Credit card', -650.00, 'forecast', 'Transfers']],
+  21: [['Athens Utilities', -176.00, 'forecast', 'Utilities'], ['Kroger', -95.00, 'forecast', 'Groceries']],
+  22: [['Dinner out', -60.00, 'manual', 'Dining']],
+  24: [['Vet — Momo', -180.00, 'manual', 'Healthcare']],
+  25: [['Kroger', -95.00, 'forecast', 'Groceries'], ['Verizon', -132.44, 'forecast', 'Utilities'], ['Athens Water', -64.00, 'forecast', 'Utilities']],
+  27: [['Mortgage', -1842.00, 'forecast', 'Housing']],
+  29: [['Payroll', 2418.66, 'forecast', 'Income'], ['Car payment', -486.11, 'forecast', 'Transportation']],
+  30: [['Kroger', -95.00, 'forecast', 'Groceries']],
+  31: [['State Farm', -214.00, 'forecast', 'Insurance'], ['Netflix', -17.99, 'forecast', 'Subscriptions']],
+};
+const CAT_COLOR = {
+  Income: '#5A7A5A', Housing: '#5D4037', Utilities: '#7B9E7B', Groceries: '#A3BFA3',
+  Transportation: '#C17D4A', Insurance: '#8A8279', Healthcare: '#C1574A',
+  Dining: '#D9A373', Shopping: '#7B5B4F', Subscriptions: '#B5AEA4', Transfers: '#3D5C3D',
+};
+const SRC = {
+  actual: ['#D4E4D4', '#3D5C3D', 'Actual'],
+  forecast: ['#F0EBE3', '#7B5B4F', 'Forecast'],
+  manual: ['#FAF7F2', '#8A8279', 'Manual'],
+};
+// 3-month averages per category, for the vs-average comparison
+const AVG = { Housing: 1842, Groceries: 340, Utilities: 384, Transportation: 520, Dining: 118, Insurance: 214, Shopping: 96, Healthcare: 24, Subscriptions: 30, Transfers: 600 };
+const OPENING = 3142.00, TODAY = 15, START_PAD = 6, DAYS = 31, GREEN = 1000, CRITICAL = 200;
+const WD = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
+
+function money(n, sign) {
+  const s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (sign) return (n < 0 ? '−$' : '+$') + s;
+  return (n < 0 ? '−$' : '$') + s;
+}
+function short(n) { return (n < 0 ? '−' : '') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US'); }
+function healthColor(b) { return b > GREEN ? '#3D5C3D' : b > CRITICAL ? '#C17D4A' : '#C1574A'; }
+
+class Component extends DCLogic {
+  state = { selected: TODAY };
+  renderVals() {
+    const s = [];
+    let bal = OPENING;
+    for (let d = 1; d <= DAYS; d++) {
+      const txs = RAW[d] || [];
+      let net = 0, spend = 0;
+      for (const t of txs) { net += t[1]; if (t[1] < 0) spend += -t[1]; }
+      bal += net;
+      s.push({ d, txs, net, spend, bal });
+    }
+
+    const cells = [];
+    for (let i = 0; i < START_PAD; i++) cells.push({ isDay: false, bg: '#FDFCFA', border: '#F5F1EA' });
+    for (const day of s) {
+      const isToday = day.d === TODAY, isSel = day.d === this.state.selected;
+      const lines = day.txs.slice(0, 3).map(t => ({
+        label: t[0], amount: short(t[1]), color: CAT_COLOR[t[3]],
+        amountColor: t[1] < 0 ? '#7B5B4F' : '#3D5C3D',
+      }));
+      cells.push({
+        isDay: true,
+        dayNum: String(day.d),
+        lines,
+        footText: day.txs.length > 3
+          ? '+' + (day.txs.length - 3) + ' MORE · ' + short(day.net)
+          : (day.txs.length ? 'NET ' + short(day.net) : ''),
+        balanceText: money(day.bal),
+        balColor: healthColor(day.bal),
+        numBg: isToday ? '#5D4037' : 'transparent',
+        numColor: isToday ? '#FAF7F2' : day.d > TODAY ? '#8A8279' : '#3A3530',
+        bg: isSel ? '#FAF7F2' : '#ffffff',
+        border: isSel ? '#7B9E7B' : '#F0EBE3',
+        select: () => this.setState({ selected: day.d }),
+      });
+    }
+    while (cells.length % 7 !== 0) cells.push({ isDay: false, bg: '#FDFCFA', border: '#F5F1EA' });
+    const weeks = [];
+    for (let i = 0; i < cells.length; i += 7) weeks.push({ cells: cells.slice(i, i + 7) });
+
+    // Category spend month to date vs 3-month average
+    const byCat = {};
+    for (let d = 1; d <= TODAY; d++) {
+      for (const t of (RAW[d] || [])) {
+        if (t[1] >= 0) continue;
+        byCat[t[3]] = (byCat[t[3]] || 0) + -t[1];
+      }
+    }
+    const rows = Object.keys(byCat).map(k => ({ category: k, amount: byCat[k], avg: AVG[k] || 0 }));
+    rows.sort((a, b) => b.amount - a.amount);
+    const scale = Math.max.apply(null, rows.map(r => Math.max(r.amount, r.avg))) || 1;
+    const catRows = rows.slice(0, 7).map(r => {
+      const delta = r.avg ? Math.round(((r.amount - r.avg) / r.avg) * 100) : 0;
+      return {
+        category: r.category,
+        color: CAT_COLOR[r.category],
+        width: Math.max((r.amount / scale) * 100, 2).toFixed(1) + '%',
+        avgLeft: ((r.avg / scale) * 100).toFixed(1) + '%',
+        amount: short(r.amount),
+        delta: r.avg ? (delta > 0 ? '▲ ' + delta + '%' : delta < 0 ? '▼ ' + Math.abs(delta) + '%' : 'flat') : 'new',
+        deltaColor: delta > 8 ? '#C1574A' : delta < -8 ? '#3D5C3D' : '#8A8279',
+      };
+    });
+
+    const sel = s[this.state.selected - 1];
+    const panelTxs = sel.txs.map(([description, amount, source, category]) => {
+      const b = SRC[source];
+      return {
+        description, category, catColor: CAT_COLOR[category],
+        amountText: money(amount, true),
+        color: amount < 0 ? '#7B5B4F' : '#3D5C3D',
+        srcBg: b[0], srcFg: b[1], srcLabel: b[2],
+      };
+    });
+
+    const mtd = s.slice(0, TODAY).reduce((a, x) => a + x.spend, 0);
+    const burn = mtd / TODAY;
+    const low = s.reduce((m, x) => (x.bal < m.bal ? x : m), s[0]);
+
+    return {
+      weeks, catRows, panelTxs,
+      panelKind: this.state.selected > TODAY ? 'Forecast day' : this.state.selected === TODAY ? 'Today' : 'Settled day',
+      panelDate: WD[(this.state.selected - 1) % 7] + ', August ' + this.state.selected,
+      panelNet: sel.net === 0 ? '—' : money(sel.net, true),
+      panelNetColor: sel.net < 0 ? '#7B5B4F' : '#3D5C3D',
+      panelBalance: money(sel.bal),
+      panelBalColor: healthColor(sel.bal),
+      panelEmpty: sel.txs.length ? '' : 'Nothing scheduled. Balance carries forward.',
+      eomBalance: money(s[DAYS - 1].bal),
+      lowBalance: money(low.bal),
+      lowDate: 'Aug ' + low.d,
+      burnRate: '$' + burn.toFixed(0),
+      runwayDays: Math.floor(s[DAYS - 1].bal / burn),
+      mtdSpend: short(mtd),
+    };
+  }
+}
+</script>
+</body>
+</html>
