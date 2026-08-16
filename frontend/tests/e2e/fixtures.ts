@@ -19,6 +19,11 @@ import { API_URL } from './stack';
  *   2. Each test gets its own account, and the browser is told which one to
  *      select before the app loads. Tests never compete over "the first
  *      account", so they stay independent of each other and of run order.
+ *
+ * The recurring seed keeps both. Its series start in the fixture month, so they
+ * generate nothing in the past — and the opening-balance back-calculation only
+ * ever subtracts real transactions, never forecast instances, so a series could
+ * not disturb it in any case.
  */
 
 /** The account's last known balance, and therefore every day's opening balance. */
@@ -44,6 +49,34 @@ export interface CalendarFixture {
   transactionIds: string[];
 }
 
+/**
+ * The two recurring series the recurring and keyboard flows share.
+ *
+ * Both are monthly and both fall on days the seed leaves empty, so each one
+ * lands alone in its cell and an assertion on that cell can only be about the
+ * series.
+ *
+ * `active` is the series every scenario acts on. It is monthly rather than a
+ * one-off so the fixture month holds one instance and the month after holds the
+ * next — the pair the single-instance override is measured against.
+ *
+ * `pending` starts in `pending_review`, which keeps it out of the forecast
+ * until the flow confirms it.
+ */
+export const RECURRING = {
+  active: { name: 'E2E Fixture Gym', amount: '-60.00', day: 5 },
+  pending: { name: 'E2E Fixture Streaming', amount: '-15.00', day: 25 },
+} as const;
+
+export interface RecurringFixture extends CalendarFixture {
+  /** The active monthly series, present in the forecast from the start. */
+  activeSeriesId: string;
+  /** The `pending_review` series, absent from the forecast until confirmed. */
+  pendingSeriesId: string;
+  /** The month after the fixture month, holding the active series' next instance. */
+  followingMonth: string;
+}
+
 // ---------------------------------------------------------------------------
 // Expected values
 // ---------------------------------------------------------------------------
@@ -55,9 +88,36 @@ export function expectedBalance(dayOfMonth: number): string {
   return AFTER_PAYCHECK;
 }
 
+// The same walk with the active recurring series in it, and the pending one
+// still withheld. Hand-computed from OPENING_BALANCE, SEEDED and RECURRING.
+const WITH_GYM = {
+  beforeGym: '5000.00', // days 1–4
+  afterGym: '4940.00', // days 5–9: 5000.00 − 60.00
+  afterRent: '3690.00', // days 10–19: 4940.00 − 1250.00
+  afterPaycheck: '6090.00', // days 20 onwards: 3690.00 + 2400.00
+} as const;
+
+/**
+ * The running balance for a day of the fixture month with the recurring seed in
+ * place — the active series charged, the pending one not.
+ */
+export function expectedRecurringBalance(dayOfMonth: number): string {
+  if (dayOfMonth < RECURRING.active.day) return WITH_GYM.beforeGym;
+  if (dayOfMonth < 10) return WITH_GYM.afterGym;
+  if (dayOfMonth < 20) return WITH_GYM.afterRent;
+  return WITH_GYM.afterPaycheck;
+}
+
 /** `YYYY-MM-DD` for a day of the fixture month. */
 export function fixtureDate(month: string, dayOfMonth: number): string {
   return `${month}-${String(dayOfMonth).padStart(2, '0')}`;
+}
+
+/** The month after a `YYYY-MM`. */
+export function monthAfter(month: string): string {
+  const [year, m] = month.split('-').map(Number) as [number, number];
+  const d = new Date(year, m, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 /** The same formatting the calendar applies to a running balance. */
@@ -132,6 +192,69 @@ async function seed(): Promise<CalendarFixture> {
 }
 
 /**
+ * Adds the two recurring series to an already-seeded account.
+ *
+ * The pending one is created and then moved to `pending_review`, because
+ * `POST /recurring` only ever writes `active` — auto-detection is the only
+ * path that produces a pending row, and driving detection here would tie the
+ * fixture to the detector's thresholds rather than to the review flow the test
+ * is about.
+ */
+async function seedRecurring(
+  accountId: string,
+  month: string,
+): Promise<{ activeSeriesId: string; pendingSeriesId: string }> {
+  const active = await api<{ id: string }>('/recurring', {
+    method: 'POST',
+    body: JSON.stringify({
+      accountId,
+      name: RECURRING.active.name,
+      amount: RECURRING.active.amount,
+      frequency: 'monthly',
+      nextDate: fixtureDate(month, RECURRING.active.day),
+    }),
+  });
+
+  const pending = await api<{ id: string }>('/recurring', {
+    method: 'POST',
+    body: JSON.stringify({
+      accountId,
+      name: RECURRING.pending.name,
+      amount: RECURRING.pending.amount,
+      frequency: 'monthly',
+      nextDate: fixtureDate(month, RECURRING.pending.day),
+    }),
+  });
+
+  await api(`/recurring/${pending.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'pending_review' }),
+  });
+
+  return { activeSeriesId: active.id, pendingSeriesId: pending.id };
+}
+
+/**
+ * Writes a single-instance override straight to the API.
+ *
+ * The calendar has no way to reach this yet — `RecurringInstanceMenu` is built
+ * but wired to nothing, which is issue #26. Until that lands the override
+ * arrives the way the sync job would write one, and the flow asserts on what
+ * the calendar does with it. When #26 ships this call is what the UI steps
+ * replace.
+ */
+export async function overrideInstance(
+  seriesId: string,
+  originalDate: string,
+  body: { overrideType: 'modified' | 'deleted'; overrideAmount?: string },
+): Promise<void> {
+  await api(`/recurring/${seriesId}/overrides/${originalDate}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+/**
  * Removes every transaction on the fixture account, including any the test
  * created through the UI.
  *
@@ -159,7 +282,10 @@ async function teardown(accountId: string): Promise<void> {
 /** localStorage key the app reads the selected account from. */
 const ACCOUNT_KEY = 'mazza-selected-account';
 
-export const test = base.extend<{ calendar: CalendarFixture }>({
+export const test = base.extend<{
+  calendar: CalendarFixture;
+  recurring: RecurringFixture;
+}>({
   calendar: async ({ page }, use) => {
     const fixture = await seed();
 
@@ -175,6 +301,25 @@ export const test = base.extend<{ calendar: CalendarFixture }>({
     } finally {
       await teardown(fixture.accountId);
     }
+  },
+
+  /*
+   * Layered on the calendar fixture rather than seeded beside it, so the
+   * recurring series are charged against balances the calendar flow already
+   * proves — a recurring assertion that fails is then about recurring, not
+   * about the seed underneath it.
+   *
+   * Series need no teardown: they are account-scoped and every test seeds its
+   * own account, so nothing they leave behind is reachable from another test.
+   * The stack's database is discarded at the end of the run in any case.
+   */
+  recurring: async ({ calendar }, use) => {
+    const series = await seedRecurring(calendar.accountId, calendar.month);
+    await use({
+      ...calendar,
+      ...series,
+      followingMonth: monthAfter(calendar.month),
+    });
   },
 });
 
