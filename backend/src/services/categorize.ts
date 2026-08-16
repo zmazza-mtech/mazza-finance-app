@@ -54,6 +54,11 @@ export function normalizeDescription(description: string): string {
 }
 
 // Keyword map: first match wins. More specific patterns before broader ones.
+//
+// A merchant whose trading name is several words often reaches the statement
+// with the spaces closed up, or abbreviated outright — Whole Foods bills as
+// `WHOLEFDS MKT`. Both forms are listed rather than having the matcher ignore
+// spacing, which would let `whole foods` match across a word boundary.
 const KEYWORD_MAP: Array<[string[], Category]> = [
   // Loan Payments — credit card payments, personal loans, BNPL (must be before Transfers)
   [['applecard gsbank', 'ccpymt', 'crcardpmt', 'cc pymt', 'mobile pmt capital one',
@@ -68,7 +73,8 @@ const KEYWORD_MAP: Array<[string[], Category]> = [
   [['usataxpymt', 'irs ', 'tax pymt', 'state tax', 'tax payment'], 'Taxes'],
   // Fitness
   [['ymca', 'family ym', 'athens mcminn family', 'gym', 'planet fitness',
-    'anytime fitness', 'crossfit', 'orangetheory'], 'Fitness'],
+    'planetfitness', 'anytime fitness', 'anytimefitness', 'crossfit',
+    'orangetheory'], 'Fitness'],
   // Income
   [['payroll', 'direct dep', 'salary', 'wages', 'paycheck', 'direct deposit',
     'soc sec', 'ssa treas', 'interest deposit'], 'Income'],
@@ -79,54 +85,65 @@ const KEYWORD_MAP: Array<[string[], Category]> = [
   [['electric', 'gas bill', 'water bill', 'internet', 'comcast', 'verizon fios',
     'spectrum', 'xfinity', 'sewer', 'trash', 'waste mgmt', 'at&t', 'att uverse'], 'Utilities'],
   // Groceries
-  [['kroger', 'publix', 'walmart', 'costco', 'aldi', 'trader joe', 'whole foods',
-    'safeway', 'grocery', 'food lion', 'h-e-b', 'wegmans', 'sprouts', 'ingles',
-    'piggly', 'food city', 'carniceria', 'sunrise market',
+  [['kroger', 'publix', 'walmart', 'costco', 'aldi', 'trader joe', 'traderjoe',
+    'whole foods', 'wholefoods', 'wholefds',
+    'safeway', 'grocery', 'food lion', 'foodlion', 'h-e-b', 'wegmans', 'sprouts',
+    'ingles', 'piggly', 'food city', 'foodcity', 'carniceria', 'sunrise market',
     'wal-mart', 'wm supercenter', 'creekside market'], 'Groceries'],
   // Transportation
   [['shell oil', 'shell service', 'exxon', 'chevron', 'gasoline', 'fuel', 'uber trip',
-    'lyft', 'parking', 'toll', 'ez pass', 'car wash', 'jiffy lube', 'auto parts',
-    'marathon', 'bp ', 'bp#', 'racetrac', 'murphy', 'pilot ', 'weigel', 'circle k',
+    'lyft', 'parking', 'toll', 'ez pass', 'ezpass', 'car wash', 'carwash',
+    'jiffy lube', 'jiffylube', 'auto parts',
+    'marathon', 'bp ', 'bp#', 'racetrac', 'murphy', 'pilot ', 'weigel',
+    'circle k', 'circlek',
     'kwik serve', 'amoco', 'buc-ee', 'valvoline', 'vioc', 'oil change'], 'Transportation'],
   // Insurance
-  [['insurance', 'geico', 'state farm', 'allstate', 'progressive', 'usaa',
-    'liberty mutual', 'per insur', 'travelers'], 'Insurance'],
+  [['insurance', 'geico', 'state farm', 'statefarm', 'allstate', 'progressive',
+    'usaa', 'liberty mutual', 'libertymutual', 'per insur', 'travelers'], 'Insurance'],
   // Healthcare
   [['pharmacy', 'cvs', 'walgreens', 'doctor', 'medical', 'dental', 'hospital',
     'urgent care', 'copay', 'labcorp', 'quest diag', 'lifepoint', 'teamhealth'], 'Healthcare'],
   // Entertainment — gaming and streaming (must be before Subscriptions to catch gaming)
-  [['netflix', 'hulu', 'disney+', 'disney plus', 'hbo', 'youtube', 'spotify',
-    'apple music', 'amazon prime', 'prime video', 'cinema', 'movie', 'theater',
+  [['netflix', 'hulu', 'disney+', 'disney plus', 'disneyplus', 'hbo', 'youtube',
+    'spotify', 'apple music', 'amazon prime', 'prime video', 'primevideo',
+    'cinema', 'movie', 'theater',
     'concert', 'ticketmaster', 'steam', 'wl steam', 'blizzard', 'nintendo',
-    'fortnite', 'epcfortnite', 'game pass', 'xbox', 'playstation',
+    'fortnite', 'epcfortnite', 'game pass', 'gamepass', 'xbox', 'playstation',
     'battle.net', 'topgolf'], 'Entertainment'],
   // Dining
   [['restaurant', 'mcdonald', 'starbucks', 'chipotle', 'chick-fil', 'wendy',
     'burger', 'pizza', 'doordash', 'grubhub', 'uber eat', 'taco bell', 'subway',
     'panera', 'cafe', 'coffee', 'diner', 'kitchen', 'grill', 'cook out', 'waffle',
-    'ihop', 'cracker barrel', 'zaxby', 'popeye', 'sonic drive', 'wing', 'bbq',
-    'bakery', 'applebee', 'chili s', 'chilis', 'arby', 'panda express',
-    'firehouse sub', 'dutch bros', 'kumo asian', 'el dorado mexican', 'pals ',
+    'ihop', 'cracker barrel', 'crackerbarrel', 'zaxby', 'popeye', 'sonic drive',
+    'wing', 'bbq', 'bakery', 'applebee', 'chili s', 'chilis', 'arby',
+    'panda express', 'pandaexpress', 'chickfila', 'tacobell', 'cookout',
+    'firehouse sub', 'firehousesub', 'dutch bros', 'dutchbros',
+    'kumo asian', 'el dorado mexican', 'pals ',
     'pals #', 'buddy', 'bar-b-q', 'bojangle', 'hardee', 'pepo', 'burrito',
     'asian chao', 'bistro', 'crowbar', 'tavern', 'michael s casual',
-    'casual d', 'olive garden', 'lotus thai', 'dave', 'hot chicken',
+    'casual d', 'olive garden', 'olivegarden', 'lotus thai', 'dave', 'hot chicken',
     'gondolier', 'komma tea', 'social on depot'], 'Dining'],
   // Shopping
-  [['amazon.com', 'amazon digit', 'amzn', 'ebay', 'etsy', 'best buy', 'home depot',
+  [['amazon.com', 'amazon digit', 'amzn', 'ebay', 'etsy', 'best buy', 'bestbuy',
+    'home depot', 'homedepot',
     'lowes', 'lowe\'s', 'lowe s', 'apple.com', 'apple.com/bill', 'nordstrom',
-    'tj maxx', 'marshalls', 'target', 'dollar general', 'dollar tree',
-    'family dollar', 'five below', 'bath & body', 'old navy', 'gap ', 'ross ',
+    'tj maxx', 'tjmaxx', 'marshalls', 'target', 'dollar general', 'dollargeneral',
+    'dollar tree', 'dollartree', 'family dollar', 'familydollar',
+    'five below', 'fivebelow', 'bath & body', 'old navy', 'oldnavy', 'gap ', 'ross ',
     'becks top shelf', 'wine & spirits', 'wine &', 'belk', 'gabriel',
-    'hobby lobby', 'hobbylobby', 'hobbytown', 'box lunch', 'micro electronic',
+    'hobby lobby', 'hobbylobby', 'hobbytown', 'box lunch', 'boxlunch',
+    'micro electronic',
     'rickey', 'odds and en', 'cricut', 'rocky top market'], 'Shopping'],
   // Subscriptions
   [['subscription', 'monthly fee', 'annual fee', 'adobe', 'microsoft 365',
-    'icloud', 'dropbox', 'github', 'patreon', 'klarna', 'google one',
+    'microsoft365', 'icloud', 'dropbox', 'github', 'patreon', 'klarna',
+    'google one', 'googleone',
     'apple com bill', 'kindle unltd', 'ring.com', 'ring standard',
-    'simplefin', 'obsidian', 'hackthebox', 'valhost', 'rocket money',
+    'simplefin', 'obsidian', 'hackthebox', 'valhost', 'rocket money', 'rocketmoney',
     'infragard', 'vpn', 'openai', 'chatgpt'], 'Subscriptions'],
   // Transfers
-  [['transfer', 'zelle', 'venmo', 'paypal', 'cash app', 'wire', 'pypl'], 'Transfers'],
+  [['transfer', 'zelle', 'venmo', 'paypal', 'cash app', 'cashapp', 'wire',
+    'pypl'], 'Transfers'],
 ];
 
 /**
