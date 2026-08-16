@@ -8,6 +8,9 @@ interface ThresholdSettingsProps {
   isSaving?: boolean;
 }
 
+const FIELD_CLASSES =
+  'w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] font-mono text-[15px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+
 /**
  * Form for configuring balance health thresholds.
  * Validation: green > yellow > 0.
@@ -59,69 +62,70 @@ export function ThresholdSettings({
   }
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Balance threshold settings">
-      <fieldset>
-        <legend className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-          Balance health thresholds
-        </legend>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          When your running balance falls at or below these amounts, the balance
-          indicator changes color. Green (Good) must be higher than Yellow (Low).
-        </p>
+    // noValidate: the decimal.js check below is the only validator, so its
+    // wording is always what the user sees. Native `min` enforcement would
+    // silently swallow the submit and show a browser tooltip instead.
+    <form onSubmit={handleSubmit} aria-label="Balance threshold settings" noValidate>
+      <p className="mb-4 text-sm text-stone">
+        The calendar colors your running balance against these two lines. Good
+        must sit above Low.
+      </p>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="threshold-green"
-              className="block text-sm font-medium text-green-700 dark:text-green-400 mb-1"
-            >
-              Good threshold ($)
-            </label>
-            <input
-              id="threshold-green"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={green}
-              onChange={(e) => setGreen(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="threshold-yellow"
-              className="block text-sm font-medium text-amber-700 dark:text-amber-300 mb-1"
-            >
-              Low threshold ($)
-            </label>
-            <input
-              id="threshold-yellow"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={yellow}
-              onChange={(e) => setYellow(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {error && (
-          <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400">
-            {error}
-          </p>
-        )}
-
-        <div className="mt-4">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label
+            htmlFor="threshold-green"
+            className="mb-1 block text-[13px] font-medium text-sage-deep"
           >
-            {isSaving ? 'Saving...' : 'Save thresholds'}
-          </button>
+            Good — at or above
+          </label>
+          <input
+            id="threshold-green"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={green}
+            onChange={(e) => setGreen(e.target.value)}
+            className={FIELD_CLASSES}
+          />
         </div>
-      </fieldset>
+        <div>
+          <label
+            htmlFor="threshold-yellow"
+            className="mb-1 block text-[13px] font-medium text-copper-dark"
+          >
+            Low — at or below
+          </label>
+          <input
+            id="threshold-yellow"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={yellow}
+            onChange={(e) => setYellow(e.target.value)}
+            className={FIELD_CLASSES}
+          />
+        </div>
+      </div>
+
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-error">
+          {error}
+        </p>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+        >
+          {isSaving ? 'Saving…' : 'Save thresholds'}
+        </button>
+        <p className="text-[13px] text-stone">
+          Alerts fire when a forecast day crosses either line.
+        </p>
+      </div>
     </form>
   );
 }

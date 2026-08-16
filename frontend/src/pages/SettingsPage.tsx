@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ThemeToggle } from '@/components/settings/ThemeToggle';
 import { ThresholdSettings } from '@/components/settings/ThresholdSettings';
 import { AccountSettings } from '@/components/settings/AccountSettings';
@@ -9,7 +10,7 @@ import { useAccounts, useUpdateAccount } from '@/hooks/useAccounts';
 import { useSyncStatus, useTriggerSync } from '@/hooks/useSync';
 
 /**
- * Settings page — theme, thresholds, account toggles, sync controls.
+ * Settings page — sync, thresholds, accounts, imports and appearance.
  */
 export function SettingsPage() {
   const { settingsMap, isLoading: settingsLoading } = useSettings();
@@ -35,103 +36,76 @@ export function SettingsPage() {
 
   if (settingsLoading || accountsLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div
-          className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
-          role="status"
-          aria-label="Loading settings"
-        />
+      <div className="flex h-64 items-center justify-center">
+        <div className="spinner-sage" role="status" aria-label="Loading settings" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
-      <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-        Settings
-      </h1>
+    <div className="mx-auto max-w-[760px] px-6 py-6">
+      <h1 className="font-display text-4xl text-bark-dark">Settings</h1>
+      <p className="mt-1 text-[15px] text-stone">
+        Sync, thresholds, accounts and imports.
+      </p>
 
-      {/* Theme */}
-      <section aria-labelledby="theme-section">
-        <h2
-          id="theme-section"
-          className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4"
-        >
-          Appearance
-        </h2>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <ThemeToggle />
-        </div>
-      </section>
-
-      {/* Sync */}
-      <section aria-labelledby="sync-section">
-        <h2
-          id="sync-section"
-          className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4"
-        >
-          Bank Sync
-        </h2>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <div className="mt-6 flex flex-col gap-4">
+        <SettingsCard id="sync" title="Bank sync">
           <SyncStatus
             syncStatus={syncStatus ?? null}
             isSyncing={triggerSync.isPending}
             onSync={() => triggerSync.mutate()}
           />
-        </div>
-      </section>
+        </SettingsCard>
 
-      {/* Balance thresholds */}
-      <section aria-labelledby="threshold-section">
-        <h2
-          id="threshold-section"
-          className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4"
-        >
-          Balance Health
-        </h2>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <SettingsCard id="thresholds" title="Balance health">
           <ThresholdSettings
             greenThreshold={greenThreshold}
             yellowThreshold={yellowThreshold}
             onSave={handleSaveThresholds}
             isSaving={updateSetting.isPending}
           />
-        </div>
-      </section>
+        </SettingsCard>
 
-      {/* CSV Import */}
-      <section aria-labelledby="import-section">
-        <h2
-          id="import-section"
-          className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4"
-        >
-          Import Transactions
-        </h2>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <CsvImportSection />
-        </div>
-      </section>
-
-      {/* Accounts */}
-      <section aria-labelledby="accounts-section">
-        <h2
-          id="accounts-section"
-          className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4"
-        >
-          Accounts
-        </h2>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
-          <div className="p-4">
-            <AccountSettings
-              accounts={accounts}
-              onToggleInclude={handleToggleAccount}
-            />
-          </div>
-          <div className="p-4 space-y-3">
+        <SettingsCard id="accounts" title="Accounts in the forecast">
+          <AccountSettings accounts={accounts} onToggleInclude={handleToggleAccount} />
+          <div className="mt-4">
             <AddAccountForm />
           </div>
-        </div>
-      </section>
+        </SettingsCard>
+
+        <SettingsCard id="import" title="Import transactions">
+          <CsvImportSection />
+        </SettingsCard>
+
+        <SettingsCard id="appearance" title="Appearance">
+          <ThemeToggle />
+        </SettingsCard>
+      </div>
     </div>
+  );
+}
+
+function SettingsCard({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: ReactNode;
+}) {
+  const headingId = `${id}-title`;
+
+  return (
+    <section
+      aria-labelledby={headingId}
+      className="rounded-lg border border-cream-mid bg-white p-[22px]"
+    >
+      <h2 id={headingId} className="mb-3 font-display text-xl text-bark-dark">
+        {title}
+      </h2>
+      {children}
+    </section>
   );
 }

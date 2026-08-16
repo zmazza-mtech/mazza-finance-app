@@ -7,7 +7,7 @@ interface SyncStatusProps {
 }
 
 /**
- * Displays last sync status, remaining daily syncs, and a "Sync Now" button.
+ * Displays last sync status, remaining daily syncs, and a "Sync now" button.
  */
 export function SyncStatus({ syncStatus, isSyncing, onSync }: SyncStatusProps) {
   const syncLog = syncStatus?.lastSync ?? null;
@@ -19,29 +19,26 @@ export function SyncStatus({ syncStatus, isSyncing, onSync }: SyncStatusProps) {
   const limitReached = remaining <= 0;
 
   let statusText = 'Never synced';
-  let statusClass = 'text-gray-500 dark:text-gray-400';
+  let statusClass = 'text-stone';
 
   if (syncLog) {
     if (syncLog.status === 'running') {
       statusText = 'Sync in progress...';
-      statusClass = 'text-blue-600 dark:text-blue-400';
+      statusClass = 'text-sage';
     } else if (syncLog.status === 'success' && syncLog.completedAt) {
       statusText = `Last synced: ${formatRelative(syncLog.completedAt)}`;
-      statusClass = 'text-green-700 dark:text-green-400';
+      statusClass = 'text-sage-dark';
     } else if (syncLog.status === 'error') {
       statusText = `Sync failed${syncLog.message ? `: ${syncLog.message}` : ''}`;
-      statusClass = 'text-red-700 dark:text-red-400';
+      statusClass = 'text-error';
     }
   }
 
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-          Bank sync
-        </p>
         <p className={`text-sm ${statusClass}`}>{statusText}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+        <p className="label-mono mt-1">
           {remaining} of {dailyLimit} syncs remaining today
         </p>
       </div>
@@ -56,9 +53,9 @@ export function SyncStatus({ syncStatus, isSyncing, onSync }: SyncStatusProps) {
               ? 'Sync in progress'
               : 'Sync now'
         }
-        className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="hit-target rounded-full bg-bark px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-bark-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
       >
-        {isRunning ? 'Syncing...' : limitReached ? 'Limit Reached' : 'Sync Now'}
+        {isRunning ? 'Syncing…' : limitReached ? 'Limit reached' : 'Sync now'}
       </button>
     </div>
   );

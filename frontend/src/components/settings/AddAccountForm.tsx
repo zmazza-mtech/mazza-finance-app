@@ -34,7 +34,7 @@ export function AddAccountForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+        className="hit-target text-[13px] text-sage-dark underline decoration-sage-light underline-offset-2 transition-colors duration-150 hover:text-sage-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
       >
         + Add account manually
       </button>
@@ -47,7 +47,7 @@ export function AddAccountForm() {
         <div>
           <label
             htmlFor="add-institution"
-            className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+            className="mb-1 block text-[13px] font-medium text-charcoal"
           >
             Bank / Institution
           </label>
@@ -58,13 +58,13 @@ export function AddAccountForm() {
             onChange={(e) => setInstitution(e.target.value)}
             placeholder="e.g. Chase"
             required
-            className="block w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 py-1.5 px-2"
+            className="block w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
         </div>
         <div>
           <label
             htmlFor="add-name"
-            className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+            className="mb-1 block text-[13px] font-medium text-charcoal"
           >
             Account name
           </label>
@@ -75,7 +75,7 @@ export function AddAccountForm() {
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Checking ****1234"
             required
-            className="block w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 py-1.5 px-2"
+            className="block w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
         </div>
       </div>
@@ -83,7 +83,7 @@ export function AddAccountForm() {
       <div>
         <label
           htmlFor="add-type"
-          className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+          className="mb-1 block text-[13px] font-medium text-charcoal"
         >
           Account type
         </label>
@@ -91,7 +91,7 @@ export function AddAccountForm() {
           id="add-type"
           value={type}
           onChange={(e) => setType(e.target.value as AccountType)}
-          className="block w-full max-w-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 py-1.5 px-2"
+          className="block w-full max-w-xs rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
         >
           <option value="checking">Checking</option>
           <option value="savings">Savings</option>
@@ -100,7 +100,7 @@ export function AddAccountForm() {
       </div>
 
       {createAccount.isError && (
-        <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+        <p className="text-sm text-error" role="alert">
           Failed to create account — please try again.
         </p>
       )}
@@ -109,14 +109,14 @@ export function AddAccountForm() {
         <button
           type="submit"
           disabled={createAccount.isPending || !institution.trim() || !name.trim()}
-          className="px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {createAccount.isPending ? 'Adding…' : 'Add account'}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          className="hit-target rounded-full border border-cream-mid bg-white px-[18px] py-[11px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
         >
           Cancel
         </button>

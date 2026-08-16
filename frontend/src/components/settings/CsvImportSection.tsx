@@ -265,25 +265,26 @@ export function CsvImportSection() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Import transactions from a bank CSV export. Duplicates are automatically skipped.
+      <p className="text-sm text-stone">
+        CSV with date, description and amount columns. Duplicates are skipped.
       </p>
 
-      {/* File picker */}
-      <div>
+      {/* Drop zone */}
+      <div className="rounded-lg border border-dashed border-border-mid bg-cream p-7 text-center">
+        <p className="text-sm text-stone">Choose a CSV export from your bank.</p>
         <input
           ref={fileInputRef}
           type="file"
           accept=".csv"
           onChange={handleFileChange}
           aria-label="Select a CSV file to import"
-          className="text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 dark:hover:file:bg-blue-900/50"
+          className="mt-3 w-full text-sm text-stone file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-cream-mid file:bg-white file:px-4 file:py-2 file:text-sm file:text-bark hover:file:border-sage-light"
         />
       </div>
 
       {/* Parse error */}
       {parseError && (
-        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+        <p className="text-sm text-error" role="alert">
           {parseError}
         </p>
       )}
@@ -291,12 +292,12 @@ export function CsvImportSection() {
       {/* Parse success — show row count, column mapping, account selector, import button */}
       {parsedRows && !importMutation.isSuccess && (
         <div className="space-y-3">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="text-sm text-charcoal">
             <p>
               <span className="font-medium">{parsedRows.rows.length}</span> transaction
               {parsedRows.rows.length !== 1 ? 's' : ''} detected
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="label-mono mt-1">
               {parsedRows.columnInfo}
             </p>
           </div>
@@ -304,7 +305,7 @@ export function CsvImportSection() {
           <div>
             <label
               htmlFor="import-account"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="mb-1 block text-[13px] font-medium text-charcoal"
             >
               Import to account
             </label>
@@ -312,7 +313,7 @@ export function CsvImportSection() {
               id="import-account"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="block w-full max-w-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-gray-100 py-1.5 px-2"
+              className="block w-full max-w-sm rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-sm text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               <option value="">Select an account…</option>
               {accounts.map((a) => (
@@ -327,20 +328,20 @@ export function CsvImportSection() {
             <button
               onClick={handleImport}
               disabled={!accountId || importMutation.isPending}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-white transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
               {importMutation.isPending ? 'Importing…' : 'Import'}
             </button>
             <button
               onClick={handleReset}
-              className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+              className="hit-target rounded-full border border-cream-mid bg-white px-[18px] py-[11px] text-sm text-stone transition-colors duration-150 hover:border-sage-light hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
             >
               Cancel
             </button>
           </div>
 
           {importMutation.isError && (
-            <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+            <p className="text-sm text-error" role="alert">
               Import failed — please try again.
             </p>
           )}
@@ -351,9 +352,9 @@ export function CsvImportSection() {
       {importMutation.isSuccess && importMutation.data && (
         <div
           role="status"
-          className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 space-y-2"
+          className="space-y-2 rounded-md border border-sage-light bg-sage-lighter/40 p-3.5"
         >
-          <p className="text-sm text-green-800 dark:text-green-300">
+          <p className="text-sm text-sage-deep">
             Imported{' '}
             <span className="font-medium">{importMutation.data.imported}</span>
             {importMutation.data.skipped > 0 && (
@@ -370,7 +371,7 @@ export function CsvImportSection() {
             )}
           </p>
           {importMutation.data.errors.length > 0 && (
-            <ul className="text-xs text-red-700 dark:text-red-400 space-y-0.5 list-disc list-inside">
+            <ul className="list-inside list-disc space-y-0.5 text-xs text-error">
               {importMutation.data.errors.map((e, i) => (
                 <li key={i}>{e}</li>
               ))}
@@ -378,7 +379,7 @@ export function CsvImportSection() {
           )}
           <button
             onClick={handleReset}
-            className="text-xs text-green-700 dark:text-green-400 underline"
+            className="text-[13px] text-sage-dark underline decoration-sage-light underline-offset-2 hover:text-sage-deep"
           >
             Import another file
           </button>
