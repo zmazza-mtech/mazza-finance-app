@@ -3,9 +3,11 @@ import {
   expandRecurringSeries,
   applyOverrides,
   computeForecast,
+  advanceMatchedSeries,
   type RecurringDef,
   type OverrideDef,
   type ActualTransaction,
+  type RecurringInstance,
 } from '../../src/services/forecast.js';
 
 // ---------------------------------------------------------------------------
@@ -175,5 +177,264 @@ describe('computeForecast', () => {
     const result = computeForecast([], [], [], '2026-02-01', '2026-02-01', '1234.56');
     expect(result[0]?.runningBalance).toBe('1234.56');
     expect(typeof result[0]?.runningBalance).toBe('string');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeForecast — PRD §7 auto-reconciliation suppression
+// ---------------------------------------------------------------------------
+
+describe('computeForecast reconciles actuals against forecast instances', () => {
+  const bill: RecurringInstance = {
+    recurringId: 'rec_internet',
+    date: '2026-01-15',
+    name: 'Internet Bill',
+    amount: '-100.00',
+  };
+
+  function paidBill(overrides: Partial<ActualTransaction> = {}): ActualTransaction {
+    return {
+      id: 'tx_internet',
+      date: '2026-01-15',
+      description: 'INTERNET BILL AUTOPAY',
+      amount: '-100.00',
+      type: 'actual',
+      ...overrides,
+    };
+  }
+
+  it('counts a bill once when its actual has posted', () => {
+    const result = computeForecast(
+      [paidBill()],
+      [bill],
+      [],
+      '2026-01-01',
+      '2026-01-31',
+      '1000.00',
+    );
+
+    const jan15 = result.find((d) => d.date === '2026-01-15')!;
+
+    expect(jan15.transactions).toHaveLength(1);
+    expect(jan15.transactions[0]!.source).toBe('actual');
+    expect(jan15.dailyNet).toBe('-100.00');
+    expect(result[result.length - 1]!.runningBalance).toBe('900.00');
+  });
+
+  it('suppresses the forecast when the actual posted a day late', () => {
+    const result = computeForecast(
+      [paidBill({ date: '2026-01-16' })],
+      [bill],
+      [],
+      '2026-01-01',
+      '2026-01-31',
+      '1000.00',
+    );
+
+    const sources = result.flatMap((d) => d.transactions).map((t) => t.source);
+    expect(sources).toEqual(['actual']);
+    expect(result[result.length - 1]!.runningBalance).toBe('900.00');
+  });
+
+  it('suppresses the forecast when the amount drifted inside tolerance', () => {
+    const result = computeForecast(
+      [paidBill({ amount: '-108.00' })],
+      [bill],
+      [],
+      '2026-01-01',
+      '2026-01-31',
+      '1000.00',
+    );
+
+    const jan15 = result.find((d) => d.date === '2026-01-15')!;
+    expect(jan15.transactions).toHaveLength(1);
+    expect(jan15.dailyNet).toBe('-108.00');
+  });
+
+  it('keeps both when the amount is beyond tolerance, so the discrepancy stays visible', () => {
+    // The mismatch indicator needs the unresolved pair to survive. Silently
+    // matching a bill that moved this far would hide a real problem.
+    const result = computeForecast(
+      [paidBill({ amount: '-160.00' })],
+      [bill],
+      [],
+      '2026-01-01',
+      '2026-01-31',
+      '1000.00',
+    );
+
+    const jan15 = result.find((d) => d.date === '2026-01-15')!;
+    expect(jan15.transactions).toHaveLength(2);
+  });
+
+  it('still forecasts an instance that no actual fulfilled', () => {
+    const result = computeForecast([], [bill], [], '2026-01-01', '2026-01-31', '1000.00');
+
+    const jan15 = result.find((d) => d.date === '2026-01-15')!;
+    expect(jan15.transactions).toHaveLength(1);
+    expect(jan15.transactions[0]!.source).toBe('forecast');
+    expect(result[result.length - 1]!.runningBalance).toBe('900.00');
+  });
+
+  it('still shows an actual that fulfilled no instance', () => {
+    const result = computeForecast(
+      [paidBill({ id: 'tx_coffee', date: '2026-01-03', amount: '-4.50' })],
+      [bill],
+      [],
+      '2026-01-01',
+      '2026-01-31',
+      '1000.00',
+    );
+
+    const jan3 = result.find((d) => d.date === '2026-01-03')!;
+    expect(jan3.transactions).toHaveLength(1);
+    expect(result[result.length - 1]!.runningBalance).toBe('895.50');
+  });
+
+  it('resolves each instance against a separate actual rather than reusing one', () => {
+    const second: RecurringInstance = {
+      recurringId: 'rec_phone',
+      date: '2026-01-15',
+      name: 'Phone Bill',
+      amount: '-100.00',
+    };
+
+    const result = computeForecast(
+      [paidBill()],
+      [bill, second],
+      [],
+      '2026-01-01',
+      '2026-01-31',
+      '1000.00',
+    );
+
+    const jan15 = result.find((d) => d.date === '2026-01-15')!;
+    // One actual can only resolve one of the two, so the other stays forecast.
+    expect(jan15.transactions).toHaveLength(2);
+    expect(jan15.dailyNet).toBe('-200.00');
+  });
+
+  it('does not let a manual entry suppress a forecast instance', () => {
+    // PRD §7 reconciles *incoming actual* transactions. A manual entry is the
+    // user's own record, not evidence the bill cleared, so it must not resolve
+    // a forecast. Pinned deliberately — widening this is a spec change.
+    const manual: ActualTransaction = {
+      id: 'tx_manual',
+      date: '2026-01-15',
+      description: 'Internet Bill',
+      amount: '-100.00',
+      type: 'manual',
+    };
+
+    const result = computeForecast([], [bill], [manual], '2026-01-01', '2026-01-31', '1000.00');
+
+    const jan15 = result.find((d) => d.date === '2026-01-15')!;
+    expect(jan15.transactions).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// advanceMatchedSeries — keeps nextDate a signal the staleness check can read
+// ---------------------------------------------------------------------------
+
+describe('advanceMatchedSeries', () => {
+  const monthly: RecurringDef = {
+    id: 'rec_internet',
+    accountId: 'acct_1',
+    name: 'Internet Bill',
+    amount: '-100.00',
+    frequency: 'monthly',
+    nextDate: '2026-01-15',
+    endDate: null,
+    status: 'active',
+  };
+
+  it('advances a matched series by exactly one interval', () => {
+    const result = advanceMatchedSeries(
+      [monthly],
+      [{ id: 'tx_1', date: '2026-01-15', amount: '-100.00' }],
+      '2026-01-01',
+      '2026-01-31',
+    );
+
+    expect(result).toEqual([{ seriesId: 'rec_internet', nextDate: '2026-02-15' }]);
+  });
+
+  it('leaves a series alone when nothing matched it', () => {
+    const result = advanceMatchedSeries([monthly], [], '2026-01-01', '2026-01-31');
+
+    expect(result).toEqual([]);
+  });
+
+  it('leaves a series alone when the actual is beyond the amount tolerance', () => {
+    const result = advanceMatchedSeries(
+      [monthly],
+      [{ id: 'tx_1', date: '2026-01-15', amount: '-160.00' }],
+      '2026-01-01',
+      '2026-01-31',
+    );
+
+    expect(result).toEqual([]);
+  });
+
+  it('advances past the latest matched occurrence when a backfill covers several', () => {
+    const result = advanceMatchedSeries(
+      [monthly],
+      [
+        { id: 'tx_1', date: '2026-01-15', amount: '-100.00' },
+        { id: 'tx_2', date: '2026-02-15', amount: '-100.00' },
+        { id: 'tx_3', date: '2026-03-15', amount: '-102.00' },
+      ],
+      '2026-01-01',
+      '2026-03-31',
+    );
+
+    expect(result).toEqual([{ seriesId: 'rec_internet', nextDate: '2026-04-15' }]);
+  });
+
+  it('is idempotent — re-running against an already-advanced series changes nothing', () => {
+    const actuals = [{ id: 'tx_1', date: '2026-01-15', amount: '-100.00' }];
+
+    const first = advanceMatchedSeries([monthly], actuals, '2026-01-01', '2026-01-31');
+    const advanced: RecurringDef = { ...monthly, nextDate: first[0]!.nextDate };
+    const second = advanceMatchedSeries([advanced], actuals, '2026-01-01', '2026-01-31');
+
+    expect(second).toEqual([]);
+  });
+
+  it('does not advance a series that is not active', () => {
+    const result = advanceMatchedSeries(
+      [{ ...monthly, status: 'pending_review' }],
+      [{ id: 'tx_1', date: '2026-01-15', amount: '-100.00' }],
+      '2026-01-01',
+      '2026-01-31',
+    );
+
+    expect(result).toEqual([]);
+  });
+
+  it('advances a weekly series by seven days', () => {
+    const result = advanceMatchedSeries(
+      [{ ...monthly, frequency: 'weekly', nextDate: '2026-01-05' }],
+      [{ id: 'tx_1', date: '2026-01-05', amount: '-100.00' }],
+      '2026-01-01',
+      '2026-01-07',
+    );
+
+    expect(result).toEqual([{ seriesId: 'rec_internet', nextDate: '2026-01-12' }]);
+  });
+
+  it('matches each series against its own actual rather than sharing one', () => {
+    const phone: RecurringDef = { ...monthly, id: 'rec_phone', name: 'Phone Bill' };
+
+    const result = advanceMatchedSeries(
+      [monthly, phone],
+      [{ id: 'tx_1', date: '2026-01-15', amount: '-100.00' }],
+      '2026-01-01',
+      '2026-01-31',
+    );
+
+    // One actual resolves one series; the other keeps waiting for its own.
+    expect(result).toHaveLength(1);
   });
 });

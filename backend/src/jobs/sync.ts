@@ -9,6 +9,7 @@ import {
 } from '../db/schema';
 import { fetchAccounts, SimpleFINApiError } from '../lib/simplefin-client';
 import { reconcileTransactions } from '../services/reconciliation';
+import { advanceMatchedSeries, type RecurringDef } from '../services/forecast';
 import { detectRecurring } from '../services/detection';
 import { categorize } from '../services/categorize';
 import { logger } from '../lib/logger';
@@ -152,6 +153,13 @@ export async function runSync(): Promise<void> {
       totalReconciled += toInsert.length + toUpdate.length;
       accountsSynced++;
 
+      // PRD §7: advance the next_date of any recurring series whose forecast
+      // instance was fulfilled by one of these actuals. Without this, next_date
+      // is frozen at whatever it was when the series was approved, and the
+      // staleness check in POST /recurring/detect ends a series that is still
+      // being paid.
+      await advanceReconciledSeries(localAccount.id, incoming);
+
       // Run recurring detection on this account's transaction history
       await runDetection(localAccount.id, incoming.map((t) => ({
         externalId: t.id,
@@ -214,6 +222,79 @@ function mapAccountType(name: string): 'checking' | 'savings' | 'credit' {
   if (lower.includes('credit')) return 'credit';
   if (lower.includes('saving')) return 'savings';
   return 'checking';
+}
+
+// ---------------------------------------------------------------------------
+// Auto-reconciliation pass — called per account after actuals are stored
+// ---------------------------------------------------------------------------
+
+/**
+ * Moves each active recurring series past the occurrences these actuals
+ * fulfilled, per PRD §7.
+ *
+ * Only posted transactions count. A pending charge can still change amount or
+ * be reversed, and advancing on one would skip an occurrence that never
+ * happened.
+ */
+async function advanceReconciledSeries(
+  accountId: string,
+  incoming: { id: string; date: string; amount: string; status: 'posted' | 'pending' }[]
+): Promise<void> {
+  const posted = incoming.filter((t) => t.status === 'posted');
+  if (posted.length === 0) return;
+
+  const db = getDb();
+
+  const seriesRows = await db
+    .select()
+    .from(recurringTransactions)
+    .where(eq(recurringTransactions.accountId, accountId));
+
+  const series: RecurringDef[] = seriesRows
+    .filter((r) => r.status === 'active')
+    .map((r) => ({
+      id: r.id,
+      accountId: r.accountId,
+      name: r.name,
+      amount: String(r.amount),
+      frequency: r.frequency as RecurringDef['frequency'],
+      nextDate: String(r.nextDate),
+      endDate: r.endDate ? String(r.endDate) : null,
+      status: 'active',
+    }));
+
+  if (series.length === 0) return;
+
+  // The window is the span this sync actually returned, widened by the ±1 day
+  // match tolerance so an instance at either edge can still find its actual.
+  const dates = posted.map((t) => t.date).sort();
+  const windowStart = addDaysToDateStr(dates[0]!, -1);
+  const windowEnd = addDaysToDateStr(dates[dates.length - 1]!, 1);
+
+  const advances = advanceMatchedSeries(
+    series,
+    posted.map((t) => ({ id: t.id, date: t.date, amount: t.amount })),
+    windowStart,
+    windowEnd
+  );
+
+  for (const advance of advances) {
+    await db
+      .update(recurringTransactions)
+      .set({ nextDate: advance.nextDate, updatedAt: new Date() })
+      .where(eq(recurringTransactions.id, advance.seriesId));
+
+    logger.info('Recurring series reconciled', {
+      seriesId: advance.seriesId,
+      nextDate: advance.nextDate,
+    });
+  }
+}
+
+function addDaysToDateStr(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 // ---------------------------------------------------------------------------

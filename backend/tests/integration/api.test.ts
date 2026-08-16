@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import supertest from 'supertest';
 import app from '../../src/app';
 import { closeDb } from '../../src/db/client';
-import { resetDb, seedAccount, seedTransactions, allTransactions } from '../helpers/db';
+import { resetDb, seedAccount, seedTransactions, seedRecurring, allTransactions } from '../helpers/db';
 
 const request = supertest(app);
 
@@ -493,4 +493,68 @@ describe('Category corrections', () => {
 
 afterAll(async () => {
   await closeDb();
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/v1/forecast — PRD §7 auto-reconciliation
+// ---------------------------------------------------------------------------
+
+describe('GET /api/v1/forecast — auto-reconciliation', () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  /** The forecast day for `date`, from a real request against the real DB. */
+  async function forecastDay(accountId: string, date: string) {
+    const res = await request
+      .get('/api/v1/forecast')
+      .query({ accountId, startDate: '2026-09-01', endDate: '2026-09-30' });
+
+    expect(res.status).toBe(200);
+    return res.body.data.find((d: { date: string }) => d.date === date);
+  }
+
+  it('counts a recurring bill once when its actual has already posted', async () => {
+    const account = await seedAccount({ lastBalance: '3142.00' });
+    await seedRecurring(account.id, {
+      name: 'Mortgage',
+      amount: '-1850.00',
+      frequency: 'monthly',
+      nextDate: '2026-09-01',
+      status: 'active',
+    });
+    await seedTransactions(account.id, [
+      { date: '2026-09-01', description: 'MORTGAGE PAYMENT', amount: '-1850.00', type: 'actual' },
+    ]);
+
+    const sept1 = await forecastDay(account.id, '2026-09-01');
+
+    expect(sept1.transactions).toHaveLength(1);
+    expect(sept1.transactions[0].source).toBe('actual');
+    expect(sept1.dailyNet).toBe('-1850.00');
+    expect(sept1.runningBalance).toBe('1292.00');
+  });
+
+  it('still forecasts a bill whose actual has not posted', async () => {
+    const account = await seedAccount({ lastBalance: '3142.00' });
+    await seedRecurring(account.id, { nextDate: '2026-09-01', status: 'active' });
+
+    const sept1 = await forecastDay(account.id, '2026-09-01');
+
+    expect(sept1.transactions).toHaveLength(1);
+    expect(sept1.transactions[0].source).toBe('forecast');
+    expect(sept1.dailyNet).toBe('-1850.00');
+  });
+
+  it('keeps both sides visible when the actual is beyond the amount tolerance', async () => {
+    const account = await seedAccount({ lastBalance: '3142.00' });
+    await seedRecurring(account.id, { nextDate: '2026-09-01', status: 'active' });
+    await seedTransactions(account.id, [
+      { date: '2026-09-01', description: 'MORTGAGE PAYMENT', amount: '-2400.00', type: 'actual' },
+    ]);
+
+    const sept1 = await forecastDay(account.id, '2026-09-01');
+
+    expect(sept1.transactions).toHaveLength(2);
+  });
 });

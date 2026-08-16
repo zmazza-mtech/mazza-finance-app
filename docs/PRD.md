@@ -390,8 +390,9 @@ A dedicated page for viewing and managing all recurring transactions.
 
 **Auto-Reconciliation**
 
-- Matches incoming actual transactions to forecasted recurring entries by date (±1 day) AND
-  amount (exact match)
+- Matches incoming posted actual transactions to forecasted recurring entries by date
+  (±1 day) AND amount within tolerance — the greater of $5.00 or 10% of the forecast
+  amount, so a bill whose amount has drifted still resolves
 - On match: replaces forecasted entry with actual; advances series next_date
 - On no match: inserts actual as-is; leaves forecasted entry for manual resolution
 
@@ -585,21 +586,44 @@ Express error handler middleware must sanitize all unhandled exceptions before l
 ### Auto-Reconciliation Logic
 
 ```
-For each incoming actual transaction (date D, amount A, account X):
-  Find recurring_transactions where:
+For each forecast instance (date D, amount F, account X):
+  Find posted actual transactions where:
     - account_id = X
-    - next_date = D (or within ±1 day tolerance)
-    - amount = A (exact match)
-    - status = 'active'
+    - date within ±1 day of D
+    - |amount - F| <= max($5.00, 10% of |F|)
+    - the series is status = 'active'
+
+  Pair closest-amount first, then closest-date. Pairing is one-to-one:
+  an actual resolves at most one instance, and an instance is resolved
+  by at most one actual.
 
   If match found:
-    - Mark the forecasted instance as reconciled
+    - Suppress the forecasted instance so the day carries the actual only
     - Advance the recurring series next_date to the following occurrence
+    - Record the amount difference (the delta) against the actual
 
   If no match:
     - Insert actual transaction as-is
     - Leave forecasted entry in place (user resolves manually)
 ```
+
+**On the amount tolerance.** Matching on an exact amount cannot resolve the case
+reconciliation exists for. A bill whose amount has drifted — a rate increase, a
+changed subscription tier — would never match, so it would be counted twice in
+the running balance and its series' `next_date` would stop advancing, which in
+turn expires a series that is still being paid.
+
+The window is therefore the greater of a fixed floor and a proportion. The floor
+carries small recurring charges, where a percentage is too tight to absorb a
+normal price change ($15.99 → $17.99 is 12.5% but only $2.00); the proportion
+carries large ones, where a fixed dollar amount is too tight to absorb an escrow
+or rate adjustment. The ±1 day window and per-account scoping are what keep the
+tolerance from over-matching.
+
+Only **posted** transactions reconcile. A pending charge can still change amount
+or be reversed, and advancing `next_date` on one would skip an occurrence that
+never happened. Manual entries do not reconcile either — a manual entry is the
+user's own record, not evidence the bill cleared.
 
 ### Recurring Transaction Detection Heuristics
 

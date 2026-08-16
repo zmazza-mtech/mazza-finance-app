@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   reconcileTransactions,
+  matchInstancesToActuals,
   type StoredTransaction,
   type IncomingTransaction,
+  type MatchableActual,
+  type MatchableInstance,
 } from '../../src/services/reconciliation';
 
 // ---------------------------------------------------------------------------
@@ -157,5 +160,209 @@ describe('reconcileTransactions', () => {
     expect(result.toInsert).toHaveLength(0);
     expect(result.toUpdate).toHaveLength(0);
     expect(result.unchanged).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// matchInstancesToActuals — PRD §7 auto-reconciliation
+// ---------------------------------------------------------------------------
+
+function instance(overrides: Partial<MatchableInstance> = {}): MatchableInstance {
+  return {
+    recurringId: 'rec_001',
+    date: '2026-01-15',
+    amount: '-100.00',
+    ...overrides,
+  };
+}
+
+function actual(overrides: Partial<MatchableActual> = {}): MatchableActual {
+  return {
+    id: 'tx_001',
+    date: '2026-01-15',
+    amount: '-100.00',
+    ...overrides,
+  };
+}
+
+describe('matchInstancesToActuals', () => {
+  describe('amount comparison', () => {
+    it('matches an actual whose amount equals the forecast, with a zero delta', () => {
+      const result = matchInstancesToActuals([instance()], [actual()]);
+
+      expect(result.matches).toHaveLength(1);
+      expect(result.matches[0]!.instance.recurringId).toBe('rec_001');
+      expect(result.matches[0]!.actual.id).toBe('tx_001');
+      expect(result.matches[0]!.delta).toBe('0.00');
+      expect(result.unmatchedInstances).toHaveLength(0);
+      expect(result.unmatchedActuals).toHaveLength(0);
+    });
+
+    it('matches a drifted amount inside the percentage tolerance and reports the delta', () => {
+      // -100.00 forecast, tolerance is max($5.00, 10%) = $10.00. A $10.00 rate
+      // increase is the boundary and must still resolve.
+      const result = matchInstancesToActuals(
+        [instance({ amount: '-100.00' })],
+        [actual({ amount: '-110.00' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+      expect(result.matches[0]!.delta).toBe('-10.00');
+    });
+
+    it('matches a small-amount drift under the absolute floor, where a percentage alone would not', () => {
+      // -15.99 forecast: 10% is only $1.60, so the $5.00 floor is what carries a
+      // subscription going from $15.99 to $17.99.
+      const result = matchInstancesToActuals(
+        [instance({ amount: '-15.99' })],
+        [actual({ amount: '-17.99' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+      expect(result.matches[0]!.delta).toBe('-2.00');
+    });
+
+    it('does not match beyond the tolerance, and leaves both sides visible', () => {
+      // A cent past the $10.00 window. Neither side may be swallowed — the
+      // discrepancy has to survive for the mismatch indicator to flag it.
+      const result = matchInstancesToActuals(
+        [instance({ amount: '-100.00' })],
+        [actual({ amount: '-110.01' })],
+      );
+
+      expect(result.matches).toHaveLength(0);
+      expect(result.unmatchedInstances).toHaveLength(1);
+      expect(result.unmatchedActuals).toHaveLength(1);
+    });
+
+    it('does not match a credit against a debit of the same magnitude', () => {
+      const result = matchInstancesToActuals(
+        [instance({ amount: '-100.00' })],
+        [actual({ amount: '100.00' })],
+      );
+
+      expect(result.matches).toHaveLength(0);
+    });
+  });
+
+  describe('date window', () => {
+    it('matches an actual posting one day early', () => {
+      const result = matchInstancesToActuals(
+        [instance({ date: '2026-01-15' })],
+        [actual({ date: '2026-01-14' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+    });
+
+    it('matches an actual posting one day late', () => {
+      const result = matchInstancesToActuals(
+        [instance({ date: '2026-01-15' })],
+        [actual({ date: '2026-01-16' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+    });
+
+    it('does not match two days out', () => {
+      const result = matchInstancesToActuals(
+        [instance({ date: '2026-01-15' })],
+        [actual({ date: '2026-01-17' })],
+      );
+
+      expect(result.matches).toHaveLength(0);
+      expect(result.unmatchedInstances).toHaveLength(1);
+      expect(result.unmatchedActuals).toHaveLength(1);
+    });
+
+    it('spans a month boundary rather than comparing day numbers', () => {
+      const result = matchInstancesToActuals(
+        [instance({ date: '2026-02-01' })],
+        [actual({ date: '2026-01-31' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+    });
+  });
+
+  describe('one-to-one consumption', () => {
+    it('gives an instance to the closest actual by amount, leaving the other unmatched', () => {
+      const result = matchInstancesToActuals(
+        [instance({ amount: '-100.00' })],
+        [
+          actual({ id: 'tx_far', amount: '-108.00' }),
+          actual({ id: 'tx_near', amount: '-101.00' }),
+        ],
+      );
+
+      expect(result.matches).toHaveLength(1);
+      expect(result.matches[0]!.actual.id).toBe('tx_near');
+      expect(result.unmatchedActuals).toHaveLength(1);
+      expect(result.unmatchedActuals[0]!.id).toBe('tx_far');
+    });
+
+    it('does not let one actual resolve two instances', () => {
+      const result = matchInstancesToActuals(
+        [
+          instance({ recurringId: 'rec_a', amount: '-100.00' }),
+          instance({ recurringId: 'rec_b', amount: '-100.00' }),
+        ],
+        [actual({ amount: '-100.00' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+      expect(result.unmatchedInstances).toHaveLength(1);
+      expect(result.unmatchedActuals).toHaveLength(0);
+    });
+
+    it('prefers the closer date when two instances are equally close on amount', () => {
+      const result = matchInstancesToActuals(
+        [
+          instance({ recurringId: 'rec_far', date: '2026-01-14' }),
+          instance({ recurringId: 'rec_same', date: '2026-01-15' }),
+        ],
+        [actual({ date: '2026-01-15' })],
+      );
+
+      expect(result.matches).toHaveLength(1);
+      expect(result.matches[0]!.instance.recurringId).toBe('rec_same');
+    });
+  });
+
+  describe('determinism', () => {
+    it('produces the same pairings regardless of input order', () => {
+      const instances = [
+        instance({ recurringId: 'rec_a', date: '2026-01-10', amount: '-50.00' }),
+        instance({ recurringId: 'rec_b', date: '2026-01-15', amount: '-100.00' }),
+        instance({ recurringId: 'rec_c', date: '2026-01-20', amount: '-25.00' }),
+      ];
+      const actuals = [
+        actual({ id: 'tx_a', date: '2026-01-10', amount: '-52.00' }),
+        actual({ id: 'tx_b', date: '2026-01-16', amount: '-104.00' }),
+        actual({ id: 'tx_c', date: '2026-01-20', amount: '-25.00' }),
+      ];
+
+      const forward = matchInstancesToActuals(instances, actuals);
+      const reversed = matchInstancesToActuals(
+        [...instances].reverse(),
+        [...actuals].reverse(),
+      );
+
+      const pairs = (r: ReturnType<typeof matchInstancesToActuals>) =>
+        r.matches
+          .map((m) => `${m.instance.recurringId}->${m.actual.id}`)
+          .sort();
+
+      expect(pairs(forward)).toEqual(['rec_a->tx_a', 'rec_b->tx_b', 'rec_c->tx_c']);
+      expect(pairs(reversed)).toEqual(pairs(forward));
+    });
+  });
+
+  it('returns empty results for empty inputs', () => {
+    const result = matchInstancesToActuals([], []);
+
+    expect(result.matches).toHaveLength(0);
+    expect(result.unmatchedInstances).toHaveLength(0);
+    expect(result.unmatchedActuals).toHaveLength(0);
   });
 });
