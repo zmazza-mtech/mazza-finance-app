@@ -269,8 +269,12 @@ export function CsvImportSection() {
         CSV with date, description and amount columns. Duplicates are skipped.
       </p>
 
-      {/* Drop zone */}
-      <div className="rounded-lg border border-dashed border-border-mid bg-cream p-7 text-center">
+      {/*
+        A file picker, not a drop target — there is no drag handler here, and on
+        a phone there would be nothing to drag. The dashed border is the
+        handoff's tap-to-choose box.
+      */}
+      <div className="rounded-lg border border-dashed border-border-mid bg-cream p-4 text-center sm:p-7">
         <p className="text-sm text-stone">Choose a CSV export from your bank.</p>
         <input
           ref={fileInputRef}

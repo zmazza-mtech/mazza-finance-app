@@ -48,13 +48,13 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[760px] px-6 py-6">
-      <h1 className="font-display text-4xl text-bark-dark">Settings</h1>
-      <p className="mt-1 text-[15px] text-stone">
+    <div className="mx-auto max-w-[760px] px-4 py-4 sm:px-6 sm:py-6">
+      <h1 className="font-display text-2xl text-bark-dark sm:text-4xl">Settings</h1>
+      <p className="mt-1 text-[13px] text-stone sm:text-[15px]">
         Sync, thresholds, accounts and imports.
       </p>
 
-      <div className="mt-6 flex flex-col gap-4">
+      <div className="mt-4 flex flex-col gap-3 sm:mt-6 sm:gap-4">
         {/*
           Renders itself, or nothing at all when there is nothing to review —
           so it is not wrapped in a SettingsCard, which would leave an empty
@@ -119,9 +119,9 @@ function SettingsCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="rounded-lg border border-cream-mid bg-surface p-[22px]"
+      className="rounded-lg border border-cream-mid bg-surface p-4 sm:p-[22px]"
     >
-      <h2 id={headingId} className="mb-3 font-display text-xl text-bark-dark">
+      <h2 id={headingId} className="mb-3 font-display text-lg text-bark-dark sm:text-xl">
         {title}
       </h2>
       {children}
