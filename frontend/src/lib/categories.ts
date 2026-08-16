@@ -13,6 +13,9 @@ export const CATEGORIES: Category[] = [
   'Dining',
   'Shopping',
   'Subscriptions',
+  'Loan Payments',
+  'Taxes',
+  'Fitness',
   'Transfers',
   'Other',
 ];

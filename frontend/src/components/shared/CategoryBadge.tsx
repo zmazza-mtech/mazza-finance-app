@@ -12,6 +12,9 @@ const CATEGORY_CLASSES: Record<Category, string> = {
   Dining: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
   Shopping: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
   Subscriptions: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  'Loan Payments': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  Taxes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  Fitness: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
   Transfers: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
   Other: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
 };

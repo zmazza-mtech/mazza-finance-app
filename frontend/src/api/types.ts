@@ -8,7 +8,8 @@ export type OverrideType = 'skip' | 'reschedule' | 'amount_change' | 'rename';
 export type Category =
   | 'Income' | 'Housing' | 'Utilities' | 'Groceries' | 'Transportation'
   | 'Insurance' | 'Healthcare' | 'Entertainment' | 'Dining' | 'Shopping'
-  | 'Subscriptions' | 'Transfers' | 'Other';
+  | 'Subscriptions' | 'Loan Payments' | 'Taxes' | 'Fitness'
+  | 'Transfers' | 'Other';
 
 export interface ApiResponse<T> {
   data: T | null;

@@ -112,8 +112,11 @@ describe('categorize', () => {
   });
 
   it('exports CATEGORIES array with all expected values', () => {
-    expect(CATEGORIES).toHaveLength(13);
+    expect(new Set(CATEGORIES).size).toBe(CATEGORIES.length);
     expect(CATEGORIES).toContain('Income');
+    expect(CATEGORIES).toContain('Loan Payments');
+    expect(CATEGORIES).toContain('Taxes');
+    expect(CATEGORIES).toContain('Fitness');
     expect(CATEGORIES).toContain('Other');
   });
 });

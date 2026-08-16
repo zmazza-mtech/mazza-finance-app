@@ -31,6 +31,9 @@ export const CategoryEnum = z.enum([
   'Dining',
   'Shopping',
   'Subscriptions',
+  'Loan Payments',
+  'Taxes',
+  'Fitness',
   'Transfers',
   'Other',
 ]);
