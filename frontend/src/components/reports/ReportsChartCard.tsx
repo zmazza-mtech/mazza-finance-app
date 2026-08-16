@@ -3,7 +3,13 @@ import { SankeyChart } from '@/components/reports/SankeyChart';
 import { BreakdownChart } from '@/components/reports/BreakdownChart';
 import { SegmentedControl } from '@/components/shared/SegmentedControl';
 import { formatCurrency } from '@/lib/balance';
-import { buildSankeyLayout, type SankeyLayout } from '@/lib/sankey';
+import {
+  buildSankeyLayout,
+  WIDE_SANKEY,
+  NARROW_SANKEY,
+  type SankeyLayout,
+} from '@/lib/sankey';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import type { CategorySummaryResponse } from '@/api/types';
 
 type ChartView = 'sankey' | 'breakdown';
@@ -22,14 +28,25 @@ interface ReportsChartCardProps {
  * local state, so switching never refetches.
  */
 export function ReportsChartCard({ data }: ReportsChartCardProps) {
+  const isPhone = useIsPhone();
   const [view, setView] = useState<ChartView>('sankey');
-  const layout = useMemo(() => buildSankeyLayout(data), [data]);
+
+  /*
+   * The geometry and the drawing have to agree, so the dimensions are chosen
+   * once here and handed to both. Six named categories is what a 480-unit
+   * column fits legibly; the rest becomes one `Other` band.
+   */
+  const dimensions = isPhone ? NARROW_SANKEY : WIDE_SANKEY;
+  const layout = useMemo(
+    () => buildSankeyLayout(data, { dimensions, maxCategories: isPhone ? 6 : undefined }),
+    [data, dimensions, isPhone],
+  );
 
   return (
-    <section className="rounded-lg border border-cream-mid bg-surface p-[22px]">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+    <section className="rounded-lg border border-cream-mid bg-surface p-4 sm:p-[22px]">
+      <div className="mb-4 flex flex-col items-stretch gap-3 sm:mb-5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
         <div>
-          <h2 className="font-display text-xl text-bark-dark">Where the income went</h2>
+          <h2 className="font-display text-lg text-bark-dark sm:text-xl">Where the income went</h2>
           <p className="mt-1 font-mono text-xs text-stone">{summaryLine(layout)}</p>
         </div>
 
@@ -43,7 +60,7 @@ export function ReportsChartCard({ data }: ReportsChartCardProps) {
       </div>
 
       {view === 'sankey' ? (
-        <SankeyChart layout={layout} />
+        <SankeyChart layout={layout} dimensions={dimensions} />
       ) : (
         <BreakdownChart layout={layout} />
       )}

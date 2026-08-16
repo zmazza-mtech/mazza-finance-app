@@ -35,8 +35,8 @@ export function MonthRangePicker({
   onEndMonthChange,
 }: MonthRangePickerProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <div className="inline-flex items-center gap-2 rounded-full border border-cream-mid bg-surface px-3.5 py-[7px]">
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full flex-wrap items-center gap-2 rounded-full border border-cream-mid bg-surface px-3.5 py-[7px] sm:inline-flex sm:w-auto sm:flex-nowrap">
         <label className="inline-flex items-center gap-1.5">
           <span className="font-mono text-[10px] uppercase tracking-label text-warm-gray">
             From

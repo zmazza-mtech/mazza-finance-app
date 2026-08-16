@@ -23,14 +23,19 @@ export function CategorySummaryTable({ title, items }: CategorySummaryTableProps
   );
 
   return (
-    <section className="rounded-lg border border-cream-mid bg-surface p-[22px]">
-      <h3 className="mb-3 font-display text-xl text-bark-dark">{title}</h3>
+    <section className="rounded-lg border border-cream-mid bg-surface p-4 sm:p-[22px]">
+      <h3 className="mb-3 font-display text-lg text-bark-dark sm:text-xl">{title}</h3>
 
       <table className="w-full table-fixed">
+        {/*
+          The figure columns narrow on a phone. At 393px the fixed 110px and
+          60px leave the category name about 190px, which truncates most of
+          them; the amounts need less room than that reserves.
+        */}
         <colgroup>
           <col />
-          <col style={{ width: '110px' }} />
-          <col style={{ width: '60px' }} />
+          <col className="w-[86px] sm:w-[110px]" />
+          <col className="w-[48px] sm:w-[60px]" />
         </colgroup>
         <tbody>
           {items.map((item) => {

@@ -19,8 +19,8 @@ export function BreakdownChart({ layout }: BreakdownChartProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[560px]">
+    <div className="sm:overflow-x-auto">
+      <div className="sm:min-w-[560px]">
         <div data-stacked-bar className="flex h-[26px] w-full gap-0.5">
           {layout.rows.map((row) => (
             <div

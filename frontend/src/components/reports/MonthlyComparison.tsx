@@ -70,10 +70,13 @@ export function MonthlyComparison({ months }: MonthlyComparisonProps) {
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px] border-collapse">
+          <table className="w-full min-w-[360px] border-collapse sm:min-w-[520px]">
             <thead>
               <tr>
-                <th scope="col" className="py-2 pr-3 text-left text-sm font-semibold text-bark-dark">
+                <th
+                  scope="col"
+                  className="sticky left-0 z-10 bg-surface py-2 pr-3 text-left text-sm font-semibold text-bark-dark"
+                >
                   Category
                 </th>
                 {months.map((month) => (
@@ -96,7 +99,10 @@ export function MonthlyComparison({ months }: MonthlyComparisonProps) {
                     the plain category names, and a summary row sharing a name
                     with one of them is ambiguous to read and to reference.
                   */}
-                  <th scope="row" className="py-2 pr-3 text-left text-sm text-charcoal">
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-10 bg-surface py-2 pr-3 text-left text-sm text-charcoal"
+                  >
                     {row === 'net' ? 'Net' : row === 'income' ? 'Total income' : 'Total expenses'}
                   </th>
                   {months.map((month) => (
@@ -112,7 +118,10 @@ export function MonthlyComparison({ months }: MonthlyComparisonProps) {
 
               {categories.map((category) => (
                 <tr key={category} className="border-b border-cream-mid">
-                  <th scope="row" className="py-2 pr-3 text-left font-normal">
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-10 bg-surface py-2 pr-3 text-left font-normal"
+                  >
                     <CategoryBadge category={category as Category} />
                   </th>
                   {months.map((month) => {

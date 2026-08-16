@@ -71,15 +71,15 @@ export function ReportsPage() {
   const { isLoading, error } = view === 'summary' ? summary : monthly;
 
   return (
-    <div className="mx-auto max-w-shell px-6 py-6">
-      <h1 className="font-display text-4xl text-bark-dark">Reports</h1>
-      <p className="mt-1 text-[15px] text-stone">
+    <div className="mx-auto max-w-shell px-4 py-4 sm:px-6 sm:py-6">
+      <h1 className="font-display text-2xl text-bark-dark sm:text-4xl">Reports</h1>
+      <p className="mt-1 text-[13px] text-stone sm:text-[15px]">
         {view === 'summary'
           ? `${formatDateRange(startDate, endDate)} · settled transactions only`
           : 'Whole calendar months · transfers excluded'}
       </p>
 
-      <div className="mb-6 mt-4 flex flex-col gap-3">
+      <div className="mb-4 mt-4 flex flex-col gap-3 sm:mb-6">
         <SegmentedControl
           options={VIEWS}
           value={view}
@@ -134,7 +134,7 @@ export function ReportsPage() {
         <div className="space-y-4">
           <ReportsChartCard data={summary.data} />
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <CategorySummaryTable title="Income" items={summary.data.income} />
             <CategorySummaryTable title="Expenses" items={summary.data.expenses} />
           </div>
