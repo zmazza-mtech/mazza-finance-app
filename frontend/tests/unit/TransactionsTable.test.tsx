@@ -13,6 +13,7 @@ function tx(overrides: Partial<Transaction> = {}): Transaction {
     amount: '-84.21',
     source: 'actual',
     category: 'Groceries',
+    categorySource: 'auto',
     recurringId: null,
     ...overrides,
   };
@@ -145,5 +146,34 @@ describe('TransactionsTable — category cell', () => {
       '',
     );
     expect(onCategoryChange).toHaveBeenCalledWith('tx-1', null);
+  });
+
+  // The select is painted at opacity 0 underneath the pill. That hides it
+  // without taking it out of the tab order the way display:none would, and a
+  // correction has to be reachable without a mouse.
+  it('reaches the category picker by tabbing', async () => {
+    const user = userEvent.setup();
+    render(<TransactionsTable {...baseProps} />);
+    const select = screen.getByLabelText('Category for Whole Foods');
+
+    // The sortable column headers take the earlier stops.
+    for (let i = 0; i < 10 && select !== document.activeElement; i++) {
+      await user.tab();
+    }
+
+    expect(select).toHaveFocus();
+  });
+
+  it('changes a category from the keyboard once focused', async () => {
+    const onCategoryChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TransactionsTable {...baseProps} onCategoryChange={onCategoryChange} />);
+
+    const select = screen.getByLabelText('Category for Whole Foods');
+    select.focus();
+    await user.selectOptions(select, 'Dining');
+
+    expect(select).toHaveFocus();
+    expect(onCategoryChange).toHaveBeenCalledWith('tx-1', 'Dining');
   });
 });

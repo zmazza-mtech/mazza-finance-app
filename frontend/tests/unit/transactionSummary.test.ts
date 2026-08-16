@@ -15,6 +15,7 @@ function tx(overrides: Partial<Transaction> = {}): Transaction {
     amount: '-84.21',
     source: 'actual',
     category: 'Groceries',
+    categorySource: 'auto',
     recurringId: null,
     ...overrides,
   };
