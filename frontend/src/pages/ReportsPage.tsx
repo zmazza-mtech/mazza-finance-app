@@ -6,6 +6,7 @@ import { ReportsChartCard } from '@/components/reports/ReportsChartCard';
 import { CategorySummaryTable } from '@/components/reports/CategorySummaryTable';
 import { MonthRangePicker } from '@/components/reports/MonthRangePicker';
 import { MonthlyComparison } from '@/components/reports/MonthlyComparison';
+import { ExportControls } from '@/components/reports/ExportControls';
 import { formatDateRange } from '@/lib/dates';
 import { useCategorySummary, useMonthlySummary } from '@/hooks/useReports';
 
@@ -85,12 +86,25 @@ export function ReportsPage() {
         />
 
         {view === 'breakdown' ? (
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-          />
+          <>
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+            {/*
+              Export sits with the breakdown, whose range is exactly what the
+              endpoints take. Offering it on the monthly view would export one
+              flat span for a screen showing month-by-month columns — what came
+              out would not be what was displayed.
+            */}
+            <ExportControls
+              accountId={selectedAccountId}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </>
         ) : (
           <MonthRangePicker
             startMonth={startMonth}
