@@ -5,6 +5,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
+    // Brings up and migrates the throwaway Postgres the integration tests use.
+    globalSetup: ['./tests/globalSetup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

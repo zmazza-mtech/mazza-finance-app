@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { and, eq, gte, lte } from 'drizzle-orm';
 import { getDb } from '../db/client';
 import { accounts, transactions } from '../db/schema';
+import { categorize } from '../services/categorize';
 import { logger } from '../lib/logger';
 
 const router = Router();
@@ -97,6 +98,7 @@ router.post('/csv', async (req: Request, res: Response) => {
       date: string;
       description: string;
       amount: string;
+      category: string | null;
       type: 'manual';
       status: 'posted';
     }> = [];
@@ -111,6 +113,10 @@ router.post('/csv', async (req: Request, res: Response) => {
           date: row.date,
           description: row.description,
           amount: row.amount,
+          // Same treatment every other write path gives a description. Without
+          // it a CSV-seeded account reads as entirely uncategorized on the
+          // reports screen until someone runs the batch sweep by hand.
+          category: categorize(row.description),
           type: 'manual',
           status: 'posted',
         });

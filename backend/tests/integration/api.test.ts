@@ -1,21 +1,21 @@
 /**
  * Integration tests for the Express API.
  *
- * These tests spin up the app (no real DB — uses in-memory db stub).
- * For a full DB integration test, the CI/CD pipeline would use a
- * test Postgres container. Here we focus on:
- *   - Request/response shape validation
+ * These run against the throwaway Postgres `globalSetup.ts` brings up, so
+ * every DB-backed assertion is against the real thing. The focus here is the
+ * request/response contract:
  *   - Zod input validation (400 on bad input)
  *   - Route existence and HTTP method handling
  *   - 404 for unknown routes
  *
- * NOTE: DB-dependent endpoints return 500 without a live database — tests
- * that need a live DB are marked and skipped in CI without Postgres.
+ * Endpoint behaviour in depth lives in reports.test.ts and import.test.ts.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import supertest from 'supertest';
 import app from '../../src/app';
+import { closeDb } from '../../src/db/client';
+import { resetDb, seedAccount, allTransactions } from '../helpers/db';
 
 const request = supertest(app);
 
@@ -228,4 +228,70 @@ describe('HTTP method enforcement', () => {
     const res = await request.get('/api/v1/sync');
     expect(res.status).toBe(404);
   });
+});
+
+// ---------------------------------------------------------------------------
+// Auto-categorization on create
+// ---------------------------------------------------------------------------
+
+describe('POST /transactions — categorization', () => {
+  let accountId: string;
+
+  beforeEach(async () => {
+    await resetDb();
+    accountId = (await seedAccount()).id;
+  });
+
+  it('returns a category derived from the description', async () => {
+    const res = await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-08-10',
+      description: 'SHELL OIL 5729',
+      amount: '-42.00',
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.category).toBe('Transportation');
+  });
+
+  it('honours an explicit category over the guess', async () => {
+    const res = await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-08-10',
+      description: 'SHELL OIL 5729',
+      amount: '-42.00',
+      category: 'Dining',
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.category).toBe('Dining');
+  });
+
+  it('returns a null category for a description it cannot place', async () => {
+    const res = await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-08-10',
+      description: 'ZZQQ 4417',
+      amount: '-42.00',
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.category).toBeNull();
+  });
+
+  it('persists the category, not just reports it', async () => {
+    await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-08-10',
+      description: 'SHELL OIL 5729',
+      amount: '-42.00',
+    });
+
+    const [saved] = await allTransactions(accountId);
+    expect(saved!.category).toBe('Transportation');
+  });
+});
+
+afterAll(async () => {
+  await closeDb();
 });

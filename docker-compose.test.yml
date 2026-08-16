@@ -1,0 +1,36 @@
+# Postgres for the backend integration tests.
+#
+# Separate from docker-compose.yml on purpose. The production database has no
+# `ports:` mapping — internal network only, a stated security requirement — so
+# tests cannot reach it, and the requirement should not be relaxed to let them.
+# This is a throwaway instance instead: it publishes a non-default port, stores
+# nothing on disk, and holds no real data.
+#
+# `backend/tests/globalSetup.ts` starts it, so `npm test` needs no preamble.
+# Stop it with `npm run test:db:down`.
+
+# Its own project name, so it never mingles with the application stack.
+name: mazza-finance-test
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    # 55432, not 5432 — never collides with a local Postgres.
+    ports:
+      - "127.0.0.1:55432:5432"
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: mazza_test
+      # No durability needed; the volume is gone at the end of the run anyway.
+      POSTGRES_INITDB_ARGS: "--nosync"
+    # In memory. Faster, and nothing survives a restart to leak between runs.
+    tmpfs:
+      - /var/lib/postgresql/data
+    command: >
+      postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d mazza_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

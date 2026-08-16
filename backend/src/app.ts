@@ -67,6 +67,29 @@ app.use((_req, res) => {
 
 // Error handler — never expose stack traces to client
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  // body-parser rejects a malformed or oversized body before any route sees
+  // it. Those are the client's fault and carry their own status; reporting
+  // them as 500 tells the user the server broke when the upload was simply
+  // too big.
+  const status = (err as { status?: number; statusCode?: number }).status
+    ?? (err as { statusCode?: number }).statusCode;
+  const type = (err as { type?: string }).type;
+
+  if (type === 'entity.too.large') {
+    logger.warn('Request body too large', { message: err.message });
+    return res.status(413).json({ data: null, error: 'Request body too large' });
+  }
+
+  if (type === 'entity.parse.failed') {
+    logger.warn('Request body was not valid JSON', { message: err.message });
+    return res.status(400).json({ data: null, error: 'Malformed JSON body' });
+  }
+
+  if (typeof status === 'number' && status >= 400 && status < 500) {
+    logger.warn('Client error', { message: err.message, status });
+    return res.status(status).json({ data: null, error: 'Bad request' });
+  }
+
   logger.error('Unhandled error', { message: err.message });
   res.status(500).json({ data: null, error: 'Internal server error' });
 });

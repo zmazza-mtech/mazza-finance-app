@@ -386,15 +386,19 @@ Strict TDD applies to:
   keyboard bindings surviving, the category filter recomputing summaries,
   threshold validation
 
-**Database coverage carve-out.** This document originally called for
-integration tests against real Postgres. There is none to reach:
-`docker-compose.yml` deliberately gives the database no `ports:` mapping
-(internal network only, a stated security requirement), and the existing
-`backend/tests/integration/api.test.ts` uses an in-memory stub despite its
-name. The grouped SQL query behind `category-summary` and `category-trend` is
-therefore untested, and closing that gap is deferred to issue #5, which will
-cover the whole API at once. No mocks were introduced in its place — the pure
-logic was extracted and tested directly instead.
+**Database coverage carve-out — closed by #5.** This document originally
+called for integration tests against real Postgres, and at the time there was
+none to reach: `docker-compose.yml` deliberately gives the database no
+`ports:` mapping (internal network only, a stated security requirement), and
+`backend/tests/integration/api.test.ts` used an in-memory stub despite its
+name. The redesign slices therefore extracted the pure logic and tested that
+directly rather than introducing a mock.
+
+Issue #5 closed the gap without relaxing the security requirement:
+`docker-compose.test.yml` runs a separate throwaway Postgres on a non-default
+port, and `backend/tests/globalSetup.ts` starts and migrates it so `npm test`
+remains one command. The grouped SQL behind `category-summary` and
+`category-trend` is now covered against the real database.
 
 Existing `DayCell`, `TransactionItem` and `balance` tests are updated as
 behavior changes rather than deleted.
