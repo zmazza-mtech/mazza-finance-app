@@ -73,11 +73,11 @@ export function isNegative(amount: string): boolean {
 export function getBalanceHealthClasses(health: BalanceHealth): string {
   switch (health) {
     case 'good':
-      return 'text-green-700 dark:text-green-400';
+      return 'text-balance-good';
     case 'warning':
-      return 'text-amber-700 dark:text-amber-300';
+      return 'text-balance-warning';
     case 'critical':
-      return 'text-red-700 dark:text-red-400';
+      return 'text-balance-critical';
   }
 }
 

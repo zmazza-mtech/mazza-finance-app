@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   getBalanceHealth,
+  getBalanceHealthClasses,
+  getBalanceHealthLabel,
   formatAmount,
   formatCurrency,
   isNegative,
@@ -92,6 +94,35 @@ describe('formatCurrency', () => {
 
   it('formats zero', () => {
     expect(formatCurrency('0')).toBe('$0.00');
+  });
+});
+
+describe('getBalanceHealthClasses', () => {
+  const healths: BalanceHealth[] = ['good', 'warning', 'critical'];
+
+  it('maps each health state to its Momoski balance token', () => {
+    expect(getBalanceHealthClasses('good')).toBe('text-balance-good');
+    expect(getBalanceHealthClasses('warning')).toBe('text-balance-warning');
+    expect(getBalanceHealthClasses('critical')).toBe('text-balance-critical');
+  });
+
+  it('carries no dark-mode variants — dark is deferred to a later slice', () => {
+    for (const health of healths) {
+      expect(getBalanceHealthClasses(health)).not.toContain('dark:');
+    }
+  });
+
+  it('gives every health state a distinct class', () => {
+    const classes = healths.map(getBalanceHealthClasses);
+    expect(new Set(classes).size).toBe(healths.length);
+  });
+});
+
+describe('getBalanceHealthLabel', () => {
+  it('pairs every health state with a text label so color is never the sole signal', () => {
+    expect(getBalanceHealthLabel('good')).toBe('Good');
+    expect(getBalanceHealthLabel('warning')).toBe('Low');
+    expect(getBalanceHealthLabel('critical')).toBe('Critical');
   });
 });
 

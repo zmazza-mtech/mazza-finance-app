@@ -1,3 +1,38 @@
+/*
+ * Fonts are self-hosted rather than loaded from Google Fonts. The Caddy CSP
+ * (Caddyfile) sets `style-src 'self' 'unsafe-inline'; font-src 'self'`, which
+ * blocks both the fonts.googleapis.com stylesheet and the fonts.gstatic.com
+ * woff2 files. Self-hosting keeps the CSP untouched and lets the app render
+ * correctly with no internet access.
+ *
+ * All three are latin-subset variable fonts, downloaded once from the Google
+ * Fonts CDN. Bricolage Grotesque and JetBrains Mono are OFL; Instrument Sans
+ * is OFL.
+ */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/instrument-sans-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-variable-latin.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +42,68 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Ensure body fills the viewport in dark mode without flash */
-body {
-  @apply bg-gray-50 dark:bg-gray-950;
+@layer base {
+  body {
+    @apply bg-cream text-charcoal font-sans;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /*
+   * Display headings tighten as they grow: -0.02em at 2rem and above,
+   * -0.01em below.
+   */
+  .font-display {
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  .font-display.text-3xl,
+  .font-display.text-4xl {
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+}
+
+@layer components {
+  /*
+   * The recurring mono label: uppercase, wide-tracked, small, tertiary.
+   * Used for every metric label, axis mark and metadata line in the design.
+   */
+  .label-mono {
+    @apply font-mono text-[10px] uppercase tracking-label-wide text-warm-gray;
+  }
+
+  /*
+   * The design's pills are visually compact. On touch devices they still have
+   * to clear 44px, so interactive controls carry this alongside their own
+   * padding rather than being sized up for everyone.
+   */
+  @media (pointer: coarse) {
+    .hit-target {
+      min-height: 44px;
+    }
+  }
+
+  /* Loading ring — sage track, transparent top, 500ms. */
+  .spinner-sage {
+    @apply h-8 w-8 rounded-full border-2 border-sage border-t-transparent;
+    animation: spinner-sage-spin 500ms linear infinite;
+  }
+}
+
+@keyframes spinner-sage-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner-sage {
+    animation-duration: 1.5s;
+  }
 }

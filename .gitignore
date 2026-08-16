@@ -37,3 +37,6 @@ Thumbs.db
 
 # Docker
 .docker/
+
+# Playwright MCP scratch output
+.playwright-mcp/

@@ -1,12 +1,32 @@
 import { useContext, useRef } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { ThemeToggle } from '@/components/settings/ThemeToggle';
 import { useBankAccounts } from '@/hooks/useAccounts';
 import { useSyncStatus, useTriggerSync, useAutoSync } from '@/hooks/useSync';
 import { AccountContext } from '@/App';
+import { formatAmount } from '@/lib/balance';
+import type { Account } from '@/api/types';
+
+const NAV_ITEMS = [
+  { to: '/', label: 'Calendar', end: true },
+  { to: '/transactions', label: 'Transactions', end: false },
+  { to: '/recurring', label: 'Recurring', end: false },
+  { to: '/reports', label: 'Reports', end: false },
+  { to: '/settings', label: 'Settings', end: false },
+] as const;
+
+/** "Joint Checking · $3,142.00", or just the name when no balance is known. */
+function accountLabel(account: Account): string {
+  return account.lastBalance
+    ? `${account.name} · $${formatAmount(account.lastBalance)}`
+    : account.name;
+}
 
 /**
- * Root layout: skip-nav link, nav header, and page outlet.
+ * Root layout: skip-nav link, sticky header, and page outlet.
+ *
+ * The header row wraps and lets the account selector and sync meta shrink.
+ * Without that the row forces horizontal page scroll below roughly 1150px.
+ * Only the brand and the sync button hold their width.
  */
 export function AppLayout() {
   const { selectedAccountId, setSelectedAccountId } = useContext(AccountContext);
@@ -31,7 +51,7 @@ export function AppLayout() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-cream text-charcoal">
       {/* Skip navigation link — hidden until focused */}
       <a
         href="#main-content"
@@ -39,137 +59,82 @@ export function AppLayout() {
           e.preventDefault();
           mainRef.current?.focus();
         }}
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-full focus:bg-bark focus:px-4 focus:py-2 focus:text-cream focus:shadow-lg"
       >
         Skip to main content
       </a>
 
-      {/* Nav header */}
-      <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-        <div className="max-w-screen-lg mx-auto px-4 h-14 flex items-center gap-4">
-          {/* Brand */}
-          <span className="font-bold text-blue-600 dark:text-blue-400 shrink-0">
+      <header className="sticky top-0 z-30 border-b border-cream-mid bg-[rgba(250,247,242,0.92)] backdrop-blur-[12px]">
+        <div className="mx-auto flex min-h-[64px] max-w-shell flex-wrap items-center gap-x-5 gap-y-3 px-6 py-2.5">
+          <span className="shrink-0 font-display text-[19px] font-bold tracking-[-0.02em] text-bark-dark">
             Mazza Finance
           </span>
 
-          {/* Nav links */}
-          <nav aria-label="Main navigation" className="flex gap-1">
-            <NavLink
-              to="/"
-              end
-              aria-label="Calendar"
-              className={({ isActive }) =>
-                `px-3 py-1.5 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`
-              }
-            >
-              Calendar
-            </NavLink>
-            <NavLink
-              to="/transactions"
-              aria-label="Transactions"
-              className={({ isActive }) =>
-                `px-3 py-1.5 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`
-              }
-            >
-              Transactions
-            </NavLink>
-            <NavLink
-              to="/recurring"
-              aria-label="Recurring"
-              className={({ isActive }) =>
-                `px-3 py-1.5 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`
-              }
-            >
-              Recurring
-            </NavLink>
-            <NavLink
-              to="/reports"
-              aria-label="Reports"
-              className={({ isActive }) =>
-                `px-3 py-1.5 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`
-              }
-            >
-              Reports
-            </NavLink>
-            <NavLink
-              to="/settings"
-              aria-label="Settings"
-              className={({ isActive }) =>
-                `px-3 py-1.5 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`
-              }
-            >
-              Settings
-            </NavLink>
+          <nav aria-label="Main navigation" className="flex flex-wrap gap-1">
+            {NAV_ITEMS.map(({ to, label, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                aria-label={label}
+                className={({ isActive }) =>
+                  `hit-target inline-flex items-center rounded-full px-[14px] py-[7px] text-sm transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sage ${
+                    isActive
+                      ? 'bg-sage-lighter font-semibold text-sage-deep'
+                      : 'text-stone hover:bg-cream-mid'
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
           </nav>
 
-          {/* Spacer */}
-          <div className="flex-1" />
+          {/*
+            The right-hand group carries the auto margin rather than a flex-1
+            spacer: under flex-wrap a spacer occupies a slot of its own and
+            pushes the sync button onto a second line at full width.
+          */}
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-2">
+            {accounts.length > 0 && (
+              <select
+                aria-label="Select account"
+                value={selectedAccountId}
+                onChange={(e) => setSelectedAccountId(e.target.value)}
+                className="hit-target min-w-0 max-w-[240px] truncate rounded-full border border-cream-mid bg-white px-[14px] py-[7px] text-[13px] text-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+              >
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {accountLabel(a)}
+                  </option>
+                ))}
+              </select>
+            )}
 
-          {/* Account selector */}
-          {accounts.length > 0 && (
-            <select
-              aria-label="Select account"
-              value={selectedAccountId}
-              onChange={(e) => setSelectedAccountId(e.target.value)}
-              className="max-h-[44px] px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <span className="hidden min-w-0 truncate font-mono text-[11px] uppercase tracking-label text-warm-gray sm:inline">
+              {lastSynced ? `Synced ${lastSynced} · ` : ''}
+              {remaining}/{dailyLimit}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => triggerSync.mutate()}
+              disabled={isSyncing || limitReached}
+              aria-label={
+                limitReached
+                  ? 'Daily sync limit reached'
+                  : isSyncing
+                    ? 'Syncing...'
+                    : 'Sync now'
+              }
+              className="hit-target shrink-0 rounded-full bg-bark px-4 py-2 text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-bark-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
             >
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.institution} — {a.name}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {/* Last synced + remaining count */}
-          <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-500 shrink-0">
-            {lastSynced ? `Synced ${lastSynced}` : ''}{' '}
-            ({remaining}/{dailyLimit})
-          </span>
-
-          {/* Sync Now button */}
-          <button
-            type="button"
-            onClick={() => triggerSync.mutate()}
-            disabled={isSyncing || limitReached}
-            aria-label={
-              limitReached
-                ? 'Daily sync limit reached'
-                : isSyncing
-                  ? 'Syncing...'
-                  : 'Sync now'
-            }
-            className="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {isSyncing ? 'Syncing...' : 'Sync'}
-          </button>
-
-          {/* Theme toggle (compact) */}
-          <ThemeToggle compact />
+              {isSyncing ? 'Syncing...' : 'Sync'}
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Page content */}
       <main
         id="main-content"
         ref={mainRef}

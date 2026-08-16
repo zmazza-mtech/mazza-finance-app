@@ -99,13 +99,13 @@ describe('DayCell', () => {
   it('applies good health class when balance is above green threshold', () => {
     render(<DayCell {...baseProps} runningBalance="2000.00" />);
     const balanceEl = screen.getByText('$2,000.00');
-    expect(balanceEl.className).toMatch(/green/);
+    expect(balanceEl.className).toMatch(/balance-good/);
   });
 
   it('applies critical health class when balance is below critical threshold', () => {
     render(<DayCell {...baseProps} runningBalance="100.00" />);
     const balanceEl = screen.getByText('$100.00');
-    expect(balanceEl.className).toMatch(/red/);
+    expect(balanceEl.className).toMatch(/balance-critical/);
   });
 
   it('calls onFocus when cell receives focus', async () => {
