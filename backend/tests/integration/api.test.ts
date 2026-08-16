@@ -293,6 +293,81 @@ describe('POST /transactions — categorization', () => {
 });
 
 // ---------------------------------------------------------------------------
+// The transaction wire shape the frontend maps from
+// ---------------------------------------------------------------------------
+
+/**
+ * `GET /transactions` returns raw Drizzle rows, and the frontend translates
+ * them into its own `Transaction` — `type` becomes `source`, and nothing else
+ * is renamed. That translation is written against the key set below, so a
+ * column added, dropped or renamed here has to fail loudly rather than reach
+ * the browser as an undefined field the UI renders blank (issue #34).
+ */
+const TRANSACTION_WIRE_KEYS = [
+  'accountId',
+  'amount',
+  'category',
+  'categorySource',
+  'createdAt',
+  'date',
+  'description',
+  'id',
+  'simplefinId',
+  'status',
+  'type',
+  'updatedAt',
+].sort();
+
+describe('Transaction wire shape', () => {
+  let accountId: string;
+
+  beforeEach(async () => {
+    await resetDb();
+    accountId = (await seedAccount()).id;
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'KROGER 118', amount: '-42.00', type: 'actual' },
+    ]);
+  });
+
+  it('returns exactly the keys the frontend maps from', async () => {
+    const res = await request.get(`/api/v1/transactions?accountId=${accountId}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(Object.keys(res.body.data[0]).sort()).toEqual(TRANSACTION_WIRE_KEYS);
+  });
+
+  it('carries the transaction type the frontend reads as its source', async () => {
+    const res = await request.get(`/api/v1/transactions?accountId=${accountId}`);
+
+    expect(res.body.data[0].type).toBe('actual');
+  });
+
+  it('answers PATCH with the same shape it answers GET with', async () => {
+    const [seeded] = await allTransactions(accountId);
+
+    const res = await request
+      .patch(`/api/v1/transactions/${seeded!.id}`)
+      .send({ category: 'Groceries' });
+
+    expect(res.status).toBe(200);
+    expect(Object.keys(res.body.data).sort()).toEqual(TRANSACTION_WIRE_KEYS);
+  });
+
+  it('answers POST with the same shape it answers GET with', async () => {
+    const res = await request.post('/api/v1/transactions').send({
+      accountId,
+      date: '2026-08-11',
+      description: 'SHELL OIL 5729',
+      amount: '-30.00',
+    });
+
+    expect(res.status).toBe(201);
+    expect(Object.keys(res.body.data).sort()).toEqual(TRANSACTION_WIRE_KEYS);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Category corrections that survive re-categorization
 // ---------------------------------------------------------------------------
 
