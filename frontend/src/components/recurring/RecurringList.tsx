@@ -4,6 +4,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { formatAmount, isNegative } from '@/lib/balance';
 import { getCategoryColor } from '@/lib/categoryColors';
 import type { Recurring, UpdateRecurringBody } from '@/api/types';
+import { useIsPhone } from '@/hooks/useIsPhone';
 
 interface RecurringListProps {
   items: Recurring[];
@@ -26,6 +27,7 @@ const COLUMNS: { key: string; label: string; width: string; alignRight?: boolean
  * - Mobile (<768px): card layout
  */
 export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps) {
+  const isPhone = useIsPhone();
   const [editTarget, setEditTarget] = useState<Recurring | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -48,8 +50,13 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
 
   return (
     <>
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-lg border border-cream-mid bg-surface md:block">
+      {/*
+        One or the other, never both. Toggling two trees with `hidden` leaves
+        every series name and every Edit/Disable/Delete button in the DOM
+        twice, which makes each of them ambiguous to find by name.
+      */}
+      {!isPhone && (
+      <div className="overflow-hidden rounded-lg border border-cream-mid bg-surface">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] table-fixed">
             <colgroup>
@@ -118,9 +125,10 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
           </table>
         </div>
       </div>
+      )}
 
-      {/* Mobile card list */}
-      <ul className="space-y-2.5 md:hidden">
+      {isPhone && (
+      <ul className="space-y-2.5">
         {active.map((item) => {
           const debit = isNegative(item.amount);
           return (
@@ -155,6 +163,7 @@ export function RecurringList({ items, onUpdate, onDelete }: RecurringListProps)
           );
         })}
       </ul>
+      )}
 
       <EditSeriesModal
         recurring={editTarget}
@@ -227,11 +236,16 @@ function RowActions({
   onDelete: () => void;
   alignRight?: boolean;
 }) {
+  /*
+   * `flex-1` below `sm` so the three actions divide the card's width evenly,
+   * as the handoff draws them; `sm:flex-none` hands the width back to the
+   * content inside the table cell, where they sit in a row of their own.
+   */
   const ghost =
-    'hit-target rounded-full border border-cream-mid bg-surface px-3 py-1 text-xs text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage';
+    'hit-target flex-1 rounded-full border border-cream-mid bg-surface px-3 py-1 text-xs text-bark transition-colors duration-150 hover:border-sage-light focus:outline-none focus-visible:ring-2 focus-visible:ring-sage sm:flex-none';
 
   return (
-    <div className={`flex flex-wrap gap-2 ${alignRight ? 'justify-end' : ''}`}>
+    <div className={`flex gap-2 sm:flex-wrap ${alignRight ? 'justify-end' : ''}`}>
       <button
         type="button"
         aria-label={`Edit ${item.name}`}
@@ -252,7 +266,7 @@ function RowActions({
         type="button"
         aria-label={`Delete ${item.name}`}
         onClick={onDelete}
-        className="hit-target rounded-full border border-danger-line bg-surface px-3 py-1 text-xs text-error transition-colors duration-150 hover:bg-danger-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+        className="hit-target flex-1 rounded-full border border-danger-line bg-surface px-3 py-1 text-xs text-error transition-colors duration-150 hover:bg-danger-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-sage sm:flex-none"
       >
         Delete
       </button>

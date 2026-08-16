@@ -62,7 +62,7 @@ export function PendingReviewSection({
                   {capitalize(item.frequency)}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
                 <button
                   type="button"
                   aria-label={`Edit ${item.name}`}

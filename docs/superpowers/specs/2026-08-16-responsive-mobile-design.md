@@ -54,7 +54,15 @@ and only at these five seams:
 | `Sheet` (shared primitive) | slide-up bottom sheet | centred modal |
 | `DayPanel` | rendered inside `Sheet` | inline `<aside>` |
 | `TransactionsTable` | card rows | `<table>` |
+| `RecurringList` | card rows | `<table>` |
 | `SankeyChart` / `buildSankeyLayout` | narrow vertical geometry | wide horizontal |
+
+**Amendment, 2026-08-16.** `RecurringList` was added as a sixth seam during
+implementation. It already had a card list, gated with `hidden`/`md:hidden`,
+which left both trees in the DOM — every series name and every
+Edit / Disable / Delete button present twice. That is precisely what the rule
+below rejects for interactive markup, so it moved to a JS branch rather than
+having the rule bent around the code that predated it.
 
 This is a closed list. It widens only by an explicit decision recorded here,
 never because branching was convenient in the moment. Everything else —
