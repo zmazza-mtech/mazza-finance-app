@@ -36,11 +36,16 @@ function compose(args: string[], timeoutMs: number): void {
  * The frontend build runs to completion before the rest comes up. It exits when
  * the build finishes, and `up --wait` treats an exited service as a failure, so
  * it cannot be part of the same command.
+ *
+ * Both commands build. `up` on its own only builds an image that is missing,
+ * which is always true on CI and never true on a second local run — so without
+ * `--build` the suite would quietly drive yesterday's backend against today's
+ * spec, and pass on CI while failing on the machine that wrote the code.
  */
 export function startStack(): void {
   stopStack();
   compose(['run', '--rm', '--build', 'frontend-build'], 15 * 60_000);
-  compose(['up', '-d', '--wait', 'postgres', 'backend', 'caddy'], 10 * 60_000);
+  compose(['up', '-d', '--wait', '--build', 'postgres', 'backend', 'caddy'], 10 * 60_000);
 }
 
 /** Tears the stack down along with its volumes. Safe to call when nothing is up. */
