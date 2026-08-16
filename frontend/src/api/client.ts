@@ -263,7 +263,7 @@ export async function importTransactions(body: ImportBody): Promise<ImportResult
 // Reports
 // ---------------------------------------------------------------------------
 
-import type { Category, CategorySummaryResponse } from './types';
+import type { Category, CategorySummaryResponse, CategoryTrendResponse } from './types';
 
 export async function getCategorySummary(params: {
   accountId: string;
@@ -272,6 +272,26 @@ export async function getCategorySummary(params: {
 }): Promise<CategorySummaryResponse> {
   const query = new URLSearchParams(params).toString();
   const res = await request<CategorySummaryResponse>(`/reports/category-summary?${query}`);
+  if (res.error) throw new Error(res.error);
+  if (!res.data) throw new Error('No data returned');
+  return res.data;
+}
+
+/**
+ * Trailing category totals over same-day-of-month spans. One request feeds
+ * both the biggest-mover and the spend-vs-average figures.
+ */
+export async function getCategoryTrend(params: {
+  accountId: string;
+  asOf: string;
+  months: number;
+}): Promise<CategoryTrendResponse> {
+  const query = new URLSearchParams({
+    accountId: params.accountId,
+    asOf: params.asOf,
+    months: String(params.months),
+  }).toString();
+  const res = await request<CategoryTrendResponse>(`/reports/category-trend?${query}`);
   if (res.error) throw new Error(res.error);
   if (!res.data) throw new Error('No data returned');
   return res.data;

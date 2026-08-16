@@ -147,6 +147,17 @@ export const ReportQuerySchema = z.object({
   endDate: dateString,
 });
 
+/**
+ * Trailing category totals. `months` is bounded because each one costs a
+ * scanned month of transactions and nothing in the UI compares more than a
+ * year back.
+ */
+export const CategoryTrendQuerySchema = z.object({
+  accountId: uuid,
+  asOf: dateString,
+  months: z.coerce.number().int().min(1).max(12),
+});
+
 // ---------------------------------------------------------------------------
 // Type exports
 // ---------------------------------------------------------------------------

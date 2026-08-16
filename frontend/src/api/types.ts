@@ -173,3 +173,18 @@ export interface CategorySummaryResponse {
   expenses: CategorySummaryItem[];
   transfers: CategorySummaryItem[];
 }
+
+/**
+ * One month of category totals, covering month-start through the same
+ * day-of-month as the requested `asOf` (clamped to the month's length).
+ */
+export interface CategoryTrendMonth extends CategorySummaryResponse {
+  month: string; // YYYY-MM
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+}
+
+export interface CategoryTrendResponse {
+  /** Newest first; index 0 contains the requested `asOf`. */
+  months: CategoryTrendMonth[];
+}

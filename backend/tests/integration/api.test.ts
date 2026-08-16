@@ -141,6 +141,85 @@ describe('PUT /api/v1/settings/:key — input validation', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Reports — input validation
+// ---------------------------------------------------------------------------
+
+const ACCOUNT_ID = '550e8400-e29b-41d4-a716-446655440000';
+
+describe('GET /api/v1/reports/category-trend — input validation', () => {
+  it('returns 400 when accountId is not a uuid', async () => {
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: 'not-a-uuid',
+      asOf: '2026-08-15',
+      months: 4,
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when asOf is not YYYY-MM-DD', async () => {
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: ACCOUNT_ID,
+      asOf: '08/15/2026',
+      months: 4,
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when months is below the lower bound', async () => {
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: ACCOUNT_ID,
+      asOf: '2026-08-15',
+      months: 0,
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when months is above the upper bound', async () => {
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: ACCOUNT_ID,
+      asOf: '2026-08-15',
+      months: 13,
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when months is not an integer', async () => {
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: ACCOUNT_ID,
+      asOf: '2026-08-15',
+      months: '2.5',
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when months is missing', async () => {
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: ACCOUNT_ID,
+      asOf: '2026-08-15',
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('accepts months as a query string integer rather than rejecting it', async () => {
+    // Query params arrive as strings; the schema coerces. A validation
+    // rejection here would mean the coercion regressed.
+    const res = await request.get('/api/v1/reports/category-trend').query({
+      accountId: ACCOUNT_ID,
+      asOf: '2026-08-15',
+      months: '4',
+    });
+
+    expect(res.status).not.toBe(400);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Method not allowed basics
 // ---------------------------------------------------------------------------
 
