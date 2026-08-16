@@ -12,9 +12,9 @@ import { CATEGORY_HUES, UNCATEGORIZED_HUES } from '@/lib/categoryPalette';
  * from the handoff, do not clear AA at all.
  *
  * That last one is why the split exists. Those pairs are enumerated in
- * LIGHT_SHORTFALLS with their measured ratios, so the gap is visible in the
- * suite rather than papered over, and so a further slip fails the build.
- * Raising them is a design change, tracked separately.
+ * Every pair clears AA in both modes. The light-mode shortfalls inherited from
+ * the handoff were raised in #27, so there is no longer a list of accepted
+ * exceptions — a pair that falls below 4.5:1 is a failure, not an entry.
  */
 
 type Mode = 'light' | 'dark';
@@ -93,6 +93,22 @@ describe('palette — shape', () => {
 // ---------------------------------------------------------------------------
 
 const AA_PAIRS: [TokenName, TokenName][] = [
+  // Formerly LIGHT_SHORTFALLS, raised to AA in #27.
+  ['stone', 'surface'],
+  ['stone', 'cream'],
+  ['warm-gray', 'surface'],
+  ['warm-gray', 'cream'],
+  ['warm-gray', 'cream-mid'],
+  ['error', 'surface'],
+  ['error', 'cream'],
+  ['balance-warning', 'surface'],
+  ['balance-warning', 'cream'],
+  ['balance-critical', 'surface'],
+  ['balance-critical', 'cream'],
+  ['panel-ink-faint', 'panel'],
+  // The primary CTA: cream label on the copper fill. Was bg-copper at 2.5:1.
+  ['cream', 'copper-dark'],
+  ['cream', 'copper-deep'],
   ['charcoal', 'surface'],
   ['charcoal', 'cream'],
   ['charcoal', 'cream-mid'],
@@ -131,39 +147,6 @@ describe('palette — WCAG AA', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Known light-mode shortfalls, inherited from the handoff.
-//
-// Each entry is the measured light ratio, floored. Dark is held to full AA,
-// which every one of them already clears. Raising the light values is a design
-// change, not a dark-mode change.
-// ---------------------------------------------------------------------------
-
-const LIGHT_SHORTFALLS: [TokenName, TokenName, number][] = [
-  ['stone', 'surface', 3.77],
-  ['stone', 'cream', 3.53],
-  ['warm-gray', 'surface', 2.19],
-  ['warm-gray', 'cream', 2.05],
-  ['warm-gray', 'cream-mid', 1.84],
-  ['error', 'surface', 4.43],
-  ['balance-warning', 'surface', 3.32],
-  ['balance-warning', 'cream', 3.11],
-  ['balance-critical', 'surface', 4.43],
-  ['balance-critical', 'cream', 4.14],
-  ['panel-ink-faint', 'panel', 4.04],
-];
-
-describe('palette — inherited light-mode shortfalls', () => {
-  for (const [fg, bg, floor] of LIGHT_SHORTFALLS) {
-    it(`${fg} on ${bg} holds at ${floor}:1 in light and clears AA in dark`, () => {
-      expect(ratio(fg, bg, 'light'), 'light must not regress further').toBeGreaterThanOrEqual(
-        floor,
-      );
-      expect(ratio(fg, bg, 'dark'), 'dark must clear AA').toBeGreaterThanOrEqual(TEXT_MIN);
-    });
-  }
-});
-
-// ---------------------------------------------------------------------------
 // The claim that actually covers this change: dark clears AA everywhere, and
 // beats light on every pair light gets wrong.
 // ---------------------------------------------------------------------------
@@ -171,7 +154,6 @@ describe('palette — inherited light-mode shortfalls', () => {
 describe('palette — dark clears AA everywhere', () => {
   const EVERY_PAIR: [TokenName, TokenName][] = [
     ...AA_PAIRS,
-    ...LIGHT_SHORTFALLS.map(([fg, bg]) => [fg, bg] as [TokenName, TokenName]),
     ['error', 'cream'],
     ['copper-dark', 'cream'],
     ['sage-deep', 'cream'],
@@ -184,14 +166,6 @@ describe('palette — dark clears AA everywhere', () => {
       expect(ratio(fg, bg, 'dark')).toBeGreaterThanOrEqual(TEXT_MIN);
     });
   }
-
-  it('beats light on every pair light gets wrong', () => {
-    for (const [fg, bg] of LIGHT_SHORTFALLS) {
-      expect(ratio(fg, bg, 'dark'), `${fg} on ${bg}`).toBeGreaterThan(
-        ratio(fg, bg, 'light'),
-      );
-    }
-  });
 
   it('lifts every category hue that light leaves too pale', () => {
     for (const [name, pair] of Object.entries(CATEGORY_HUES)) {

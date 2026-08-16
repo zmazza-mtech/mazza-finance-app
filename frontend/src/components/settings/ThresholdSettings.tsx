@@ -118,7 +118,7 @@ export function ThresholdSettings({
         <button
           type="submit"
           disabled={isSaving}
-          className="hit-target w-full sm:w-auto rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          className="hit-target w-full sm:w-auto rounded-full bg-copper-dark px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-deep hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {isSaving ? 'Saving…' : 'Save thresholds'}
         </button>

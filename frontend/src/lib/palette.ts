@@ -39,10 +39,20 @@ export const PALETTE = {
   // --- Ink ------------------------------------------------------------------
   /** Body text. */
   charcoal: { light: '#3A3530', dark: '#E9E2D9' },
-  /** Secondary text: explainers, metadata, inactive pills. */
-  stone: { light: '#8A8279', dark: '#ADA49A' },
-  /** Tertiary text: the mono labels. Small, so it still has to clear 4.5:1. */
-  'warm-gray': { light: '#B5AEA4', dark: '#A0978D' },
+  /**
+   * Secondary text: explainers, metadata, inactive pills.
+   *
+   * Darkened in #27 from the handoff's #8A8279, which read 3.54:1 on cream.
+   */
+  stone: { light: '#777068', dark: '#ADA49A' },
+  /**
+   * Tertiary text: the mono labels. Small, so it still has to clear 4.5:1.
+   *
+   * The handoff's #B5AEA4 measured 1.85:1 on cream-mid — this is `.label-mono`,
+   * so that was every metric label, axis mark and metadata line in the app, at
+   * 10px. Darkened in #27 until the worst of its three grounds clears AA.
+   */
+  'warm-gray': { light: '#71685C', dark: '#A0978D' },
 
   // --- Bark: strong ink, and the fill of an inverted pill -------------------
   bark: { light: '#5D4037', dark: '#E9E2D9' },
@@ -66,10 +76,20 @@ export const PALETTE = {
   // --- Copper: the primary action, and overspend ----------------------------
   copper: { light: '#C17D4A', dark: '#D08A55' },
   'copper-light': { light: '#D9A373', dark: '#E3B48D' },
+  /**
+   * The primary action's fill.
+   *
+   * The handoff specifies `copper` here, but cream on it measures 2.5:1 — the
+   * lowest contrast anywhere in the app, on its most-pressed control. #27 moved
+   * the fill one step down the ramp, which clears AA without leaving the
+   * palette.
+   */
   'copper-dark': { light: '#9B5F30', dark: '#E9AE77' },
+  /** The primary action's hover, one step further on again. */
+  'copper-deep': { light: '#7E4D26', dark: '#F2C08D' },
 
   // --- Error ----------------------------------------------------------------
-  error: { light: '#C1574A', dark: '#D9705F' },
+  error: { light: '#BB4E40', dark: '#D9705F' },
   /**
    * Body-text weight. `error` clears 3:1 on cream but only 3.86:1 on the
    * critical alert tint, short of the 4.5:1 text minimum.
@@ -88,15 +108,15 @@ export const PALETTE = {
   panel: { light: '#2A2420', dark: '#372F2A' },
   'panel-ink': { light: '#FAF7F2', dark: '#FAF7F2' },
   'panel-ink-muted': { light: '#B5AEA4', dark: '#B5AEA4' },
-  'panel-ink-faint': { light: '#8A8279', dark: '#A69D93' },
+  'panel-ink-faint': { light: '#928B83', dark: '#A69D93' },
   'panel-positive': { light: '#A3BFA3', dark: '#A3BFA3' },
   'panel-warning': { light: '#D9A373', dark: '#D9A373' },
 
   // --- Balance health -------------------------------------------------------
   // Always paired with a text label, so color is never the sole signal.
   'balance-good': { light: '#3D5C3D', dark: '#C3DEC3' },
-  'balance-warning': { light: '#C17D4A', dark: '#E3B48D' },
-  'balance-critical': { light: '#C1574A', dark: '#F09383' },
+  'balance-warning': { light: '#9F6336', dark: '#E3B48D' },
+  'balance-critical': { light: '#BB4E40', dark: '#F09383' },
 } as const satisfies Record<string, TokenPair>;
 
 export type TokenName = keyof typeof PALETTE;
