@@ -161,3 +161,28 @@ Required coverage per the PRD:
 - Backend: unit + integration tests (Vitest)
 - Frontend: unit + integration tests (Vitest/Testing Library)
 - E2E: Playwright tests for critical user flows
+
+---
+
+## Work tracking
+
+Managed through GitHub Issues in `zmazza-mtech/mazza-finance-app`. Conventions are
+injected by the mt-github-tracking plugin; this section holds only what is
+specific to this project.
+
+**Tracking epic:** issue #1 — read it before starting anything. It carries the
+design invariants (decimal.js for money, Zod on every write, SimpleFIN's 24-poll
+ceiling, container hardening) and the checklist of every issue.
+
+**Milestones:**
+- `Test & CI Hardening` — Playwright E2E suite, integration coverage for
+  post-MVP endpoints, CI workflow
+- `Categorization v1` — trustworthy and correctable auto-categorization
+- `Reporting v1` — reporting surface beyond the existing Sankey
+- `Production Hardening` — reconciliation surfacing, backups, open UX TODOs
+
+**Labels beyond the defaults:** `epic`, `backend`, `frontend`, `database`,
+`security`, `infra`, `testing`, `simplefin`
+
+**Project board:** Mazza Finance (user project #4) — a view, never a source of
+truth. Backlog = `no:milestone`.
