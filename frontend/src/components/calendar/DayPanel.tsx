@@ -12,6 +12,7 @@ import {
 } from '@/lib/balance';
 import { formatFullDate } from '@/lib/dates';
 import { getCategoryColor } from '@/lib/categoryColors';
+import { parseForecastInstanceId } from '@/lib/recurring';
 import type { ForecastDay } from '@/api/types';
 
 interface DayPanelProps {
@@ -25,6 +26,17 @@ interface DayPanelProps {
   /** Phone only: whether the sheet is raised. The desktop panel is always shown. */
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * Called for a forecast row the user wants to override. Only a row that came
+   * from a recurring series can produce this — an actual or a manual
+   * transaction has no series behind it to edit.
+   */
+  onEditRecurring: (instance: {
+    recurringId: string;
+    originalDate: string;
+    name: string;
+    amount: string;
+  }) => void;
 }
 
 function kindLabel(date: string, todayDate: string): string {
@@ -75,6 +87,7 @@ export function DayPanel({
   onAddTransaction,
   isOpen,
   onClose,
+  onEditRecurring,
 }: DayPanelProps) {
   const isPhone = useIsPhone();
   const transactions = day?.transactions ?? [];
@@ -135,6 +148,8 @@ export function DayPanel({
         <ul className="mt-4">
           {transactions.map((tx) => {
             const debit = isNegative(tx.amount);
+            const instance =
+              tx.source === 'forecast' ? parseForecastInstanceId(tx.id) : null;
             return (
               <li
                 key={tx.id}
@@ -156,13 +171,33 @@ export function DayPanel({
                     <SourceBadge source={tx.source} />
                   </div>
                 </div>
-                <span
-                  className={`shrink-0 font-mono text-sm font-medium ${
-                    debit ? 'text-bark-light' : 'text-sage-deep'
-                  }`}
-                >
-                  {debit ? '−' : '+'}${formatAmount(tx.amount)}
-                </span>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span
+                    className={`font-mono text-sm font-medium ${
+                      debit ? 'text-bark-light' : 'text-sage-deep'
+                    }`}
+                  >
+                    {debit ? '−' : '+'}${formatAmount(tx.amount)}
+                  </span>
+
+                  {instance && (
+                    <button
+                      type="button"
+                      aria-label={`Edit recurring ${tx.description}`}
+                      onClick={() =>
+                        onEditRecurring({
+                          recurringId: instance.recurringId,
+                          originalDate: instance.originalDate,
+                          name: tx.description,
+                          amount: tx.amount,
+                        })
+                      }
+                      className="hit-target rounded-full p-1 text-stone transition-colors duration-150 hover:bg-cream hover:text-bark focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+                    >
+                      <Icon name="more" className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </li>
             );
           })}

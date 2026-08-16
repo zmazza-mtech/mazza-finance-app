@@ -235,26 +235,6 @@ async function seedRecurring(
 }
 
 /**
- * Writes a single-instance override straight to the API.
- *
- * The calendar has no way to reach this yet — `RecurringInstanceMenu` is built
- * but wired to nothing, which is issue #26. Until that lands the override
- * arrives the way the sync job would write one, and the flow asserts on what
- * the calendar does with it. When #26 ships this call is what the UI steps
- * replace.
- */
-export async function overrideInstance(
-  seriesId: string,
-  originalDate: string,
-  body: { overrideType: 'modified' | 'deleted'; overrideAmount?: string },
-): Promise<void> {
-  await api(`/recurring/${seriesId}/overrides/${originalDate}`, {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-}
-
-/**
  * Adds one transaction to an already-seeded account.
  *
  * Created through `POST /transactions` like the rest of the seed, so it goes

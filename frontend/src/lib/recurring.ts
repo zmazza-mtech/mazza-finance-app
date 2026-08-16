@@ -20,6 +20,27 @@ export function describeSeriesCounts(activeCount: number, pendingCount: number):
   return `${driving} ${pendingCount} ${more}${verb} waiting on you.`;
 }
 
+/** A forecast row traced back to the series and occurrence that produced it. */
+export interface ForecastInstanceRef {
+  recurringId: string;
+  originalDate: string;
+}
+
+/**
+ * Reads a forecast row's id back into the series and date it came from.
+ *
+ * `computeForecast` builds the id as `recurring_${recurringId}_${date}`, and an
+ * override is written against exactly that pair. Anything else — an actual or a
+ * manual transaction — has no series behind it and returns null, which is what
+ * keeps the override controls off rows that cannot take one.
+ */
+export function parseForecastInstanceId(id: string): ForecastInstanceRef | null {
+  const match = /^recurring_(.+)_(\d{4}-\d{2}-\d{2})$/.exec(id);
+  if (!match) return null;
+
+  return { recurringId: match[1]!, originalDate: match[2]! };
+}
+
 /**
  * The first occurrence of a series strictly after `today`.
  *

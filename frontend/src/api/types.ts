@@ -4,7 +4,16 @@ export type Frequency = 'weekly' | 'biweekly' | 'monthly' | 'yearly';
 export type RecurringStatus = 'active' | 'disabled' | 'pending_review' | 'ended';
 export type AccountType = 'checking' | 'savings' | 'credit';
 export type TransactionSource = 'actual' | 'forecast' | 'manual';
-export type OverrideType = 'skip' | 'reschedule' | 'amount_change' | 'rename';
+/**
+ * The wire vocabulary, which is narrower than the intents the UI offers.
+ *
+ * The backend stores one of two kinds (`validate.ts` and a CHECK constraint on
+ * `recurring_overrides` both enforce it): `deleted` removes the occurrence, and
+ * `modified` carries whichever of date, amount and name changed. Skipping,
+ * rescheduling and re-amounting are UI intents that map onto those two — they
+ * are not values this field accepts.
+ */
+export type OverrideType = 'modified' | 'deleted';
 export type Category =
   | 'Income' | 'Housing' | 'Utilities' | 'Groceries' | 'Transportation'
   | 'Insurance' | 'Healthcare' | 'Entertainment' | 'Dining' | 'Shopping'
