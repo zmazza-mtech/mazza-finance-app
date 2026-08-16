@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -43,6 +44,7 @@ function renderTimeline(overrides: Partial<React.ComponentProps<typeof CalendarT
     onAddTransaction: vi.fn(),
     requestedDate: null as string | null,
     onRequestedDateHandled: vi.fn(),
+    onJumpToDate: vi.fn(),
     ...overrides,
   };
   return { ...render(<CalendarTimeline {...props} />), props };
@@ -256,6 +258,15 @@ describe('CalendarTimeline requestedDate', () => {
     expect(document.activeElement).toBe(cell('2026-08-22'));
   });
 
+  it('moves focus even when the requested day is already the focused one', () => {
+    // The default selection for August is today, 2026-08-15. Asking for it
+    // leaves `focusedId` unchanged, so an effect keyed on that value alone
+    // never fires — and the jump is lost without a sound.
+    renderTimeline({ requestedDate: TODAY });
+
+    expect(document.activeElement).toBe(cell(TODAY));
+  });
+
   it('tells the parent it handled the request, so the same date can be asked for twice', () => {
     const { props } = renderTimeline({ requestedDate: '2026-08-22' });
 
@@ -273,5 +284,169 @@ describe('CalendarTimeline requestedDate', () => {
     renderTimeline({ requestedDate: null });
 
     expect(within(panel()).getByText('Saturday, August 15')).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Page Up / Page Down and Home / End (PRD §5.1, ARIA grid pattern)
+// ---------------------------------------------------------------------------
+
+/** July, August and September 2026, so a month jump has somewhere to land. */
+const THREE_MONTHS: ForecastDay[] = (['2026-07', '2026-08', '2026-09'] as const).flatMap(
+  (month) => {
+    const length = month === '2026-07' ? 31 : month === '2026-08' ? 31 : 30;
+    return Array.from({ length }, (_, i) => {
+      const date = `${month}-${String(i + 1).padStart(2, '0')}`;
+      return {
+        date,
+        transactions: [],
+        dailyNet: '0.00',
+        runningBalance: '3000.00',
+      };
+    });
+  },
+);
+
+/**
+ * Holds `currentMonth` the way CalendarPage does, so a month jump actually
+ * re-renders the grid. Without a real parent, Page Up and Page Down would only
+ * ever be asserted as callbacks and never as navigation.
+ */
+function MonthNavHarness() {
+  const [currentMonth, setCurrentMonth] = React.useState('2026-08');
+  const [requestedDate, setRequestedDate] = React.useState<string | null>(null);
+
+  // The same two pieces of state CalendarPage holds, wired the same way.
+  function jumpToDate(date: string) {
+    setCurrentMonth(date.slice(0, 7));
+    setRequestedDate(date);
+  }
+
+  return (
+    <CalendarTimeline
+      days={THREE_MONTHS}
+      accountId="acct-1"
+      todayDate={TODAY}
+      currentMonth={currentMonth}
+      greenThreshold="1000"
+      criticalThreshold="200"
+      searchQuery=""
+      matchingDates={new Set<string>()}
+      onSearchChange={vi.fn()}
+      onPrevMonth={() => setCurrentMonth('2026-07')}
+      onNextMonth={() => setCurrentMonth('2026-09')}
+      onToday={vi.fn()}
+      onAddTransaction={vi.fn()}
+      requestedDate={requestedDate}
+      onRequestedDateHandled={() => setRequestedDate(null)}
+      onJumpToDate={jumpToDate}
+    />
+  );
+}
+
+describe('CalendarTimeline Home and End', () => {
+  it('focuses the first day of the visible month on Home', async () => {
+    const user = userEvent.setup();
+    renderTimeline();
+
+    cell('2026-08-15').focus();
+    await user.keyboard('{Home}');
+
+    expect(document.activeElement).toBe(cell('2026-08-01'));
+  });
+
+  it('focuses the last day of the visible month on End', async () => {
+    const user = userEvent.setup();
+    renderTimeline();
+
+    cell('2026-08-15').focus();
+    await user.keyboard('{End}');
+
+    expect(document.activeElement).toBe(cell('2026-08-31'));
+  });
+
+  it('clamps at the first day rather than wrapping into the previous month', async () => {
+    const user = userEvent.setup();
+    renderTimeline();
+
+    cell('2026-08-01').focus();
+    await user.keyboard('{Home}');
+
+    expect(document.activeElement).toBe(cell('2026-08-01'));
+  });
+
+  it('clamps at the last day rather than wrapping into the next month', async () => {
+    const user = userEvent.setup();
+    renderTimeline();
+
+    cell('2026-08-31').focus();
+    await user.keyboard('{End}');
+
+    expect(document.activeElement).toBe(cell('2026-08-31'));
+  });
+});
+
+describe('CalendarTimeline Page Up and Page Down', () => {
+  it('moves to the next month and leaves focus on a cell in it', async () => {
+    const user = userEvent.setup();
+    render(<MonthNavHarness />);
+
+    cell('2026-08-15').focus();
+    await user.keyboard('{PageDown}');
+
+    expect(screen.getByRole('heading', { name: /^September, day by day$/i })).toBeInTheDocument();
+    expect(document.activeElement).toHaveAttribute('data-date', '2026-09-15');
+  });
+
+  it('moves to the previous month and leaves focus on a cell in it', async () => {
+    const user = userEvent.setup();
+    render(<MonthNavHarness />);
+
+    cell('2026-08-15').focus();
+    await user.keyboard('{PageUp}');
+
+    expect(screen.getByRole('heading', { name: /^July, day by day$/i })).toBeInTheDocument();
+    expect(document.activeElement).toHaveAttribute('data-date', '2026-07-15');
+  });
+
+  it('does not let the browser scroll the page instead', async () => {
+    const user = userEvent.setup();
+    renderTimeline();
+
+    cell('2026-08-15').focus();
+
+    // A default-prevented key is the whole reason the grid can own PageDown.
+    const events: KeyboardEvent[] = [];
+    document.addEventListener('keydown', (e) => events.push(e), { once: true });
+    await user.keyboard('{PageDown}');
+
+    expect(events[0]?.defaultPrevented).toBe(true);
+  });
+});
+
+describe('CalendarTimeline month jump day clamping', () => {
+  it('lands on the last day when the next month is shorter', async () => {
+    const user = userEvent.setup();
+    render(<MonthNavHarness />);
+
+    // August has 31 days, September 30. Keeping the day number blindly would
+    // ask for a 2026-09-31 that does not exist.
+    cell('2026-08-31').focus();
+    await user.keyboard('{End}');
+    await user.keyboard('{PageDown}');
+
+    expect(document.activeElement).toHaveAttribute('data-date', '2026-09-30');
+  });
+
+  it('repeats — a second Page Down moves another month rather than sticking', async () => {
+    const user = userEvent.setup();
+    render(<MonthNavHarness />);
+
+    cell('2026-08-15').focus();
+    await user.keyboard('{PageUp}');
+    expect(document.activeElement).toHaveAttribute('data-date', '2026-07-15');
+
+    await user.keyboard('{PageDown}');
+    expect(document.activeElement).toHaveAttribute('data-date', '2026-08-15');
   });
 });

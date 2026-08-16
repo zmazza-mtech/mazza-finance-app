@@ -1,4 +1,4 @@
-import { test, expect, fixtureDate } from './fixtures';
+import { test, expect, fixtureDate, monthAfter } from './fixtures';
 import type { Page } from '@playwright/test';
 
 /**
@@ -139,5 +139,80 @@ test.describe('calendar keyboard navigation', () => {
     // this the cell is still ringed but focus has fallen to the document body,
     // and the next Tab restarts from the top of the page.
     expect(await focusedDate(page)).toEqual(entryDate);
+  });
+});
+
+/**
+ * PRD §5.1, "Keyboard Navigation — Calendar", and the ARIA grid pattern:
+ * Home and End reach the ends of the visible month, Page Up and Page Down
+ * cross months. Issue #29 — `keyToDirection` mapped the four arrows and
+ * nothing else, so a keyboard user crossed a month one week at a time.
+ *
+ * Assertions are on `document.activeElement` for the same reason as above: the
+ * focus ring is not evidence that focus moved.
+ */
+
+/** The last day of a `YYYY-MM`, as `YYYY-MM-DD`. */
+function lastDayOf(month: string): string {
+  const [year, m] = month.split('-').map(Number) as [number, number];
+  return fixtureDate(month, new Date(year, m, 0).getDate());
+}
+
+test.describe('calendar keyboard month and row shortcuts', () => {
+  test('Home and End reach the ends of the visible month', async ({ page, recurring }) => {
+    await page.goto('/');
+    await showMonthsAhead(page, 1);
+    await tabIntoCalendar(page);
+
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('End');
+    expect(await focusedDate(page)).toEqual(lastDayOf(recurring.month));
+
+    await page.keyboard.press('Home');
+    expect(await focusedDate(page)).toEqual(fixtureDate(recurring.month, 1));
+  });
+
+  test('End clamps to the visible month rather than walking into the next', async ({
+    page,
+    recurring,
+  }) => {
+    await page.goto('/');
+    await showMonthsAhead(page, 1);
+    await tabIntoCalendar(page);
+
+    await page.keyboard.press('End');
+    await page.keyboard.press('End');
+
+    expect(await focusedDate(page)).toEqual(lastDayOf(recurring.month));
+  });
+
+  test('Page Down moves to the next month with focus landing in it', async ({
+    page,
+    recurring,
+  }) => {
+    await page.goto('/');
+    await showMonthsAhead(page, 1);
+    await tabIntoCalendar(page);
+
+    await page.keyboard.press('PageDown');
+
+    const following = monthAfter(recurring.month);
+    await expect(page.getByRole('button', { name: 'Next month' })).toBeVisible();
+    expect(await focusedDate(page)).toContain(following);
+  });
+
+  test('Page Up moves to the previous month with focus landing in it', async ({
+    page,
+    recurring,
+  }) => {
+    await page.goto('/');
+    await showMonthsAhead(page, 2);
+    await tabIntoCalendar(page);
+
+    await page.keyboard.press('PageUp');
+
+    // Back to the fixture month, and on a cell of it — not left behind on a
+    // cell of the month just departed, which is what #29 describes.
+    expect(await focusedDate(page)).toContain(recurring.month);
   });
 });

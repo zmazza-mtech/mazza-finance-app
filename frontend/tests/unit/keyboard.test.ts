@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   createRovingState,
   moveFocus,
+  keyToDirection,
   RovingDirection,
   RovingState,
 } from '@/lib/keyboard';
@@ -85,5 +86,56 @@ describe('moveFocus', () => {
     const original = { ...state };
     moveFocus(state, RovingDirection.Next);
     expect(state.focusedId).toBe(original.focusedId);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Home / End — first and last day of the visible month
+// ---------------------------------------------------------------------------
+
+describe('keyToDirection for Home and End', () => {
+  it('maps Home to the first cell', () => {
+    expect(keyToDirection('Home')).toBe(RovingDirection.First);
+  });
+
+  it('maps End to the last cell', () => {
+    expect(keyToDirection('End')).toBe(RovingDirection.Last);
+  });
+
+  it('does not map the month jumps, which are not moves within the grid', () => {
+    // PageUp/PageDown change which month is rendered, so they are the grid
+    // handler's business rather than a roving move over the current ids.
+    expect(keyToDirection('PageUp')).toBeNull();
+    expect(keyToDirection('PageDown')).toBeNull();
+  });
+});
+
+describe('moveFocus to first and last', () => {
+  const state: RovingState = createRovingState(
+    ['2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04'],
+    '2025-01-03',
+  );
+
+  it('jumps to the first cell', () => {
+    expect(moveFocus(state, RovingDirection.First).focusedId).toBe('2025-01-01');
+  });
+
+  it('jumps to the last cell', () => {
+    expect(moveFocus(state, RovingDirection.Last).focusedId).toBe('2025-01-04');
+  });
+
+  it('stays put on the first cell rather than wrapping to the last', () => {
+    const atFirst = createRovingState(state.ids, '2025-01-01');
+    expect(moveFocus(atFirst, RovingDirection.First).focusedId).toBe('2025-01-01');
+  });
+
+  it('stays put on the last cell rather than wrapping to the first', () => {
+    const atLast = createRovingState(state.ids, '2025-01-04');
+    expect(moveFocus(atLast, RovingDirection.Last).focusedId).toBe('2025-01-04');
+  });
+
+  it('returns the same state when there is nothing focused', () => {
+    const empty: RovingState = { ids: [], focusedId: null };
+    expect(moveFocus(empty, RovingDirection.Last).focusedId).toBeNull();
   });
 });

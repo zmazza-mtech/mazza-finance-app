@@ -15,6 +15,8 @@ export enum RovingDirection {
   Prev = 'prev',       // ArrowLeft
   Up = 'up',           // ArrowUp   (7 positions back)
   Down = 'down',       // ArrowDown (7 positions forward)
+  First = 'first',     // Home      (first day of the visible month)
+  Last = 'last',       // End       (last day of the visible month)
 }
 
 /**
@@ -73,6 +75,15 @@ export function moveFocus(
       // Jump 7 positions backward (one week), clamp to first
       nextIndex = Math.max(currentIndex - 7, 0);
       break;
+    case RovingDirection.First:
+      // Home: first day of the visible month. Clamps rather than wrapping —
+      // the ids are one month, and Home must not walk into the next one.
+      nextIndex = 0;
+      break;
+    case RovingDirection.Last:
+      // End: last day of the visible month, same clamping rule.
+      nextIndex = ids.length - 1;
+      break;
   }
 
   return { ids, focusedId: ids[nextIndex] };
@@ -91,7 +102,14 @@ export function keyToDirection(key: string): RovingDirection | null {
       return RovingDirection.Down;
     case 'ArrowUp':
       return RovingDirection.Up;
+    case 'Home':
+      return RovingDirection.First;
+    case 'End':
+      return RovingDirection.Last;
     default:
+      // PageUp and PageDown are absent on purpose: they change which month is
+      // rendered, so they are the grid handler's business rather than a move
+      // over the ids it currently holds.
       return null;
   }
 }
