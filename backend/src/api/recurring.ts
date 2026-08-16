@@ -6,6 +6,11 @@ import { recurringTransactions, recurringOverrides, transactions, accounts } fro
 import { detectRecurring, type RawTransaction } from '../services/detection';
 import { categorize } from '../services/categorize';
 import {
+  advanceSeriesDate,
+  type ActualTransaction,
+  type RecurringDef,
+} from '../services/forecast';
+import {
   CreateRecurringSchema,
   UpdateRecurringSchema,
   CreateOverrideSchema,
@@ -171,7 +176,55 @@ router.post('/detect', async (req: Request, res: Response) => {
     }
 
     // ---------------------------------------------------------------------------
-    // Step 2: Expire stale active recurring series
+    // Step 2: Advance series whose occurrences were paid
+    //
+    // The staleness check below reads nextDate, so it has to run against a
+    // nextDate that reflects the payments actually seen. The sync job does
+    // this too, but detection is reachable on its own from "Scan for
+    // patterns" — without this, one click there would re-end every series
+    // whose payments had not been reconciled since the last sync (#43).
+    // ---------------------------------------------------------------------------
+
+    const actualsForAdvance: ActualTransaction[] = txRows
+      .filter((t) => t.type === 'actual')
+      .map((t) => ({
+        id: t.id,
+        date: String(t.date),
+        description: t.description,
+        amount: String(t.amount),
+        type: 'actual' as const,
+      }));
+
+    const advancedNextDates = new Map<string, string>();
+    for (const r of allRecurring) {
+      if (r.status !== 'active') continue;
+
+      const next = advanceSeriesDate(
+        {
+          id: r.id,
+          accountId: r.accountId,
+          name: r.name,
+          amount: String(r.amount),
+          frequency: r.frequency as RecurringDef['frequency'],
+          nextDate: String(r.nextDate),
+          endDate: r.endDate ? String(r.endDate) : null,
+          status: 'active',
+        },
+        actualsForAdvance,
+        serverToday,
+      );
+
+      if (next !== null && next !== String(r.nextDate)) {
+        advancedNextDates.set(r.id, next);
+        await db
+          .update(recurringTransactions)
+          .set({ nextDate: next, updatedAt: new Date() })
+          .where(eq(recurringTransactions.id, r.id));
+      }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Step 3: Expire stale active recurring series
     // A series is stale when its nextDate + grace period is still in the past,
     // meaning no occurrence has been seen for longer than the grace window.
     // ---------------------------------------------------------------------------
@@ -181,7 +234,9 @@ router.post('/detect', async (req: Request, res: Response) => {
     for (const r of allRecurring) {
       if (r.status !== 'active') continue;
       const graceDays = STALE_GRACE_DAYS[r.frequency] ?? 90;
-      const cutoff = addDaysToDateStr(String(r.nextDate), graceDays);
+      // The advanced date where one was written, not the row's stale copy.
+      const nextDate = advancedNextDates.get(r.id) ?? String(r.nextDate);
+      const cutoff = addDaysToDateStr(nextDate, graceDays);
       if (cutoff < serverToday) {
         staleIds.push(r.id);
       }

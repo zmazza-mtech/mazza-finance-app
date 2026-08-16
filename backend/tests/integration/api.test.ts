@@ -605,3 +605,74 @@ describe('GET /forecast — reconciliation of actuals against recurring instance
     expect(day(res.body, '2026-01-15').transactions).toHaveLength(2);
   });
 });
+
+// ---------------------------------------------------------------------------
+// #43 Defect 2 — detection must not end a series that is still being paid
+// ---------------------------------------------------------------------------
+
+describe('POST /recurring/detect — staleness against real payments', () => {
+  let accountId: string;
+
+  /** A monthly series whose stored nextDate is long past its grace window. */
+  async function seedStaleSeries(nextDate: string) {
+    const res = await request.post('/api/v1/recurring').send({
+      accountId,
+      name: 'Mortgage',
+      amount: '-1800.00',
+      frequency: 'monthly',
+      nextDate,
+    });
+    await request.patch(`/api/v1/recurring/${res.body.data.id}`).send({ status: 'active' });
+    return res.body.data.id as string;
+  }
+
+  async function statusOf(id: string) {
+    const res = await request.get('/api/v1/recurring').query({ accountId });
+    return res.body.data.find((r: { id: string }) => r.id === id);
+  }
+
+  beforeEach(async () => {
+    await resetDb();
+    accountId = (await seedAccount()).id;
+  });
+
+  it('does not end a series whose payments are still arriving', async () => {
+    const today = new Date();
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    const monthsAgo = (n: number) => {
+      const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - n, 10));
+      return iso(d);
+    };
+
+    // nextDate four months back — well past the 90-day monthly grace window —
+    // but paid every month since.
+    const id = await seedStaleSeries(monthsAgo(4));
+    await seedTransactions(accountId, [4, 3, 2, 1].map((n) => ({
+      date: monthsAgo(n),
+      description: 'Mortgage',
+      amount: '-1800.00',
+      type: 'actual' as const,
+    })));
+
+    const res = await request.post('/api/v1/recurring/detect').send({ accountId });
+    expect(res.status).toBe(200);
+
+    // Before this, one click here ended the series and it never came back.
+    const series = await statusOf(id);
+    expect(series.status).toBe('active');
+    expect(series.nextDate > monthsAgo(1)).toBe(true);
+  });
+
+  it('still ends a series that genuinely stopped, and writes no end date', async () => {
+    const old = '2020-01-15';
+    const id = await seedStaleSeries(old);
+
+    const res = await request.post('/api/v1/recurring/detect').send({ accountId });
+    expect(res.status).toBe(200);
+
+    const series = await statusOf(id);
+    expect(series.status).toBe('ended');
+    // The sweep observes an absence, not an ending — so it records no date.
+    expect(series.endDate).toBeNull();
+  });
+});
