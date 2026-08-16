@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { computeTrendBuckets, groupUncategorized, splitByCategory } from '../../src/services/reports';
+import {
+  compareMonths,
+  computeTrendBuckets,
+  groupUncategorized,
+  monthBounds,
+  monthRange,
+  splitByCategory,
+} from '../../src/services/reports';
 import { normalizeDescription } from '../../src/services/categorize';
 
 describe('computeTrendBuckets', () => {
@@ -232,5 +239,159 @@ describe('groupUncategorized', () => {
     ]);
 
     expect(result.groups.map((g) => g.description)).toEqual(['ALPHA CO', 'ZEBRA CO']);
+  });
+});
+
+describe('monthRange', () => {
+  it('returns a single month when start and end are the same', () => {
+    expect(monthRange('2026-08', '2026-08')).toEqual(['2026-08']);
+  });
+
+  it('returns every month between the two, oldest first', () => {
+    expect(monthRange('2026-06', '2026-09')).toEqual([
+      '2026-06',
+      '2026-07',
+      '2026-08',
+      '2026-09',
+    ]);
+  });
+
+  it('crosses a year boundary', () => {
+    expect(monthRange('2025-11', '2026-02')).toEqual([
+      '2025-11',
+      '2025-12',
+      '2026-01',
+      '2026-02',
+    ]);
+  });
+
+  it('returns nothing when the end precedes the start', () => {
+    expect(monthRange('2026-09', '2026-06')).toEqual([]);
+  });
+});
+
+describe('monthBounds', () => {
+  it('runs from the first of the month to its last day', () => {
+    expect(monthBounds('2026-08')).toEqual({
+      startDate: '2026-08-01',
+      endDate: '2026-08-31',
+    });
+  });
+
+  it('ends a 30-day month on the 30th', () => {
+    expect(monthBounds('2026-09').endDate).toBe('2026-09-30');
+  });
+
+  it('ends February on the 28th in a common year', () => {
+    expect(monthBounds('2026-02').endDate).toBe('2026-02-28');
+  });
+
+  it('ends February on the 29th in a leap year', () => {
+    expect(monthBounds('2028-02').endDate).toBe('2028-02-29');
+  });
+});
+
+describe('compareMonths', () => {
+  const groceries = (total: string) => ({ category: 'Groceries', total });
+
+  it('keeps a category total exactly as the query returned it', () => {
+    const result = compareMonths([{ month: '2026-08', categories: [groceries('-812.40')] }]);
+    expect(result[0].categories[0].total).toBe('-812.40');
+  });
+
+  it('leaves the earliest month without a change figure', () => {
+    const result = compareMonths([{ month: '2026-08', categories: [groceries('-812.40')] }]);
+    expect(result[0].categories[0].change).toBeNull();
+    expect(result[0].categories[0].changePercent).toBeNull();
+  });
+
+  it('reports a rise in spending as a positive change', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('-690.10')] },
+      { month: '2026-08', categories: [groceries('-812.40')] },
+    ]);
+    expect(result[1].categories[0].change).toBe('122.30');
+  });
+
+  it('reports a fall in spending as a negative change', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('-318.55')] },
+      { month: '2026-08', categories: [groceries('-244.19')] },
+    ]);
+    expect(result[1].categories[0].change).toBe('-74.36');
+  });
+
+  it('states the change as a percent of the prior month', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('-100.00')] },
+      { month: '2026-08', categories: [groceries('-117.70')] },
+    ]);
+    expect(result[1].categories[0].changePercent).toBe('17.7');
+  });
+
+  it('gives no percent when the prior month was zero, rather than infinity', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('0.00')] },
+      { month: '2026-08', categories: [groceries('-40.00')] },
+    ]);
+    expect(result[1].categories[0].change).toBe('40.00');
+    expect(result[1].categories[0].changePercent).toBeNull();
+  });
+
+  it('gives no change at all for a category the prior month never had', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [] },
+      { month: '2026-08', categories: [groceries('-40.00')] },
+    ]);
+    expect(result[1].categories[0].change).toBeNull();
+    expect(result[1].categories[0].changePercent).toBeNull();
+  });
+
+  it('reports no change when the amount held steady', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('-198.00')] },
+      { month: '2026-08', categories: [groceries('-198.00')] },
+    ]);
+    expect(result[1].categories[0].change).toBe('0.00');
+    expect(result[1].categories[0].changePercent).toBe('0.0');
+  });
+
+  it('compares magnitudes, so a bigger charge reads as an increase', () => {
+    // Both months are money out. -812.40 is more spending than -690.10, and a
+    // signed subtraction would call that a decrease.
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('-690.10')] },
+      { month: '2026-08', categories: [groceries('-812.40')] },
+    ]);
+    expect(result[1].categories[0].change?.startsWith('-')).toBe(false);
+  });
+
+  it('carries every month through, including one with no transactions', () => {
+    const result = compareMonths([
+      { month: '2026-06', categories: [groceries('-100.00')] },
+      { month: '2026-07', categories: [] },
+      { month: '2026-08', categories: [groceries('-100.00')] },
+    ]);
+    expect(result.map((m) => m.month)).toEqual(['2026-06', '2026-07', '2026-08']);
+    expect(result[1].categories).toEqual([]);
+  });
+
+  it('compares against the month immediately before, empty or not', () => {
+    const result = compareMonths([
+      { month: '2026-06', categories: [groceries('-100.00')] },
+      { month: '2026-07', categories: [] },
+      { month: '2026-08', categories: [groceries('-100.00')] },
+    ]);
+    // July had no Groceries at all, so August has nothing to compare against —
+    // reaching back to June would invent a comparison the data does not make.
+    expect(result[2].categories[0].change).toBeNull();
+  });
+
+  it('keeps the percent exact rather than routing it through a float', () => {
+    const result = compareMonths([
+      { month: '2026-07', categories: [groceries('-0.03')] },
+      { month: '2026-08', categories: [groceries('-0.04')] },
+    ]);
+    expect(result[1].categories[0].changePercent).toBe('33.3');
   });
 });

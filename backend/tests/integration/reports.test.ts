@@ -21,6 +21,7 @@ const request = supertest(app);
 const SUMMARY = '/api/v1/reports/category-summary';
 const TREND = '/api/v1/reports/category-trend';
 const UNCATEGORIZED = '/api/v1/reports/uncategorized';
+const MONTHLY = '/api/v1/reports/monthly';
 
 let accountId: string;
 
@@ -413,5 +414,222 @@ describe('GET /reports/uncategorized', () => {
     const res = await request.get(UNCATEGORIZED);
 
     expect(res.body.data.groups).toEqual([]);
+  });
+});
+
+/**
+ * The monthly summary. Buckets are whole calendar months, every month in the
+ * requested range appears whether or not it holds anything, and each category
+ * carries its movement against the month immediately before.
+ */
+describe('GET /reports/monthly — validation', () => {
+  it('rejects a missing accountId', async () => {
+    const res = await request.get(MONTHLY).query({ startMonth: '2026-07', endMonth: '2026-08' });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a month that carries a day', async () => {
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-07-01',
+      endMonth: '2026-08',
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects an end month that precedes the start', async () => {
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-07',
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a range longer than two years, which nothing asks for', async () => {
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2020-01',
+      endMonth: '2026-08',
+    });
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('GET /reports/monthly', () => {
+  it('returns a bucket for every month in the range', async () => {
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-06',
+      endMonth: '2026-08',
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.months.map((m: { month: string }) => m.month)).toEqual([
+      '2026-06',
+      '2026-07',
+      '2026-08',
+    ]);
+  });
+
+  it('keeps a month with no transactions rather than omitting it', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-06-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+      { date: '2026-08-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-06',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[1]).toMatchObject({ month: '2026-07', categories: [] });
+  });
+
+  it('buckets a transaction into the month it falls in', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-07-31', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+      { date: '2026-08-01', description: 'Kroger', amount: '-200.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-07',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0].categories[0].total).toBe('-100.00');
+    expect(res.body.data.months[1].categories[0].total).toBe('-200.00');
+  });
+
+  it('leaves the earliest month in the range without a change figure', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-07-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-07',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0].categories[0].change).toBeNull();
+    expect(res.body.data.months[0].categories[0].changePercent).toBeNull();
+  });
+
+  it('states each category’s movement against the prior month', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-07-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+      { date: '2026-08-10', description: 'Kroger', amount: '-117.70', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-07',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[1].categories[0]).toMatchObject({
+      change: '17.70',
+      changePercent: '17.7',
+    });
+  });
+
+  it('sums income and expenses for the month as decimal strings', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'Payroll', amount: '2400.00', category: 'Income' },
+      { date: '2026-08-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+      { date: '2026-08-11', description: 'Rent', amount: '-1250.00', category: 'Housing' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0]).toMatchObject({
+      income: '2400.00',
+      expenses: '-1350.00',
+      net: '1050.00',
+    });
+  });
+
+  it('excludes transfers from the income and expense totals', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-01', description: 'Payroll', amount: '2400.00', category: 'Income' },
+      { date: '2026-08-02', description: 'To savings', amount: '-500.00', category: 'Transfers' },
+      { date: '2026-08-03', description: 'From savings', amount: '500.00', category: 'Transfers' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0]).toMatchObject({
+      income: '2400.00',
+      expenses: '0.00',
+      net: '2400.00',
+    });
+  });
+
+  it('leaves transfers out of the category rows too', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-02', description: 'To savings', amount: '-500.00', category: 'Transfers' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0].categories).toEqual([]);
+  });
+
+  it('covers a partial month to its end, so today’s data is included', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-31', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0].categories[0].total).toBe('-100.00');
+  });
+
+  it('counts only the requested account', async () => {
+    const otherAccount = (await seedAccount({ name: 'Savings' })).id;
+    await seedTransactions(otherAccount, [
+      { date: '2026-08-10', description: 'Kroger', amount: '-100.00', category: 'Groceries' },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0].categories).toEqual([]);
+  });
+
+  it('files an uncategorized transaction under Other', async () => {
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: 'Mystery', amount: '-40.00', category: null },
+    ]);
+
+    const res = await request.get(MONTHLY).query({
+      accountId,
+      startMonth: '2026-08',
+      endMonth: '2026-08',
+    });
+
+    expect(res.body.data.months[0].categories[0].category).toBe('Other');
   });
 });

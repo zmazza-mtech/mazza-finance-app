@@ -147,6 +147,37 @@ export const ReportQuerySchema = z.object({
   endDate: dateString,
 });
 
+/** YYYY-MM month string */
+const monthString = z.string().regex(/^\d{4}-\d{2}$/, 'Must be YYYY-MM');
+
+/** Absolute month index, for comparing two YYYY-MM strings. */
+function monthIndex(month: string): number {
+  const [year, m] = month.split('-').map(Number) as [number, number];
+  return year * 12 + (m - 1);
+}
+
+/** The longest span the monthly summary will bucket, in months. */
+const MAX_MONTH_SPAN = 24;
+
+/**
+ * A range of whole calendar months. Bounded for the same reason the trend is:
+ * each month costs its own query, and no comparison view reads two years back.
+ */
+export const MonthlySummaryQuerySchema = z
+  .object({
+    accountId: uuid,
+    startMonth: monthString,
+    endMonth: monthString,
+  })
+  .refine((q) => monthIndex(q.endMonth) >= monthIndex(q.startMonth), {
+    message: 'endMonth must not precede startMonth',
+    path: ['endMonth'],
+  })
+  .refine((q) => monthIndex(q.endMonth) - monthIndex(q.startMonth) < MAX_MONTH_SPAN, {
+    message: `Range must span at most ${MAX_MONTH_SPAN} months`,
+    path: ['endMonth'],
+  });
+
 /**
  * Trailing category totals. `months` is bounded because each one costs a
  * scanned month of transactions and nothing in the UI compares more than a
