@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { AmountField } from '@/components/shared/AmountField';
+import { Sheet } from '@/components/shared/Sheet';
 import { SegmentedControl } from '@/components/shared/SegmentedControl';
 import { formatFullDate } from '@/lib/dates';
 import Decimal from 'decimal.js';
@@ -20,9 +21,11 @@ const DIRECTION_OPTIONS: { value: Direction; label: string }[] = [
 ];
 
 /**
- * Full modal form for adding a transaction.
- * Traps focus within the modal.
- * Closes on Escape.
+ * Form for adding a one-off transaction to a day.
+ *
+ * `Sheet` owns the presentation and the modal behaviour — backdrop, Escape,
+ * focus trap, focus restore, scroll lock — and renders as a bottom sheet on a
+ * phone. This component owns only the form.
  */
 export function TransactionModal({
   date,
@@ -35,45 +38,19 @@ export function TransactionModal({
   const [amount, setAmount] = useState('');
   const [direction, setDirection] = useState<Direction>('debit');
   const descriptionRef = useRef<HTMLInputElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   const formattedDate = formatFullDate(date);
 
+  // Reset the form each time it opens, so a cancelled entry does not reappear
+  // on the next day the reader taps. Focus is Sheet's job, via
+  // `initialFocusRef`.
   useEffect(() => {
     if (isOpen) {
       setDescription('');
       setAmount('');
       setDirection('debit');
-      // Defer focus to allow render
-      setTimeout(() => descriptionRef.current?.focus(), 0);
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      // Focus trap: Tab cycles within panel
-      if (e.key === 'Tab' && panelRef.current) {
-        const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-          'button, input, [tabindex]:not([tabindex="-1"])',
-        );
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
 
   function isAmountValid(): boolean {
     if (!amount) return false;
@@ -99,86 +76,76 @@ export function TransactionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-scrim/50"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="transaction-modal-title"
-        className="relative mx-4 w-full max-w-md rounded-lg border border-cream-mid bg-surface p-6 shadow-xl"
-      >
-        <h2
-          id="transaction-modal-title"
-          className="mb-4 font-display text-xl text-bark-dark"
-        >
-          Add transaction — {formattedDate}
-        </h2>
+    <Sheet
+      isOpen={isOpen}
+      onClose={onClose}
+      labelledBy="transaction-modal-title"
+      initialFocusRef={descriptionRef}
+      className="p-6"
+    >
+      <h2 id="transaction-modal-title" className="mb-4 font-display text-xl text-bark-dark">
+        Add transaction — {formattedDate}
+      </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="modal-description"
-              className="mb-1 block text-[13px] font-medium text-charcoal"
-            >
-              Description
-            </label>
-            <input
-              ref={descriptionRef}
-              id="modal-description"
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={255}
-              placeholder="e.g. Grocery run"
-              className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="modal-amount"
-              className="mb-1 block text-[13px] font-medium text-charcoal"
-            >
-              Amount
-            </label>
-            <AmountField
-              id="modal-amount"
-              value={amount}
-              onChange={setAmount}
-            />
-          </div>
-
-          <SegmentedControl
-            options={DIRECTION_OPTIONS}
-            value={direction}
-            onChange={setDirection}
-            legend="Transaction direction"
-            name="modal-direction"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label
+            htmlFor="modal-description"
+            className="mb-1 block text-[13px] font-medium text-charcoal"
+          >
+            Description
+          </label>
+          <input
+            ref={descriptionRef}
+            id="modal-description"
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={255}
+            placeholder="e.g. Grocery run"
+            className="hit-target w-full rounded-md border border-cream-mid bg-cream px-3.5 py-[11px] text-[15px] text-charcoal placeholder:text-warm-gray focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           />
+        </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="hit-target rounded-full border border-cream-mid bg-surface px-4 py-2 text-sm text-stone transition-colors duration-150 hover:bg-cream-mid focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!description.trim() || !isAmountValid()}
-              className="hit-target rounded-full bg-copper px-4 py-2 text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-            >
-              Add transaction
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div>
+          <label
+            htmlFor="modal-amount"
+            className="mb-1 block text-[13px] font-medium text-charcoal"
+          >
+            Amount
+          </label>
+          <AmountField
+            id="modal-amount"
+            value={amount}
+            onChange={setAmount}
+          />
+        </div>
+
+        <SegmentedControl
+          options={DIRECTION_OPTIONS}
+          value={direction}
+          onChange={setDirection}
+          legend="Transaction direction"
+          name="modal-direction"
+        />
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="hit-target rounded-full border border-cream-mid bg-surface px-4 py-2 text-sm text-stone transition-colors duration-150 hover:bg-cream-mid focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={!description.trim() || !isAmountValid()}
+            className="hit-target rounded-full bg-copper px-4 py-2 text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          >
+            Add transaction
+          </button>
+        </div>
+      </form>
+    </Sheet>
   );
 }

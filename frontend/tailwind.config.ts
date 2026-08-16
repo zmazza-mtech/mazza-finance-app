@@ -100,6 +100,17 @@ const config: Config = {
         'ease-out': 'cubic-bezier(.16,1,.3,1)',
         'ease-spring': 'cubic-bezier(.34,1.56,.64,1)',
       },
+      // The phone sheet's entrance. Applied through `motion-safe:` so that
+      // `prefers-reduced-motion: reduce` gets the sheet with no travel.
+      keyframes: {
+        'sheet-up': {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'sheet-up': 'sheet-up 300ms cubic-bezier(.16,1,.3,1)',
+      },
       transitionDuration: {
         150: '150ms',
         300: '300ms',
