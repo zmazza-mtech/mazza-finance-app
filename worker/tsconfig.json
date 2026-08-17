@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      // The CPU spike imports forecast code from ../backend, whose own
+      // node_modules are not installed here; resolve decimal.js locally.
+      "decimal.js": ["./node_modules/decimal.js"]
+    }
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"],
+  // The fixture generator is a plain-Node script (node: builtins), validated
+  // by running it — not part of the Workers typecheck surface.
+  "exclude": ["tests/fixtures/generate-crypto-fixtures.ts"]
+}
