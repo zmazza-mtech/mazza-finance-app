@@ -3,6 +3,32 @@
 Date: 2026-08-17
 Status: approved by owner 2026-08-17
 
+## State as of 2026-08-17
+
+Already on this branch (`worker/` package, all tests green):
+
+- Hono entry (`worker/src/index.ts`) serving the `{ data, error }` envelope
+  at `/api/v1/health`; wrangler config with D1 + static-assets bindings
+  (`database_id` is a placeholder until `wrangler d1 create mazza-finance`).
+- Tenancy-ready Drizzle sqlite schema (`worker/src/db/schema.ts`) and
+  generated migration `worker/migrations/0000_*.sql` — 11 tables, every
+  financial table carrying `household_id`.
+- Web Crypto port of `lib/crypto.ts` (`worker/src/lib/crypto.ts`),
+  fixture-verified against the Node implementation in both directions of the
+  wire format. Note: the port is async where the Node version was sync.
+- `@cloudflare/vitest-pool-workers` suite (`npm test` in `worker/`):
+  health + D1 smoke, crypto cross-fixtures, and the decision 9 CPU gate.
+- Decision 9 measured: unoptimized forecast ≈ 106ms avg — see decision 9
+  for the consequence (Phase 1 performance pass). Measurement caveat baked
+  into the bench: workerd pins `performance.now()` during synchronous work,
+  so the bench times with `Date.now()`.
+- Tooling facts learned scaffolding: `@cloudflare/workers-types` is on a v5
+  series (wrangler 4.x peer-depends on it); the newest supported
+  `compatibility_date` for the installed runtime was `2025-09-06`.
+
+Everything else in the phase list below is not started. Work is tracked in
+epic #63; issue #62 is closed as obsoleted.
+
 ## Purpose
 
 The app was built as a self-hosted home-LAN tool: Docker Compose on a home
