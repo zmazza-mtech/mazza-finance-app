@@ -108,7 +108,7 @@ dev), Postgres, the home server, Express, `readSecret()`. Local dev is
 | 1 | Runtime | Workers-native: Hono + D1 (owner-confirmed) | Matches the owner's fleet, truly $0, best scaling story. One-time port of 8 thin routers with the existing test suite as safety net. |
 | 2 | Serving topology | Single Worker: static assets + Hono API, same origin | Workers static assets is Cloudflare's recommended new-project path; same origin kills CORS/split-CSP complexity and is one `wrangler deploy`. |
 | 3 | Money in D1 | TEXT decimal strings; ALL arithmetic in decimal.js; SQL arithmetic on money banned | Preserves the epic #1 invariant. The one `SUM` in reports is rewritten as decimal.js summation in the service layer. New invariant: "no SQL aggregation/arithmetic on amount columns — fetch and sum with decimal.js." |
-| 4 | Auth | **WorkOS AuthKit** — decided 2026-08-18. Passkey primary (Face ID), email code fallback; social available but **not** the primary path on the installed PWA, see below. Clerk was chosen originally on the belief that passkeys were free; they cost $25/mo. WorkOS is free to 1M MAU with passkeys, social, MFA and enterprise SSO included — which also gives Phase 5 an upgrade path that costs nothing until it is needed. Integration facts, verified 2026-08-18: JWKS at `https://api.workos.com/sso/jwks/<clientId>`, `iss` is `https://api.workos.com/`, **no `aud` claim** (the client binding is the per-client key set), and `email` is **not** in the default claim set — it needs a JWT template. | Face ID is a hard requirement; Cloudflare Access is email-OTP-only. Clerk verifies JWTs statelessly in Hono middleware; free to 10k MAU. Bearer-token API = future Swift/Capacitor ready. Redirect-based providers can strand sessions in iOS standalone PWA context — hence none configured. |
+| 4 | Auth | **Auth0 (Okta)** — decided 2026-08-18. Free to **25,000 MAU** with passkeys and unlimited social connections included. Chosen over WorkOS (1M MAU free) on maturity rather than headroom: this guards the household's money, 25k is five orders of magnitude beyond need, and Auth0 has the larger body of documentation and prior art. Clerk was the original choice, on the mistaken belief that passkeys were free; they are $25/mo. Passkey primary (Face ID), email-code fallback, social on desktop only until #81 clears it on the installed PWA. Token facts verified 2026-08-18: `iss` is `https://tenant.auth0.com/` **with a trailing slash**, `aud` is an **array**, RS256, and the access token carries **no email** — it needs a namespaced custom claim via an Action. |
 | 5 | Tenancy | Household model, in the schema from migration #1; queries written scoped from day one | households / users (Clerk ID, JIT-provisioned) / household_memberships (owner\|member) / household_settings / user_settings / simplefin_connections. During the port, household resolution is a constant (the Mazza household); Phase 4 swaps in JWT-membership resolution. No retrofit pass later. |
 | 6 | Isolation upgrade path | App-level scoping now; D1-per-household noted as the future hard-isolation option | SQLite has no RLS; per-tenant DBs (D1 supports thousands) is the Cloudflare-idiomatic stronger answer if SaaS gets real. Not built now. |
 | 7 | SimpleFIN token | Encrypted D1 column (AES-256-GCM via Web Crypto, same nonce:ciphertext:tag format), single master key in Wrangler secrets, `key_version` column | One KEK outside the DB covers the DB-exfiltration threat; per-tenant DEK/KMS is overkill below ~1k tenants. |
@@ -226,48 +226,139 @@ D1-per-household isolation if warranted, Capacitor spike if native matters.
    | Clerk Pro | yes | $25/mo | no |
    | Clerk Hobby | no | $0 | no — loses Face ID |
 
-   **Resolved 2026-08-18: WorkOS AuthKit.** Free to 1M MAU, passkeys and
-   social included.
+   **Resolved 2026-08-18: Auth0.**
 
-   *Correction to an earlier note here:* enterprise SSO is **not** free — it is
-   **$125/mo per connection**, discounting to $50 at volume. The pricing page
-   lists it among AuthKit's free-tier features while pricing connections
-   separately, which is genuinely ambiguous; treat SSO as paid until proven
-   otherwise. It is irrelevant to this household and only matters if Phase 5
-   ever sells to a company with an IdP.
+   | | free MAU | passkeys | social | first paid tier |
+   |---|---|---|---|---|
+   | **Auth0 (Okta)** | **25,000** | yes | unlimited | $35/mo |
+   | WorkOS AuthKit | 1,000,000 | yes | yes | $2,500/mo per extra 1M |
+   | Clerk | 50k MRU | **no — $25/mo** | yes | $25/mo |
 
-   Also priced, and worth knowing before assuming $0: a **custom auth domain
-   is $99/mo**. The default `api.workos.com` issuer is free, so the $0 target
-   holds only while sign-in is willing to live on WorkOS's domain.
+   Chosen on **maturity over headroom**. Both Auth0 and WorkOS are free,
+   secure and include passkeys; 25,000 MAU is five orders of magnitude past a
+   two-person household, so the extra ceiling buys nothing here. What does buy
+   something is the larger body of documentation and prior art behind the
+   thing guarding the household's money.
 
-   Two integration facts found while wiring it, either of which would have
-   rejected every real token:
+   **Three token facts, each of which would have failed in production**, and
+   none of which a suite that mints its own tokens could catch:
 
-   - **No `aud` claim.** `AUTH_AUDIENCE` is therefore optional — enforced when
-     set, skipped when not. Safe here only because the JWKS is per client
-     (`/sso/jwks/<clientId>`), so a token minted for another application is
-     signed by a key this Worker never fetches. The binding is in the key
-     rather than in a claim.
-   - **No `email` claim by default.** It comes from a JWT template. Identity
-     is `sub` regardless, so an absent email is a display gap rather than an
-     authentication failure — but the template must be configured before
-     go-live or every user provisions with a blank address.
+   - **`iss` ends in a slash** — `https://tenant.auth0.com/`. The derived JWKS
+     URL doubled it. Fixed.
+   - **`aud` is an array** when the token also grants `/userinfo`. The
+     verifier already handled arrays; there is now a test saying so.
+   - **No `email` in the access token.** Auth0's docs: it "does not contain
+     any information about the user except for the user ID". It arrives as a
+     **namespaced** custom claim via an Action —
+     `https://mazza.finance/email` — so a plain `email` lookup finds nothing
+     and every user provisions blank, silently. Configured through
+     `AUTH_EMAIL_CLAIM`.
 
-   Configuration is `AUTH_ISSUER=https://api.workos.com/` and
-   `AUTH_JWKS_URL=https://api.workos.com/sso/jwks/<clientId>`.
+   Configuration:
 
-   **Social providers, and the PWA caveat.** AuthKit includes them free and
-   they are welcome on desktop. They are redirect-based, and an OAuth redirect
-   in an iOS standalone PWA is a documented way to lose a session: iOS opens
-   authentication in a separate Safari context and the user does not
-   reliably land back inside the installed app. That is the original reason
-   this decision said "no OAuth redirects", and it still holds. Passkey stays
-   primary on the phone; social must pass #81's on-device QA before being
-   offered as a sign-in path there.
-3. ~~D1 free-tier limits — verify row-read/write daily caps at Phase 1 start.~~
-   **Answered 2026-08-17 (#75). See "D1 free-tier headroom" below.** The row
-   caps are not the constraint; two other free-tier limits are, and one of
-   them contradicts an assumption this spec made.
+   ```
+   AUTH_ISSUER       = https://<tenant>.auth0.com/
+   AUTH_AUDIENCE     = <the API identifier registered in Auth0>
+   AUTH_EMAIL_CLAIM  = https://mazza.finance/email
+   ```
+
+   `AUTH_JWKS_URL` is unnecessary — the derived
+   `https://<tenant>.auth0.com/.well-known/jwks.json` is correct now the
+   slash is handled.
+
+   **Before go-live:** register the API in Auth0 to get an audience
+   identifier, and add an Action emitting the namespaced email claim.
+   Without the second, every user provisions with a blank address.
+
+   **A custom auth domain is paid on Auth0**, as it is on WorkOS. Sign-in
+   lives on `<tenant>.auth0.com` unless that changes, which is fine for a
+   household app and worth knowing if it ever wears a brand.
+
+   **Social providers, and the PWA caveat.** Auth0 includes unlimited social
+   connections free and they are welcome on desktop. They are redirect-based,
+   and an OAuth redirect in an iOS standalone PWA is a documented way to lose
+   a session: iOS opens authentication in a separate Safari context and the
+   user does not reliably land back inside the installed app. That is the
+   original reason this decision said "no OAuth redirects", and it still
+   holds. Passkey stays primary on the phone; social must pass #81's
+   on-device QA before being offered as a sign-in path there.
+
+## Forecast CPU: what the limit is, and what is left to optimise
+
+Measured 2026-08-18, answering #105 and the question behind it.
+
+### The limit
+
+| plan | CPU per request |
+|---|---|
+| Free | **10 ms** |
+| Paid ($5/mo) | 30 s default, configurable to 5 min |
+
+**Waiting on `fetch()`, KV or D1 does not count** — only executing code. So D1
+latency is free, the benchmark measures the right thing, and `GET /forecast`
+is the only endpoint anywhere near the limit. Exceeding it is Error 1102 and a
+dead request, not a slow one.
+
+10ms is Cloudflare's number, not a target this project chose, and nothing
+raises it short of the paid plan.
+
+### The pipeline is linear, measured not argued
+
+`worker/tests/forecast-scaling.spec.ts` grows the window 8x with data density
+held constant:
+
+```
+113d = 1ms    226d = 2ms    452d = 4ms    904d = 7ms
+size x8, time x7        (quadratic would be x64)
+```
+
+**There is no complexity win left.** The two quadratics #67 removed were the
+whole of it, and what remains is the irreducible work of touching each day and
+each transaction once. Three levers remain, none of them algorithmic:
+
+### 1. Reduce n — the largest and simplest
+
+The window is 226 days: three months either side of the month on screen. The
+calendar displays **one** month. That is roughly 7x more data than is shown,
+carried for scroll-ahead. Halving the window roughly halves the CPU, and the
+seed-balance back-calculation stays correct because it derives from
+`lastBalance` minus the transactions in the window.
+
+### 2. Do not recompute what has not changed
+
+The forecast is deterministic given account data, and that data changes at
+most 24 times a day (a sync) plus manual edits. Caching the computed days
+against a data version — in KV, or a D1 column — makes a repeat page load
+cost approximately zero CPU. This is the largest win available and the one
+that scales with usage rather than with data.
+
+### 3. The constant factor is decimal.js — 8x, and exactly
+
+Measured at forecast volume, 2,000 additions:
+
+```
+decimal.js       0.445 ms
+integer cents    0.055 ms      8x
+both totals      -119380.00    identical
+```
+
+Integer cents is **exact** for 2-decimal money — every amount is a whole
+number of cents, and JS integers are exact to 2^53, which is $90 trillion. It
+is not a precision compromise; it is the same answer 8x faster.
+
+It would, however, change an invariant this project has held since epic #1,
+and the matcher's percentage tolerance (`amount x 0.10`) needs a defined
+rounding rule where addition does not. **Not proposed — recorded.** If #105
+comes back over budget, this is the third lever and it is worth more than it
+sounds; if it comes back under, decimal.js stays for the readability.
+
+### The honest summary
+
+Optimisation can very likely get this inside 10ms — window, caching and
+integer cents are 2x, ~infinite and 8x respectively, against a gap that is at
+worst 1.4x on the slowest machine measured. But **$5/mo buys 30 seconds**,
+which is three orders of magnitude of headroom and no further thought. The
+engineering exists; whether it is worth doing is a $5 question.
 
 ## D1 free-tier headroom
 
