@@ -198,14 +198,32 @@ export function computeForecast(
       .map((t) => ({ ...t, source: 'manual' as const })),
   ];
 
+  /*
+   * Bucket by date once rather than filtering the whole set per day.
+   *
+   * The walk below visits 226 days on a typical window and the merged set runs
+   * to four figures, so the filter it replaced was quadratic — and it is the
+   * single largest cost in the pipeline under the Workers CPU budget (#67).
+   * Days outside the window are simply never read, which is the same thing the
+   * filter accomplished by never matching them.
+   */
+  const byDate = new Map<string, ForecastTransaction[]>();
+  for (const t of allTransactions) {
+    const bucket = byDate.get(t.date);
+    if (bucket) bucket.push(t);
+    else byDate.set(t.date, [t]);
+  }
+
   // Walk day by day
   let runningBalance = new Decimal(seedBalance);
   const days = datesInRange(startDate, endDate);
 
   return days.map((date) => {
-    const dayTransactions = allTransactions
-      .filter((t) => t.date === date)
-      .sort((a, b) => a.id.localeCompare(b.id));
+    // Sorted in place: each date is visited exactly once, and the bucket is
+    // handed straight to the caller as that day's transactions.
+    const dayTransactions = (byDate.get(date) ?? []).sort((a, b) =>
+      a.id.localeCompare(b.id),
+    );
 
     const dailyNet = dayTransactions.reduce(
       (sum, t) => sum.plus(new Decimal(t.amount)),

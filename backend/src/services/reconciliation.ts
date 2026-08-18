@@ -166,18 +166,19 @@ export interface InstanceMatchResult {
 export const AMOUNT_TOLERANCE_FLOOR = '5.00';
 export const AMOUNT_TOLERANCE_RATE = '0.10';
 
-/** Whole days between two `YYYY-MM-DD` dates, ignoring order. */
-function dayGap(a: string, b: string): number {
-  const [ay, am, ad] = a.split('-').map(Number) as [number, number, number];
-  const [by, bm, bd] = b.split('-').map(Number) as [number, number, number];
-  const ms = Date.UTC(ay, am - 1, ad) - Date.UTC(by, bm - 1, bd);
-  return Math.abs(ms) / 86_400_000;
+const MS_PER_DAY = 86_400_000;
+
+/** The date `offset` whole days from `date`, as `YYYY-MM-DD`. */
+function shiftDate(date: string, offset: number): string {
+  const [y, m, d] = date.split('-').map(Number) as [number, number, number];
+  return new Date(Date.UTC(y, m - 1, d) + offset * MS_PER_DAY).toISOString().slice(0, 10);
 }
 
-function toleranceFor(amount: string): Decimal {
-  const rate = new Decimal(amount).abs().times(AMOUNT_TOLERANCE_RATE);
-  const floor = new Decimal(AMOUNT_TOLERANCE_FLOOR);
-  return Decimal.max(floor, rate);
+/** Constructed once. It is the same value on every call and is never mutated. */
+const TOLERANCE_FLOOR = new Decimal(AMOUNT_TOLERANCE_FLOOR);
+
+function toleranceFor(amount: Decimal): Decimal {
+  return Decimal.max(TOLERANCE_FLOOR, amount.abs().times(AMOUNT_TOLERANCE_RATE));
 }
 
 /**
@@ -204,24 +205,62 @@ export function matchInstancesToActuals(
     dateDiff: number;
   }
 
+  /*
+   * Actuals indexed by the two things that gate a pair: the account, and the
+   * day. Only three days can ever satisfy the +/-1 window, so an instance
+   * visits those three buckets instead of every actual in the set.
+   *
+   * The candidate set this produces is identical to the one the full scan
+   * produced -- the index removes only pairs the `continue` guards would have
+   * rejected anyway -- so the global sort below still decides the pairing, and
+   * the result stays independent of the order the inputs arrive in (#67).
+   */
+  const actualsByDay = new Map<string, number[]>();
+  for (let a = 0; a < actuals.length; a++) {
+    const act = actuals[a]!;
+    const key = `${act.accountId}|${act.date}`;
+    const bucket = actualsByDay.get(key);
+    if (bucket) bucket.push(a);
+    else actualsByDay.set(key, [a]);
+  }
+
+  /** One `Decimal` per actual, built on first use: many instances read the same actual. */
+  const actualAmounts = new Array<Decimal | undefined>(actuals.length);
+  function amountOf(index: number): Decimal {
+    const cached = actualAmounts[index];
+    if (cached) return cached;
+    const built = new Decimal(actuals[index]!.amount);
+    actualAmounts[index] = built;
+    return built;
+  }
+
   const candidates: Candidate[] = [];
 
   for (let i = 0; i < instances.length; i++) {
     const inst = instances[i]!;
-    const tolerance = toleranceFor(inst.amount);
+    const instAmount = new Decimal(inst.amount);
+    const tolerance = toleranceFor(instAmount);
 
-    for (let a = 0; a < actuals.length; a++) {
-      const act = actuals[a]!;
-      if (act.accountId !== inst.accountId) continue;
+    // Ordered nearest-day-first only for readability; the sort below is what
+    // actually decides, and it reads `dateDiff` rather than arrival order.
+    const windows: [number, string[]][] = [
+      [0, [inst.date]],
+      [1, [shiftDate(inst.date, -1), shiftDate(inst.date, 1)]],
+    ];
 
-      const dateDiff = dayGap(inst.date, act.date);
-      if (dateDiff > 1) continue;
+    for (const [dateDiff, dates] of windows) {
+      for (const date of dates) {
+        const bucket = actualsByDay.get(`${inst.accountId}|${date}`);
+        if (!bucket) continue;
 
-      // Signed, so a deposit never satisfies a bill of the same magnitude.
-      const amountDiff = new Decimal(act.amount).minus(inst.amount).abs();
-      if (amountDiff.greaterThan(tolerance)) continue;
+        for (const a of bucket) {
+          // Signed, so a deposit never satisfies a bill of the same magnitude.
+          const amountDiff = amountOf(a).minus(instAmount).abs();
+          if (amountDiff.greaterThan(tolerance)) continue;
 
-      candidates.push({ instanceIdx: i, actualIdx: a, amountDiff, dateDiff });
+          candidates.push({ instanceIdx: i, actualIdx: a, amountDiff, dateDiff });
+        }
+      }
     }
   }
 

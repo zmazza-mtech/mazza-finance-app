@@ -1,0 +1,6479 @@
+{
+  "days": [
+    {
+      "date": "2026-05-01",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "4210.55"
+    },
+    {
+      "date": "2026-05-02",
+      "transactions": [
+        {
+          "id": "recurring_series-15_2026-05-02",
+          "date": "2026-05-02",
+          "description": "Recurring 15",
+          "amount": "-140.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-134",
+          "date": "2026-05-02",
+          "description": "Posted transaction 134",
+          "amount": "-14.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-179",
+          "date": "2026-05-02",
+          "description": "Posted transaction 179",
+          "amount": "-59.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-224",
+          "date": "2026-05-02",
+          "description": "Posted transaction 224",
+          "amount": "-104.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-269",
+          "date": "2026-05-02",
+          "description": "Posted transaction 269",
+          "amount": "-29.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-314",
+          "date": "2026-05-02",
+          "description": "Posted transaction 314",
+          "amount": "-74.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-359",
+          "date": "2026-05-02",
+          "description": "Posted transaction 359",
+          "amount": "-119.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-44",
+          "date": "2026-05-02",
+          "description": "Posted transaction 44",
+          "amount": "-44.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-89",
+          "date": "2026-05-02",
+          "description": "Posted transaction 89",
+          "amount": "-89.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-679.92",
+      "runningBalance": "3530.63"
+    },
+    {
+      "date": "2026-05-03",
+      "transactions": [
+        {
+          "id": "txn-133",
+          "date": "2026-05-03",
+          "description": "Posted transaction 133",
+          "amount": "-13.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-178",
+          "date": "2026-05-03",
+          "description": "Posted transaction 178",
+          "amount": "-58.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-223",
+          "date": "2026-05-03",
+          "description": "Posted transaction 223",
+          "amount": "-103.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-268",
+          "date": "2026-05-03",
+          "description": "Posted transaction 268",
+          "amount": "-28.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-313",
+          "date": "2026-05-03",
+          "description": "Posted transaction 313",
+          "amount": "-73.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-358",
+          "date": "2026-05-03",
+          "description": "Posted transaction 358",
+          "amount": "-118.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-43",
+          "date": "2026-05-03",
+          "description": "Posted transaction 43",
+          "amount": "-43.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-88",
+          "date": "2026-05-03",
+          "description": "Posted transaction 88",
+          "amount": "-88.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-531.92",
+      "runningBalance": "2998.71"
+    },
+    {
+      "date": "2026-05-04",
+      "transactions": [
+        {
+          "id": "txn-132",
+          "date": "2026-05-04",
+          "description": "Posted transaction 132",
+          "amount": "-12.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-177",
+          "date": "2026-05-04",
+          "description": "Posted transaction 177",
+          "amount": "-57.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-222",
+          "date": "2026-05-04",
+          "description": "Posted transaction 222",
+          "amount": "-102.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-267",
+          "date": "2026-05-04",
+          "description": "Posted transaction 267",
+          "amount": "-27.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-312",
+          "date": "2026-05-04",
+          "description": "Posted transaction 312",
+          "amount": "-72.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-357",
+          "date": "2026-05-04",
+          "description": "Posted transaction 357",
+          "amount": "-117.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-42",
+          "date": "2026-05-04",
+          "description": "Posted transaction 42",
+          "amount": "-42.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-87",
+          "date": "2026-05-04",
+          "description": "Posted transaction 87",
+          "amount": "-87.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-523.92",
+      "runningBalance": "2474.79"
+    },
+    {
+      "date": "2026-05-05",
+      "transactions": [
+        {
+          "id": "txn-131",
+          "date": "2026-05-05",
+          "description": "Posted transaction 131",
+          "amount": "-11.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-176",
+          "date": "2026-05-05",
+          "description": "Posted transaction 176",
+          "amount": "-56.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-221",
+          "date": "2026-05-05",
+          "description": "Posted transaction 221",
+          "amount": "-101.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-266",
+          "date": "2026-05-05",
+          "description": "Posted transaction 266",
+          "amount": "-26.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-311",
+          "date": "2026-05-05",
+          "description": "Posted transaction 311",
+          "amount": "-71.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-356",
+          "date": "2026-05-05",
+          "description": "Posted transaction 356",
+          "amount": "-116.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-41",
+          "date": "2026-05-05",
+          "description": "Posted transaction 41",
+          "amount": "-41.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-86",
+          "date": "2026-05-05",
+          "description": "Posted transaction 86",
+          "amount": "-86.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-515.92",
+      "runningBalance": "1958.87"
+    },
+    {
+      "date": "2026-05-06",
+      "transactions": [
+        {
+          "id": "txn-130",
+          "date": "2026-05-06",
+          "description": "Posted transaction 130",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-130",
+          "date": "2026-05-06",
+          "description": "Posted transaction 130",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-175",
+          "date": "2026-05-06",
+          "description": "Posted transaction 175",
+          "amount": "-55.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-220",
+          "date": "2026-05-06",
+          "description": "Posted transaction 220",
+          "amount": "-100.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-220",
+          "date": "2026-05-06",
+          "description": "Posted transaction 220",
+          "amount": "-100.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-265",
+          "date": "2026-05-06",
+          "description": "Posted transaction 265",
+          "amount": "-25.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-310",
+          "date": "2026-05-06",
+          "description": "Posted transaction 310",
+          "amount": "-70.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-310",
+          "date": "2026-05-06",
+          "description": "Posted transaction 310",
+          "amount": "-70.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-355",
+          "date": "2026-05-06",
+          "description": "Posted transaction 355",
+          "amount": "-115.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-40",
+          "date": "2026-05-06",
+          "description": "Posted transaction 40",
+          "amount": "-40.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-40",
+          "date": "2026-05-06",
+          "description": "Posted transaction 40",
+          "amount": "-40.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-85",
+          "date": "2026-05-06",
+          "description": "Posted transaction 85",
+          "amount": "-85.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-731.88",
+      "runningBalance": "1226.99"
+    },
+    {
+      "date": "2026-05-07",
+      "transactions": [
+        {
+          "id": "txn-129",
+          "date": "2026-05-07",
+          "description": "Posted transaction 129",
+          "amount": "-9.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-174",
+          "date": "2026-05-07",
+          "description": "Posted transaction 174",
+          "amount": "-54.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-219",
+          "date": "2026-05-07",
+          "description": "Posted transaction 219",
+          "amount": "-99.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-264",
+          "date": "2026-05-07",
+          "description": "Posted transaction 264",
+          "amount": "-24.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-309",
+          "date": "2026-05-07",
+          "description": "Posted transaction 309",
+          "amount": "-69.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-354",
+          "date": "2026-05-07",
+          "description": "Posted transaction 354",
+          "amount": "-114.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-39",
+          "date": "2026-05-07",
+          "description": "Posted transaction 39",
+          "amount": "-39.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-399",
+          "date": "2026-05-07",
+          "description": "Posted transaction 399",
+          "amount": "-39.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-84",
+          "date": "2026-05-07",
+          "description": "Posted transaction 84",
+          "amount": "-84.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-539.91",
+      "runningBalance": "687.08"
+    },
+    {
+      "date": "2026-05-08",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-05-08",
+          "date": "2026-05-08",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-128",
+          "date": "2026-05-08",
+          "description": "Posted transaction 128",
+          "amount": "-8.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-173",
+          "date": "2026-05-08",
+          "description": "Posted transaction 173",
+          "amount": "-53.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-218",
+          "date": "2026-05-08",
+          "description": "Posted transaction 218",
+          "amount": "-98.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-263",
+          "date": "2026-05-08",
+          "description": "Posted transaction 263",
+          "amount": "-23.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-308",
+          "date": "2026-05-08",
+          "description": "Posted transaction 308",
+          "amount": "-68.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-353",
+          "date": "2026-05-08",
+          "description": "Posted transaction 353",
+          "amount": "-113.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-38",
+          "date": "2026-05-08",
+          "description": "Posted transaction 38",
+          "amount": "-38.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-398",
+          "date": "2026-05-08",
+          "description": "Posted transaction 398",
+          "amount": "-38.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-83",
+          "date": "2026-05-08",
+          "description": "Posted transaction 83",
+          "amount": "-83.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-663.91",
+      "runningBalance": "23.17"
+    },
+    {
+      "date": "2026-05-09",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-05-09",
+          "date": "2026-05-09",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-127",
+          "date": "2026-05-09",
+          "description": "Posted transaction 127",
+          "amount": "-7.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-172",
+          "date": "2026-05-09",
+          "description": "Posted transaction 172",
+          "amount": "-52.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-217",
+          "date": "2026-05-09",
+          "description": "Posted transaction 217",
+          "amount": "-97.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-262",
+          "date": "2026-05-09",
+          "description": "Posted transaction 262",
+          "amount": "-22.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-307",
+          "date": "2026-05-09",
+          "description": "Posted transaction 307",
+          "amount": "-67.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-352",
+          "date": "2026-05-09",
+          "description": "Posted transaction 352",
+          "amount": "-112.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-37",
+          "date": "2026-05-09",
+          "description": "Posted transaction 37",
+          "amount": "-37.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-397",
+          "date": "2026-05-09",
+          "description": "Posted transaction 397",
+          "amount": "-37.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-82",
+          "date": "2026-05-09",
+          "description": "Posted transaction 82",
+          "amount": "-82.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1978.09",
+      "runningBalance": "2001.26"
+    },
+    {
+      "date": "2026-05-10",
+      "transactions": [
+        {
+          "id": "txn-126",
+          "date": "2026-05-10",
+          "description": "Posted transaction 126",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-171",
+          "date": "2026-05-10",
+          "description": "Posted transaction 171",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-216",
+          "date": "2026-05-10",
+          "description": "Posted transaction 216",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-261",
+          "date": "2026-05-10",
+          "description": "Posted transaction 261",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-306",
+          "date": "2026-05-10",
+          "description": "Posted transaction 306",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-351",
+          "date": "2026-05-10",
+          "description": "Posted transaction 351",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-36",
+          "date": "2026-05-10",
+          "description": "Posted transaction 36",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-396",
+          "date": "2026-05-10",
+          "description": "Posted transaction 396",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-81",
+          "date": "2026-05-10",
+          "description": "Posted transaction 81",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "9.00",
+      "runningBalance": "2010.26"
+    },
+    {
+      "date": "2026-05-11",
+      "transactions": [
+        {
+          "id": "txn-125",
+          "date": "2026-05-11",
+          "description": "Posted transaction 125",
+          "amount": "-5.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-170",
+          "date": "2026-05-11",
+          "description": "Posted transaction 170",
+          "amount": "-50.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-170",
+          "date": "2026-05-11",
+          "description": "Posted transaction 170",
+          "amount": "-50.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-215",
+          "date": "2026-05-11",
+          "description": "Posted transaction 215",
+          "amount": "-95.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-260",
+          "date": "2026-05-11",
+          "description": "Posted transaction 260",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-260",
+          "date": "2026-05-11",
+          "description": "Posted transaction 260",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-305",
+          "date": "2026-05-11",
+          "description": "Posted transaction 305",
+          "amount": "-65.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-35",
+          "date": "2026-05-11",
+          "description": "Posted transaction 35",
+          "amount": "-35.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-350",
+          "date": "2026-05-11",
+          "description": "Posted transaction 350",
+          "amount": "-110.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-350",
+          "date": "2026-05-11",
+          "description": "Posted transaction 350",
+          "amount": "-110.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-395",
+          "date": "2026-05-11",
+          "description": "Posted transaction 395",
+          "amount": "-35.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-80",
+          "date": "2026-05-11",
+          "description": "Posted transaction 80",
+          "amount": "-80.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-80",
+          "date": "2026-05-11",
+          "description": "Posted transaction 80",
+          "amount": "-80.99",
+          "type": "manual",
+          "source": "manual"
+        }
+      ],
+      "dailyNet": "-767.87",
+      "runningBalance": "1242.39"
+    },
+    {
+      "date": "2026-05-12",
+      "transactions": [
+        {
+          "id": "txn-124",
+          "date": "2026-05-12",
+          "description": "Posted transaction 124",
+          "amount": "-4.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-169",
+          "date": "2026-05-12",
+          "description": "Posted transaction 169",
+          "amount": "-49.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-214",
+          "date": "2026-05-12",
+          "description": "Posted transaction 214",
+          "amount": "-94.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-259",
+          "date": "2026-05-12",
+          "description": "Posted transaction 259",
+          "amount": "-19.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-304",
+          "date": "2026-05-12",
+          "description": "Posted transaction 304",
+          "amount": "-64.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-34",
+          "date": "2026-05-12",
+          "description": "Posted transaction 34",
+          "amount": "-34.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-349",
+          "date": "2026-05-12",
+          "description": "Posted transaction 349",
+          "amount": "-109.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-394",
+          "date": "2026-05-12",
+          "description": "Posted transaction 394",
+          "amount": "-34.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-79",
+          "date": "2026-05-12",
+          "description": "Posted transaction 79",
+          "amount": "-79.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-494.91",
+      "runningBalance": "747.48"
+    },
+    {
+      "date": "2026-05-13",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-05-13",
+          "date": "2026-05-13",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-123",
+          "date": "2026-05-13",
+          "description": "Posted transaction 123",
+          "amount": "-3.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-168",
+          "date": "2026-05-13",
+          "description": "Posted transaction 168",
+          "amount": "-48.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-213",
+          "date": "2026-05-13",
+          "description": "Posted transaction 213",
+          "amount": "-93.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-258",
+          "date": "2026-05-13",
+          "description": "Posted transaction 258",
+          "amount": "-18.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-303",
+          "date": "2026-05-13",
+          "description": "Posted transaction 303",
+          "amount": "-63.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-33",
+          "date": "2026-05-13",
+          "description": "Posted transaction 33",
+          "amount": "-33.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-348",
+          "date": "2026-05-13",
+          "description": "Posted transaction 348",
+          "amount": "-108.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-393",
+          "date": "2026-05-13",
+          "description": "Posted transaction 393",
+          "amount": "-33.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-78",
+          "date": "2026-05-13",
+          "description": "Posted transaction 78",
+          "amount": "-78.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "2014.09",
+      "runningBalance": "2761.57"
+    },
+    {
+      "date": "2026-05-14",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-05-14",
+          "date": "2026-05-14",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-122",
+          "date": "2026-05-14",
+          "description": "Posted transaction 122",
+          "amount": "-2.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-167",
+          "date": "2026-05-14",
+          "description": "Posted transaction 167",
+          "amount": "-47.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-212",
+          "date": "2026-05-14",
+          "description": "Posted transaction 212",
+          "amount": "-92.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-257",
+          "date": "2026-05-14",
+          "description": "Posted transaction 257",
+          "amount": "-17.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-302",
+          "date": "2026-05-14",
+          "description": "Posted transaction 302",
+          "amount": "-62.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-32",
+          "date": "2026-05-14",
+          "description": "Posted transaction 32",
+          "amount": "-32.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-347",
+          "date": "2026-05-14",
+          "description": "Posted transaction 347",
+          "amount": "-107.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-392",
+          "date": "2026-05-14",
+          "description": "Posted transaction 392",
+          "amount": "-32.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-77",
+          "date": "2026-05-14",
+          "description": "Posted transaction 77",
+          "amount": "-77.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-602.91",
+      "runningBalance": "2158.66"
+    },
+    {
+      "date": "2026-05-15",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-05-15",
+          "date": "2026-05-15",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-121",
+          "date": "2026-05-15",
+          "description": "Posted transaction 121",
+          "amount": "-1.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-166",
+          "date": "2026-05-15",
+          "description": "Posted transaction 166",
+          "amount": "-46.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-211",
+          "date": "2026-05-15",
+          "description": "Posted transaction 211",
+          "amount": "-91.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-256",
+          "date": "2026-05-15",
+          "description": "Posted transaction 256",
+          "amount": "-16.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-301",
+          "date": "2026-05-15",
+          "description": "Posted transaction 301",
+          "amount": "-61.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-31",
+          "date": "2026-05-15",
+          "description": "Posted transaction 31",
+          "amount": "-31.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-346",
+          "date": "2026-05-15",
+          "description": "Posted transaction 346",
+          "amount": "-106.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-391",
+          "date": "2026-05-15",
+          "description": "Posted transaction 391",
+          "amount": "-31.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-76",
+          "date": "2026-05-15",
+          "description": "Posted transaction 76",
+          "amount": "-76.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-600.91",
+      "runningBalance": "1557.75"
+    },
+    {
+      "date": "2026-05-16",
+      "transactions": [
+        {
+          "id": "txn-120",
+          "date": "2026-05-16",
+          "description": "Posted transaction 120",
+          "amount": "-0.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-120",
+          "date": "2026-05-16",
+          "description": "Posted transaction 120",
+          "amount": "-0.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-165",
+          "date": "2026-05-16",
+          "description": "Posted transaction 165",
+          "amount": "-45.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-210",
+          "date": "2026-05-16",
+          "description": "Posted transaction 210",
+          "amount": "-90.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-210",
+          "date": "2026-05-16",
+          "description": "Posted transaction 210",
+          "amount": "-90.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-255",
+          "date": "2026-05-16",
+          "description": "Posted transaction 255",
+          "amount": "-15.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-30",
+          "date": "2026-05-16",
+          "description": "Posted transaction 30",
+          "amount": "-30.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-30",
+          "date": "2026-05-16",
+          "description": "Posted transaction 30",
+          "amount": "-30.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-300",
+          "date": "2026-05-16",
+          "description": "Posted transaction 300",
+          "amount": "-60.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-300",
+          "date": "2026-05-16",
+          "description": "Posted transaction 300",
+          "amount": "-60.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-345",
+          "date": "2026-05-16",
+          "description": "Posted transaction 345",
+          "amount": "-105.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-390",
+          "date": "2026-05-16",
+          "description": "Posted transaction 390",
+          "amount": "-30.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-390",
+          "date": "2026-05-16",
+          "description": "Posted transaction 390",
+          "amount": "-30.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-75",
+          "date": "2026-05-16",
+          "description": "Posted transaction 75",
+          "amount": "-75.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-673.86",
+      "runningBalance": "883.89"
+    },
+    {
+      "date": "2026-05-17",
+      "transactions": [
+        {
+          "id": "txn-119",
+          "date": "2026-05-17",
+          "description": "Posted transaction 119",
+          "amount": "-119.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-164",
+          "date": "2026-05-17",
+          "description": "Posted transaction 164",
+          "amount": "-44.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-209",
+          "date": "2026-05-17",
+          "description": "Posted transaction 209",
+          "amount": "-89.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-254",
+          "date": "2026-05-17",
+          "description": "Posted transaction 254",
+          "amount": "-14.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-29",
+          "date": "2026-05-17",
+          "description": "Posted transaction 29",
+          "amount": "-29.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-299",
+          "date": "2026-05-17",
+          "description": "Posted transaction 299",
+          "amount": "-59.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-344",
+          "date": "2026-05-17",
+          "description": "Posted transaction 344",
+          "amount": "-104.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-389",
+          "date": "2026-05-17",
+          "description": "Posted transaction 389",
+          "amount": "-29.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-74",
+          "date": "2026-05-17",
+          "description": "Posted transaction 74",
+          "amount": "-74.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-569.91",
+      "runningBalance": "313.98"
+    },
+    {
+      "date": "2026-05-18",
+      "transactions": [
+        {
+          "id": "txn-118",
+          "date": "2026-05-18",
+          "description": "Posted transaction 118",
+          "amount": "-118.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-163",
+          "date": "2026-05-18",
+          "description": "Posted transaction 163",
+          "amount": "-43.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-208",
+          "date": "2026-05-18",
+          "description": "Posted transaction 208",
+          "amount": "-88.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-253",
+          "date": "2026-05-18",
+          "description": "Posted transaction 253",
+          "amount": "-13.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-28",
+          "date": "2026-05-18",
+          "description": "Posted transaction 28",
+          "amount": "-28.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-298",
+          "date": "2026-05-18",
+          "description": "Posted transaction 298",
+          "amount": "-58.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-343",
+          "date": "2026-05-18",
+          "description": "Posted transaction 343",
+          "amount": "-103.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-388",
+          "date": "2026-05-18",
+          "description": "Posted transaction 388",
+          "amount": "-28.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-73",
+          "date": "2026-05-18",
+          "description": "Posted transaction 73",
+          "amount": "-73.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-560.91",
+      "runningBalance": "-246.93"
+    },
+    {
+      "date": "2026-05-19",
+      "transactions": [
+        {
+          "id": "txn-117",
+          "date": "2026-05-19",
+          "description": "Posted transaction 117",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-162",
+          "date": "2026-05-19",
+          "description": "Posted transaction 162",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-207",
+          "date": "2026-05-19",
+          "description": "Posted transaction 207",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-252",
+          "date": "2026-05-19",
+          "description": "Posted transaction 252",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-27",
+          "date": "2026-05-19",
+          "description": "Posted transaction 27",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-297",
+          "date": "2026-05-19",
+          "description": "Posted transaction 297",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-342",
+          "date": "2026-05-19",
+          "description": "Posted transaction 342",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-387",
+          "date": "2026-05-19",
+          "description": "Posted transaction 387",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-72",
+          "date": "2026-05-19",
+          "description": "Posted transaction 72",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "9.00",
+      "runningBalance": "-237.93"
+    },
+    {
+      "date": "2026-05-20",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-05-20",
+          "date": "2026-05-20",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-116",
+          "date": "2026-05-20",
+          "description": "Posted transaction 116",
+          "amount": "-116.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-161",
+          "date": "2026-05-20",
+          "description": "Posted transaction 161",
+          "amount": "-41.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-206",
+          "date": "2026-05-20",
+          "description": "Posted transaction 206",
+          "amount": "-86.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-251",
+          "date": "2026-05-20",
+          "description": "Posted transaction 251",
+          "amount": "-11.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-26",
+          "date": "2026-05-20",
+          "description": "Posted transaction 26",
+          "amount": "-26.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-296",
+          "date": "2026-05-20",
+          "description": "Posted transaction 296",
+          "amount": "-56.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-341",
+          "date": "2026-05-20",
+          "description": "Posted transaction 341",
+          "amount": "-101.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-386",
+          "date": "2026-05-20",
+          "description": "Posted transaction 386",
+          "amount": "-26.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-71",
+          "date": "2026-05-20",
+          "description": "Posted transaction 71",
+          "amount": "-71.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1957.09",
+      "runningBalance": "1719.16"
+    },
+    {
+      "date": "2026-05-21",
+      "transactions": [
+        {
+          "id": "txn-115",
+          "date": "2026-05-21",
+          "description": "Posted transaction 115",
+          "amount": "-115.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-160",
+          "date": "2026-05-21",
+          "description": "Posted transaction 160",
+          "amount": "-40.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-160",
+          "date": "2026-05-21",
+          "description": "Posted transaction 160",
+          "amount": "-40.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-205",
+          "date": "2026-05-21",
+          "description": "Posted transaction 205",
+          "amount": "-85.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-25",
+          "date": "2026-05-21",
+          "description": "Posted transaction 25",
+          "amount": "-25.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-250",
+          "date": "2026-05-21",
+          "description": "Posted transaction 250",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-250",
+          "date": "2026-05-21",
+          "description": "Posted transaction 250",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-295",
+          "date": "2026-05-21",
+          "description": "Posted transaction 295",
+          "amount": "-55.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-340",
+          "date": "2026-05-21",
+          "description": "Posted transaction 340",
+          "amount": "-100.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-340",
+          "date": "2026-05-21",
+          "description": "Posted transaction 340",
+          "amount": "-100.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-385",
+          "date": "2026-05-21",
+          "description": "Posted transaction 385",
+          "amount": "-25.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-70",
+          "date": "2026-05-21",
+          "description": "Posted transaction 70",
+          "amount": "-70.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-70",
+          "date": "2026-05-21",
+          "description": "Posted transaction 70",
+          "amount": "-70.99",
+          "type": "manual",
+          "source": "manual"
+        }
+      ],
+      "dailyNet": "-757.87",
+      "runningBalance": "961.29"
+    },
+    {
+      "date": "2026-05-22",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-05-22",
+          "date": "2026-05-22",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-114",
+          "date": "2026-05-22",
+          "description": "Posted transaction 114",
+          "amount": "-114.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-159",
+          "date": "2026-05-22",
+          "description": "Posted transaction 159",
+          "amount": "-39.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-204",
+          "date": "2026-05-22",
+          "description": "Posted transaction 204",
+          "amount": "-84.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-24",
+          "date": "2026-05-22",
+          "description": "Posted transaction 24",
+          "amount": "-24.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-249",
+          "date": "2026-05-22",
+          "description": "Posted transaction 249",
+          "amount": "-9.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-294",
+          "date": "2026-05-22",
+          "description": "Posted transaction 294",
+          "amount": "-54.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-339",
+          "date": "2026-05-22",
+          "description": "Posted transaction 339",
+          "amount": "-99.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-384",
+          "date": "2026-05-22",
+          "description": "Posted transaction 384",
+          "amount": "-24.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-69",
+          "date": "2026-05-22",
+          "description": "Posted transaction 69",
+          "amount": "-69.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-657.91",
+      "runningBalance": "303.38"
+    },
+    {
+      "date": "2026-05-23",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-05-23",
+          "date": "2026-05-23",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-113",
+          "date": "2026-05-23",
+          "description": "Posted transaction 113",
+          "amount": "-113.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-158",
+          "date": "2026-05-23",
+          "description": "Posted transaction 158",
+          "amount": "-38.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-203",
+          "date": "2026-05-23",
+          "description": "Posted transaction 203",
+          "amount": "-83.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-23",
+          "date": "2026-05-23",
+          "description": "Posted transaction 23",
+          "amount": "-23.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-248",
+          "date": "2026-05-23",
+          "description": "Posted transaction 248",
+          "amount": "-8.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-293",
+          "date": "2026-05-23",
+          "description": "Posted transaction 293",
+          "amount": "-53.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-338",
+          "date": "2026-05-23",
+          "description": "Posted transaction 338",
+          "amount": "-98.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-383",
+          "date": "2026-05-23",
+          "description": "Posted transaction 383",
+          "amount": "-23.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-68",
+          "date": "2026-05-23",
+          "description": "Posted transaction 68",
+          "amount": "-68.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1984.09",
+      "runningBalance": "2287.47"
+    },
+    {
+      "date": "2026-05-24",
+      "transactions": [
+        {
+          "id": "txn-112",
+          "date": "2026-05-24",
+          "description": "Posted transaction 112",
+          "amount": "-112.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-157",
+          "date": "2026-05-24",
+          "description": "Posted transaction 157",
+          "amount": "-37.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-202",
+          "date": "2026-05-24",
+          "description": "Posted transaction 202",
+          "amount": "-82.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-22",
+          "date": "2026-05-24",
+          "description": "Posted transaction 22",
+          "amount": "-22.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-247",
+          "date": "2026-05-24",
+          "description": "Posted transaction 247",
+          "amount": "-7.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-292",
+          "date": "2026-05-24",
+          "description": "Posted transaction 292",
+          "amount": "-52.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-337",
+          "date": "2026-05-24",
+          "description": "Posted transaction 337",
+          "amount": "-97.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-382",
+          "date": "2026-05-24",
+          "description": "Posted transaction 382",
+          "amount": "-22.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-67",
+          "date": "2026-05-24",
+          "description": "Posted transaction 67",
+          "amount": "-67.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-506.91",
+      "runningBalance": "1780.56"
+    },
+    {
+      "date": "2026-05-25",
+      "transactions": [
+        {
+          "id": "txn-111",
+          "date": "2026-05-25",
+          "description": "Posted transaction 111",
+          "amount": "-111.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-156",
+          "date": "2026-05-25",
+          "description": "Posted transaction 156",
+          "amount": "-36.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-201",
+          "date": "2026-05-25",
+          "description": "Posted transaction 201",
+          "amount": "-81.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-21",
+          "date": "2026-05-25",
+          "description": "Posted transaction 21",
+          "amount": "-21.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-246",
+          "date": "2026-05-25",
+          "description": "Posted transaction 246",
+          "amount": "-6.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-291",
+          "date": "2026-05-25",
+          "description": "Posted transaction 291",
+          "amount": "-51.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-336",
+          "date": "2026-05-25",
+          "description": "Posted transaction 336",
+          "amount": "-96.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-381",
+          "date": "2026-05-25",
+          "description": "Posted transaction 381",
+          "amount": "-21.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-66",
+          "date": "2026-05-25",
+          "description": "Posted transaction 66",
+          "amount": "-66.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-497.91",
+      "runningBalance": "1282.65"
+    },
+    {
+      "date": "2026-05-26",
+      "transactions": [
+        {
+          "id": "txn-110",
+          "date": "2026-05-26",
+          "description": "Posted transaction 110",
+          "amount": "-110.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-110",
+          "date": "2026-05-26",
+          "description": "Posted transaction 110",
+          "amount": "-110.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-155",
+          "date": "2026-05-26",
+          "description": "Posted transaction 155",
+          "amount": "-35.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-20",
+          "date": "2026-05-26",
+          "description": "Posted transaction 20",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-20",
+          "date": "2026-05-26",
+          "description": "Posted transaction 20",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-200",
+          "date": "2026-05-26",
+          "description": "Posted transaction 200",
+          "amount": "-80.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-200",
+          "date": "2026-05-26",
+          "description": "Posted transaction 200",
+          "amount": "-80.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-245",
+          "date": "2026-05-26",
+          "description": "Posted transaction 245",
+          "amount": "-5.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-290",
+          "date": "2026-05-26",
+          "description": "Posted transaction 290",
+          "amount": "-50.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-290",
+          "date": "2026-05-26",
+          "description": "Posted transaction 290",
+          "amount": "-50.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-335",
+          "date": "2026-05-26",
+          "description": "Posted transaction 335",
+          "amount": "-95.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-380",
+          "date": "2026-05-26",
+          "description": "Posted transaction 380",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-380",
+          "date": "2026-05-26",
+          "description": "Posted transaction 380",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-65",
+          "date": "2026-05-26",
+          "description": "Posted transaction 65",
+          "amount": "-65.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-773.86",
+      "runningBalance": "508.79"
+    },
+    {
+      "date": "2026-05-27",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-05-27",
+          "date": "2026-05-27",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-109",
+          "date": "2026-05-27",
+          "description": "Posted transaction 109",
+          "amount": "-109.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-154",
+          "date": "2026-05-27",
+          "description": "Posted transaction 154",
+          "amount": "-34.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-19",
+          "date": "2026-05-27",
+          "description": "Posted transaction 19",
+          "amount": "-19.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-199",
+          "date": "2026-05-27",
+          "description": "Posted transaction 199",
+          "amount": "-79.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-244",
+          "date": "2026-05-27",
+          "description": "Posted transaction 244",
+          "amount": "-4.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-289",
+          "date": "2026-05-27",
+          "description": "Posted transaction 289",
+          "amount": "-49.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-334",
+          "date": "2026-05-27",
+          "description": "Posted transaction 334",
+          "amount": "-94.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-379",
+          "date": "2026-05-27",
+          "description": "Posted transaction 379",
+          "amount": "-19.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-64",
+          "date": "2026-05-27",
+          "description": "Posted transaction 64",
+          "amount": "-64.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "2020.09",
+      "runningBalance": "2528.88"
+    },
+    {
+      "date": "2026-05-28",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-05-28",
+          "date": "2026-05-28",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-108",
+          "date": "2026-05-28",
+          "description": "Posted transaction 108",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-153",
+          "date": "2026-05-28",
+          "description": "Posted transaction 153",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-18",
+          "date": "2026-05-28",
+          "description": "Posted transaction 18",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-198",
+          "date": "2026-05-28",
+          "description": "Posted transaction 198",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-243",
+          "date": "2026-05-28",
+          "description": "Posted transaction 243",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-288",
+          "date": "2026-05-28",
+          "description": "Posted transaction 288",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-333",
+          "date": "2026-05-28",
+          "description": "Posted transaction 333",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-378",
+          "date": "2026-05-28",
+          "description": "Posted transaction 378",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-63",
+          "date": "2026-05-28",
+          "description": "Posted transaction 63",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-117.00",
+      "runningBalance": "2411.88"
+    },
+    {
+      "date": "2026-05-29",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-05-29",
+          "date": "2026-05-29",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-107",
+          "date": "2026-05-29",
+          "description": "Posted transaction 107",
+          "amount": "-107.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-152",
+          "date": "2026-05-29",
+          "description": "Posted transaction 152",
+          "amount": "-32.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-17",
+          "date": "2026-05-29",
+          "description": "Posted transaction 17",
+          "amount": "-17.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-197",
+          "date": "2026-05-29",
+          "description": "Posted transaction 197",
+          "amount": "-77.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-242",
+          "date": "2026-05-29",
+          "description": "Posted transaction 242",
+          "amount": "-2.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-287",
+          "date": "2026-05-29",
+          "description": "Posted transaction 287",
+          "amount": "-47.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-332",
+          "date": "2026-05-29",
+          "description": "Posted transaction 332",
+          "amount": "-92.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-377",
+          "date": "2026-05-29",
+          "description": "Posted transaction 377",
+          "amount": "-17.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-62",
+          "date": "2026-05-29",
+          "description": "Posted transaction 62",
+          "amount": "-62.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-594.91",
+      "runningBalance": "1816.97"
+    },
+    {
+      "date": "2026-05-30",
+      "transactions": [
+        {
+          "id": "txn-106",
+          "date": "2026-05-30",
+          "description": "Posted transaction 106",
+          "amount": "-106.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-151",
+          "date": "2026-05-30",
+          "description": "Posted transaction 151",
+          "amount": "-31.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-16",
+          "date": "2026-05-30",
+          "description": "Posted transaction 16",
+          "amount": "-16.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-196",
+          "date": "2026-05-30",
+          "description": "Posted transaction 196",
+          "amount": "-76.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-241",
+          "date": "2026-05-30",
+          "description": "Posted transaction 241",
+          "amount": "-1.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-286",
+          "date": "2026-05-30",
+          "description": "Posted transaction 286",
+          "amount": "-46.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-331",
+          "date": "2026-05-30",
+          "description": "Posted transaction 331",
+          "amount": "-91.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-376",
+          "date": "2026-05-30",
+          "description": "Posted transaction 376",
+          "amount": "-16.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-61",
+          "date": "2026-05-30",
+          "description": "Posted transaction 61",
+          "amount": "-61.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-452.91",
+      "runningBalance": "1364.06"
+    },
+    {
+      "date": "2026-05-31",
+      "transactions": [
+        {
+          "id": "txn-105",
+          "date": "2026-05-31",
+          "description": "Posted transaction 105",
+          "amount": "-105.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-15",
+          "date": "2026-05-31",
+          "description": "Posted transaction 15",
+          "amount": "-15.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-150",
+          "date": "2026-05-31",
+          "description": "Posted transaction 150",
+          "amount": "-30.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-150",
+          "date": "2026-05-31",
+          "description": "Posted transaction 150",
+          "amount": "-30.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-195",
+          "date": "2026-05-31",
+          "description": "Posted transaction 195",
+          "amount": "-75.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-240",
+          "date": "2026-05-31",
+          "description": "Posted transaction 240",
+          "amount": "-0.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-240",
+          "date": "2026-05-31",
+          "description": "Posted transaction 240",
+          "amount": "-0.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-285",
+          "date": "2026-05-31",
+          "description": "Posted transaction 285",
+          "amount": "-45.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-330",
+          "date": "2026-05-31",
+          "description": "Posted transaction 330",
+          "amount": "-90.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-330",
+          "date": "2026-05-31",
+          "description": "Posted transaction 330",
+          "amount": "-90.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-375",
+          "date": "2026-05-31",
+          "description": "Posted transaction 375",
+          "amount": "-15.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-60",
+          "date": "2026-05-31",
+          "description": "Posted transaction 60",
+          "amount": "-60.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-60",
+          "date": "2026-05-31",
+          "description": "Posted transaction 60",
+          "amount": "-60.99",
+          "type": "manual",
+          "source": "manual"
+        }
+      ],
+      "dailyNet": "-627.87",
+      "runningBalance": "736.19"
+    },
+    {
+      "date": "2026-06-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-06-01",
+          "date": "2026-06-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-104",
+          "date": "2026-06-01",
+          "description": "Posted transaction 104",
+          "amount": "-104.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-14",
+          "date": "2026-06-01",
+          "description": "Posted transaction 14",
+          "amount": "-14.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-149",
+          "date": "2026-06-01",
+          "description": "Posted transaction 149",
+          "amount": "-29.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-194",
+          "date": "2026-06-01",
+          "description": "Posted transaction 194",
+          "amount": "-74.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-239",
+          "date": "2026-06-01",
+          "description": "Posted transaction 239",
+          "amount": "-119.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-284",
+          "date": "2026-06-01",
+          "description": "Posted transaction 284",
+          "amount": "-44.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-329",
+          "date": "2026-06-01",
+          "description": "Posted transaction 329",
+          "amount": "-89.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-374",
+          "date": "2026-06-01",
+          "description": "Posted transaction 374",
+          "amount": "-14.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-59",
+          "date": "2026-06-01",
+          "description": "Posted transaction 59",
+          "amount": "-59.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1945.09",
+      "runningBalance": "2681.28"
+    },
+    {
+      "date": "2026-06-02",
+      "transactions": [
+        {
+          "id": "txn-103",
+          "date": "2026-06-02",
+          "description": "Posted transaction 103",
+          "amount": "-103.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-13",
+          "date": "2026-06-02",
+          "description": "Posted transaction 13",
+          "amount": "-13.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-148",
+          "date": "2026-06-02",
+          "description": "Posted transaction 148",
+          "amount": "-28.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-193",
+          "date": "2026-06-02",
+          "description": "Posted transaction 193",
+          "amount": "-73.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-238",
+          "date": "2026-06-02",
+          "description": "Posted transaction 238",
+          "amount": "-118.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-283",
+          "date": "2026-06-02",
+          "description": "Posted transaction 283",
+          "amount": "-43.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-328",
+          "date": "2026-06-02",
+          "description": "Posted transaction 328",
+          "amount": "-88.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-373",
+          "date": "2026-06-02",
+          "description": "Posted transaction 373",
+          "amount": "-13.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-58",
+          "date": "2026-06-02",
+          "description": "Posted transaction 58",
+          "amount": "-58.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-545.91",
+      "runningBalance": "2135.37"
+    },
+    {
+      "date": "2026-06-03",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-06-03",
+          "date": "2026-06-03",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-2_2026-06-03",
+          "date": "2026-06-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-102",
+          "date": "2026-06-03",
+          "description": "Posted transaction 102",
+          "amount": "-102.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-12",
+          "date": "2026-06-03",
+          "description": "Posted transaction 12",
+          "amount": "-12.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-147",
+          "date": "2026-06-03",
+          "description": "Posted transaction 147",
+          "amount": "-27.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-192",
+          "date": "2026-06-03",
+          "description": "Posted transaction 192",
+          "amount": "-72.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-237",
+          "date": "2026-06-03",
+          "description": "Posted transaction 237",
+          "amount": "-117.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-282",
+          "date": "2026-06-03",
+          "description": "Posted transaction 282",
+          "amount": "-42.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-327",
+          "date": "2026-06-03",
+          "description": "Posted transaction 327",
+          "amount": "-87.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-372",
+          "date": "2026-06-03",
+          "description": "Posted transaction 372",
+          "amount": "-12.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-57",
+          "date": "2026-06-03",
+          "description": "Posted transaction 57",
+          "amount": "-57.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1914.09",
+      "runningBalance": "4049.46"
+    },
+    {
+      "date": "2026-06-04",
+      "transactions": [
+        {
+          "id": "txn-101",
+          "date": "2026-06-04",
+          "description": "Posted transaction 101",
+          "amount": "-101.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-11",
+          "date": "2026-06-04",
+          "description": "Posted transaction 11",
+          "amount": "-11.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-146",
+          "date": "2026-06-04",
+          "description": "Posted transaction 146",
+          "amount": "-26.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-191",
+          "date": "2026-06-04",
+          "description": "Posted transaction 191",
+          "amount": "-71.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-236",
+          "date": "2026-06-04",
+          "description": "Posted transaction 236",
+          "amount": "-116.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-281",
+          "date": "2026-06-04",
+          "description": "Posted transaction 281",
+          "amount": "-41.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-326",
+          "date": "2026-06-04",
+          "description": "Posted transaction 326",
+          "amount": "-86.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-371",
+          "date": "2026-06-04",
+          "description": "Posted transaction 371",
+          "amount": "-11.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-56",
+          "date": "2026-06-04",
+          "description": "Posted transaction 56",
+          "amount": "-56.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-527.91",
+      "runningBalance": "3521.55"
+    },
+    {
+      "date": "2026-06-05",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-06-05",
+          "date": "2026-06-05",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-4_2026-06-05",
+          "date": "2026-06-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-10",
+          "date": "2026-06-05",
+          "description": "Posted transaction 10",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-10",
+          "date": "2026-06-05",
+          "description": "Posted transaction 10",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-100",
+          "date": "2026-06-05",
+          "description": "Posted transaction 100",
+          "amount": "-100.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-100",
+          "date": "2026-06-05",
+          "description": "Posted transaction 100",
+          "amount": "-100.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-145",
+          "date": "2026-06-05",
+          "description": "Posted transaction 145",
+          "amount": "-25.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-190",
+          "date": "2026-06-05",
+          "description": "Posted transaction 190",
+          "amount": "-70.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-190",
+          "date": "2026-06-05",
+          "description": "Posted transaction 190",
+          "amount": "-70.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-235",
+          "date": "2026-06-05",
+          "description": "Posted transaction 235",
+          "amount": "-115.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-280",
+          "date": "2026-06-05",
+          "description": "Posted transaction 280",
+          "amount": "-40.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-280",
+          "date": "2026-06-05",
+          "description": "Posted transaction 280",
+          "amount": "-40.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-325",
+          "date": "2026-06-05",
+          "description": "Posted transaction 325",
+          "amount": "-85.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-370",
+          "date": "2026-06-05",
+          "description": "Posted transaction 370",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-370",
+          "date": "2026-06-05",
+          "description": "Posted transaction 370",
+          "amount": "-10.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-55",
+          "date": "2026-06-05",
+          "description": "Posted transaction 55",
+          "amount": "-55.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1613.14",
+      "runningBalance": "5134.69"
+    },
+    {
+      "date": "2026-06-06",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-06-06",
+          "date": "2026-06-06",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-144",
+          "date": "2026-06-06",
+          "description": "Posted transaction 144",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-189",
+          "date": "2026-06-06",
+          "description": "Posted transaction 189",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-234",
+          "date": "2026-06-06",
+          "description": "Posted transaction 234",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-279",
+          "date": "2026-06-06",
+          "description": "Posted transaction 279",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-324",
+          "date": "2026-06-06",
+          "description": "Posted transaction 324",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-369",
+          "date": "2026-06-06",
+          "description": "Posted transaction 369",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-54",
+          "date": "2026-06-06",
+          "description": "Posted transaction 54",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-9",
+          "date": "2026-06-06",
+          "description": "Posted transaction 9",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-99",
+          "date": "2026-06-06",
+          "description": "Posted transaction 99",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "2509.00",
+      "runningBalance": "7643.69"
+    },
+    {
+      "date": "2026-06-07",
+      "transactions": [
+        {
+          "id": "txn-143",
+          "date": "2026-06-07",
+          "description": "Posted transaction 143",
+          "amount": "-23.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-188",
+          "date": "2026-06-07",
+          "description": "Posted transaction 188",
+          "amount": "-68.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-233",
+          "date": "2026-06-07",
+          "description": "Posted transaction 233",
+          "amount": "-113.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-278",
+          "date": "2026-06-07",
+          "description": "Posted transaction 278",
+          "amount": "-38.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-323",
+          "date": "2026-06-07",
+          "description": "Posted transaction 323",
+          "amount": "-83.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-368",
+          "date": "2026-06-07",
+          "description": "Posted transaction 368",
+          "amount": "-8.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-53",
+          "date": "2026-06-07",
+          "description": "Posted transaction 53",
+          "amount": "-53.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-8",
+          "date": "2026-06-07",
+          "description": "Posted transaction 8",
+          "amount": "-8.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-98",
+          "date": "2026-06-07",
+          "description": "Posted transaction 98",
+          "amount": "-98.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-500.91",
+      "runningBalance": "7142.78"
+    },
+    {
+      "date": "2026-06-08",
+      "transactions": [
+        {
+          "id": "txn-142",
+          "date": "2026-06-08",
+          "description": "Posted transaction 142",
+          "amount": "-22.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-187",
+          "date": "2026-06-08",
+          "description": "Posted transaction 187",
+          "amount": "-67.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-232",
+          "date": "2026-06-08",
+          "description": "Posted transaction 232",
+          "amount": "-112.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-277",
+          "date": "2026-06-08",
+          "description": "Posted transaction 277",
+          "amount": "-37.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-322",
+          "date": "2026-06-08",
+          "description": "Posted transaction 322",
+          "amount": "-82.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-367",
+          "date": "2026-06-08",
+          "description": "Posted transaction 367",
+          "amount": "-7.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-52",
+          "date": "2026-06-08",
+          "description": "Posted transaction 52",
+          "amount": "-52.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-7",
+          "date": "2026-06-08",
+          "description": "Posted transaction 7",
+          "amount": "-7.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-97",
+          "date": "2026-06-08",
+          "description": "Posted transaction 97",
+          "amount": "-97.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-491.91",
+      "runningBalance": "6650.87"
+    },
+    {
+      "date": "2026-06-09",
+      "transactions": [
+        {
+          "id": "txn-141",
+          "date": "2026-06-09",
+          "description": "Posted transaction 141",
+          "amount": "-21.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-186",
+          "date": "2026-06-09",
+          "description": "Posted transaction 186",
+          "amount": "-66.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-231",
+          "date": "2026-06-09",
+          "description": "Posted transaction 231",
+          "amount": "-111.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-276",
+          "date": "2026-06-09",
+          "description": "Posted transaction 276",
+          "amount": "-36.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-321",
+          "date": "2026-06-09",
+          "description": "Posted transaction 321",
+          "amount": "-81.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-366",
+          "date": "2026-06-09",
+          "description": "Posted transaction 366",
+          "amount": "-6.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-51",
+          "date": "2026-06-09",
+          "description": "Posted transaction 51",
+          "amount": "-51.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-6",
+          "date": "2026-06-09",
+          "description": "Posted transaction 6",
+          "amount": "-6.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-96",
+          "date": "2026-06-09",
+          "description": "Posted transaction 96",
+          "amount": "-96.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-482.91",
+      "runningBalance": "6167.96"
+    },
+    {
+      "date": "2026-06-10",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-06-10",
+          "date": "2026-06-10",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-140",
+          "date": "2026-06-10",
+          "description": "Posted transaction 140",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-140",
+          "date": "2026-06-10",
+          "description": "Posted transaction 140",
+          "amount": "-20.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-185",
+          "date": "2026-06-10",
+          "description": "Posted transaction 185",
+          "amount": "-65.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-230",
+          "date": "2026-06-10",
+          "description": "Posted transaction 230",
+          "amount": "-110.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-230",
+          "date": "2026-06-10",
+          "description": "Posted transaction 230",
+          "amount": "-110.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-275",
+          "date": "2026-06-10",
+          "description": "Posted transaction 275",
+          "amount": "-35.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-320",
+          "date": "2026-06-10",
+          "description": "Posted transaction 320",
+          "amount": "-80.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-320",
+          "date": "2026-06-10",
+          "description": "Posted transaction 320",
+          "amount": "-80.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-365",
+          "date": "2026-06-10",
+          "description": "Posted transaction 365",
+          "amount": "-5.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-5",
+          "date": "2026-06-10",
+          "description": "Posted transaction 5",
+          "amount": "-5.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-50",
+          "date": "2026-06-10",
+          "description": "Posted transaction 50",
+          "amount": "-50.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-50",
+          "date": "2026-06-10",
+          "description": "Posted transaction 50",
+          "amount": "-50.99",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-95",
+          "date": "2026-06-10",
+          "description": "Posted transaction 95",
+          "amount": "-95.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "1762.13",
+      "runningBalance": "7930.09"
+    },
+    {
+      "date": "2026-06-11",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-06-11",
+          "date": "2026-06-11",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-139",
+          "date": "2026-06-11",
+          "description": "Posted transaction 139",
+          "amount": "-19.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-184",
+          "date": "2026-06-11",
+          "description": "Posted transaction 184",
+          "amount": "-64.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-229",
+          "date": "2026-06-11",
+          "description": "Posted transaction 229",
+          "amount": "-109.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-274",
+          "date": "2026-06-11",
+          "description": "Posted transaction 274",
+          "amount": "-34.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-319",
+          "date": "2026-06-11",
+          "description": "Posted transaction 319",
+          "amount": "-79.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-364",
+          "date": "2026-06-11",
+          "description": "Posted transaction 364",
+          "amount": "-4.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-4",
+          "date": "2026-06-11",
+          "description": "Posted transaction 4",
+          "amount": "-4.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-49",
+          "date": "2026-06-11",
+          "description": "Posted transaction 49",
+          "amount": "-49.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-94",
+          "date": "2026-06-11",
+          "description": "Posted transaction 94",
+          "amount": "-94.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-590.91",
+      "runningBalance": "7339.18"
+    },
+    {
+      "date": "2026-06-12",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-06-12",
+          "date": "2026-06-12",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "txn-138",
+          "date": "2026-06-12",
+          "description": "Posted transaction 138",
+          "amount": "-18.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-183",
+          "date": "2026-06-12",
+          "description": "Posted transaction 183",
+          "amount": "-63.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-228",
+          "date": "2026-06-12",
+          "description": "Posted transaction 228",
+          "amount": "-108.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-273",
+          "date": "2026-06-12",
+          "description": "Posted transaction 273",
+          "amount": "-33.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-3",
+          "date": "2026-06-12",
+          "description": "Posted transaction 3",
+          "amount": "-3.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-318",
+          "date": "2026-06-12",
+          "description": "Posted transaction 318",
+          "amount": "-78.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-363",
+          "date": "2026-06-12",
+          "description": "Posted transaction 363",
+          "amount": "-3.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-48",
+          "date": "2026-06-12",
+          "description": "Posted transaction 48",
+          "amount": "-48.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-93",
+          "date": "2026-06-12",
+          "description": "Posted transaction 93",
+          "amount": "-93.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-588.91",
+      "runningBalance": "6750.27"
+    },
+    {
+      "date": "2026-06-13",
+      "transactions": [
+        {
+          "id": "txn-137",
+          "date": "2026-06-13",
+          "description": "Posted transaction 137",
+          "amount": "-17.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-182",
+          "date": "2026-06-13",
+          "description": "Posted transaction 182",
+          "amount": "-62.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-2",
+          "date": "2026-06-13",
+          "description": "Posted transaction 2",
+          "amount": "-2.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-227",
+          "date": "2026-06-13",
+          "description": "Posted transaction 227",
+          "amount": "-107.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-272",
+          "date": "2026-06-13",
+          "description": "Posted transaction 272",
+          "amount": "-32.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-317",
+          "date": "2026-06-13",
+          "description": "Posted transaction 317",
+          "amount": "-77.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-362",
+          "date": "2026-06-13",
+          "description": "Posted transaction 362",
+          "amount": "-2.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-47",
+          "date": "2026-06-13",
+          "description": "Posted transaction 47",
+          "amount": "-47.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-92",
+          "date": "2026-06-13",
+          "description": "Posted transaction 92",
+          "amount": "-92.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-446.91",
+      "runningBalance": "6303.36"
+    },
+    {
+      "date": "2026-06-14",
+      "transactions": [
+        {
+          "id": "txn-1",
+          "date": "2026-06-14",
+          "description": "Posted transaction 1",
+          "amount": "-1.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-136",
+          "date": "2026-06-14",
+          "description": "Posted transaction 136",
+          "amount": "-16.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-181",
+          "date": "2026-06-14",
+          "description": "Posted transaction 181",
+          "amount": "-61.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-226",
+          "date": "2026-06-14",
+          "description": "Posted transaction 226",
+          "amount": "-106.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-271",
+          "date": "2026-06-14",
+          "description": "Posted transaction 271",
+          "amount": "-31.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-316",
+          "date": "2026-06-14",
+          "description": "Posted transaction 316",
+          "amount": "-76.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-361",
+          "date": "2026-06-14",
+          "description": "Posted transaction 361",
+          "amount": "-1.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-46",
+          "date": "2026-06-14",
+          "description": "Posted transaction 46",
+          "amount": "-46.99",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-91",
+          "date": "2026-06-14",
+          "description": "Posted transaction 91",
+          "amount": "-91.99",
+          "type": "actual",
+          "source": "actual"
+        }
+      ],
+      "dailyNet": "-437.91",
+      "runningBalance": "5865.45"
+    },
+    {
+      "date": "2026-06-15",
+      "transactions": [
+        {
+          "id": "txn-0",
+          "date": "2026-06-15",
+          "description": "Posted transaction 0",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-0",
+          "date": "2026-06-15",
+          "description": "Posted transaction 0",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-135",
+          "date": "2026-06-15",
+          "description": "Posted transaction 135",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-180",
+          "date": "2026-06-15",
+          "description": "Posted transaction 180",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-180",
+          "date": "2026-06-15",
+          "description": "Posted transaction 180",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-225",
+          "date": "2026-06-15",
+          "description": "Posted transaction 225",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-270",
+          "date": "2026-06-15",
+          "description": "Posted transaction 270",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-270",
+          "date": "2026-06-15",
+          "description": "Posted transaction 270",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-315",
+          "date": "2026-06-15",
+          "description": "Posted transaction 315",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-360",
+          "date": "2026-06-15",
+          "description": "Posted transaction 360",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-360",
+          "date": "2026-06-15",
+          "description": "Posted transaction 360",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-45",
+          "date": "2026-06-15",
+          "description": "Posted transaction 45",
+          "amount": "1.00",
+          "type": "actual",
+          "source": "actual"
+        },
+        {
+          "id": "txn-90",
+          "date": "2026-06-15",
+          "description": "Posted transaction 90",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        },
+        {
+          "id": "txn-90",
+          "date": "2026-06-15",
+          "description": "Posted transaction 90",
+          "amount": "1.00",
+          "type": "manual",
+          "source": "manual"
+        }
+      ],
+      "dailyNet": "14.00",
+      "runningBalance": "5879.45"
+    },
+    {
+      "date": "2026-06-16",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "5879.45"
+    },
+    {
+      "date": "2026-06-17",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-06-17",
+          "date": "2026-06-17",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "8379.45"
+    },
+    {
+      "date": "2026-06-18",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-06-18",
+          "date": "2026-06-18",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "8253.45"
+    },
+    {
+      "date": "2026-06-19",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-06-19",
+          "date": "2026-06-19",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "8120.45"
+    },
+    {
+      "date": "2026-06-20",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-06-20",
+          "date": "2026-06-20",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "10620.45"
+    },
+    {
+      "date": "2026-06-21",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-06-21",
+          "date": "2026-06-21",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "10522.45"
+    },
+    {
+      "date": "2026-06-22",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-06-22",
+          "date": "2026-06-22",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "10417.45"
+    },
+    {
+      "date": "2026-06-23",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-06-23",
+          "date": "2026-06-23",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "10305.45"
+    },
+    {
+      "date": "2026-06-24",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-06-24",
+          "date": "2026-06-24",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "12805.45"
+    },
+    {
+      "date": "2026-06-25",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-06-25",
+          "date": "2026-06-25",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "12679.45"
+    },
+    {
+      "date": "2026-06-26",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-06-26",
+          "date": "2026-06-26",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "12546.45"
+    },
+    {
+      "date": "2026-06-27",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "12546.45"
+    },
+    {
+      "date": "2026-06-28",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "12546.45"
+    },
+    {
+      "date": "2026-06-29",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "12546.45"
+    },
+    {
+      "date": "2026-06-30",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "12546.45"
+    },
+    {
+      "date": "2026-07-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-07-01",
+          "date": "2026-07-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-12_2026-07-01",
+          "date": "2026-07-01",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "5000.00",
+      "runningBalance": "17546.45"
+    },
+    {
+      "date": "2026-07-02",
+      "transactions": [
+        {
+          "id": "recurring_series-1_2026-07-02",
+          "date": "2026-07-02",
+          "description": "Recurring 1",
+          "amount": "-42.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-13_2026-07-02",
+          "date": "2026-07-02",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-168.00",
+      "runningBalance": "17378.45"
+    },
+    {
+      "date": "2026-07-03",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-07-03",
+          "date": "2026-07-03",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-2_2026-07-03",
+          "date": "2026-07-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-182.00",
+      "runningBalance": "17196.45"
+    },
+    {
+      "date": "2026-07-04",
+      "transactions": [
+        {
+          "id": "recurring_series-3_2026-07-04",
+          "date": "2026-07-04",
+          "description": "Recurring 3",
+          "amount": "-56.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-8_2026-07-04",
+          "date": "2026-07-04",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2444.00",
+      "runningBalance": "19640.45"
+    },
+    {
+      "date": "2026-07-05",
+      "transactions": [
+        {
+          "id": "recurring_series-4_2026-07-05",
+          "date": "2026-07-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-9_2026-07-05",
+          "date": "2026-07-05",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2402.00",
+      "runningBalance": "22042.45"
+    },
+    {
+      "date": "2026-07-06",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-07-06",
+          "date": "2026-07-06",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-5_2026-07-06",
+          "date": "2026-07-06",
+          "description": "Recurring 5",
+          "amount": "-70.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-175.00",
+      "runningBalance": "21867.45"
+    },
+    {
+      "date": "2026-07-07",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-07-07",
+          "date": "2026-07-07",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-6_2026-07-07",
+          "date": "2026-07-07",
+          "description": "Recurring 6",
+          "amount": "-77.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-189.00",
+      "runningBalance": "21678.45"
+    },
+    {
+      "date": "2026-07-08",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-07-08",
+          "date": "2026-07-08",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-7_2026-07-08",
+          "date": "2026-07-08",
+          "description": "Recurring 7",
+          "amount": "-84.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2416.00",
+      "runningBalance": "24094.45"
+    },
+    {
+      "date": "2026-07-09",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-07-09",
+          "date": "2026-07-09",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "23968.45"
+    },
+    {
+      "date": "2026-07-10",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-07-10",
+          "date": "2026-07-10",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "23835.45"
+    },
+    {
+      "date": "2026-07-11",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "23835.45"
+    },
+    {
+      "date": "2026-07-12",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "23835.45"
+    },
+    {
+      "date": "2026-07-13",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "23835.45"
+    },
+    {
+      "date": "2026-07-14",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "23835.45"
+    },
+    {
+      "date": "2026-07-15",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-07-15",
+          "date": "2026-07-15",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "26335.45"
+    },
+    {
+      "date": "2026-07-16",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-07-16",
+          "date": "2026-07-16",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "26209.45"
+    },
+    {
+      "date": "2026-07-17",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-07-17",
+          "date": "2026-07-17",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "26076.45"
+    },
+    {
+      "date": "2026-07-18",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-07-18",
+          "date": "2026-07-18",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "28576.45"
+    },
+    {
+      "date": "2026-07-19",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-07-19",
+          "date": "2026-07-19",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "28478.45"
+    },
+    {
+      "date": "2026-07-20",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-07-20",
+          "date": "2026-07-20",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "28373.45"
+    },
+    {
+      "date": "2026-07-21",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-07-21",
+          "date": "2026-07-21",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "28261.45"
+    },
+    {
+      "date": "2026-07-22",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-07-22",
+          "date": "2026-07-22",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "30761.45"
+    },
+    {
+      "date": "2026-07-23",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-07-23",
+          "date": "2026-07-23",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "30635.45"
+    },
+    {
+      "date": "2026-07-24",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-07-24",
+          "date": "2026-07-24",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "30502.45"
+    },
+    {
+      "date": "2026-07-25",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "30502.45"
+    },
+    {
+      "date": "2026-07-26",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "30502.45"
+    },
+    {
+      "date": "2026-07-27",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "30502.45"
+    },
+    {
+      "date": "2026-07-28",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "30502.45"
+    },
+    {
+      "date": "2026-07-29",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-07-29",
+          "date": "2026-07-29",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "33002.45"
+    },
+    {
+      "date": "2026-07-30",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-07-30",
+          "date": "2026-07-30",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "32876.45"
+    },
+    {
+      "date": "2026-07-31",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-07-31",
+          "date": "2026-07-31",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "32743.45"
+    },
+    {
+      "date": "2026-08-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-08-01",
+          "date": "2026-08-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-8_2026-08-01",
+          "date": "2026-08-01",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "5000.00",
+      "runningBalance": "37743.45"
+    },
+    {
+      "date": "2026-08-02",
+      "transactions": [
+        {
+          "id": "recurring_series-1_2026-08-02",
+          "date": "2026-08-02",
+          "description": "Recurring 1",
+          "amount": "-42.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-9_2026-08-02",
+          "date": "2026-08-02",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-140.00",
+      "runningBalance": "37603.45"
+    },
+    {
+      "date": "2026-08-03",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-08-03",
+          "date": "2026-08-03",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-2_2026-08-03",
+          "date": "2026-08-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-154.00",
+      "runningBalance": "37449.45"
+    },
+    {
+      "date": "2026-08-04",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-08-04",
+          "date": "2026-08-04",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-3_2026-08-04",
+          "date": "2026-08-04",
+          "description": "Recurring 3",
+          "amount": "-56.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-168.00",
+      "runningBalance": "37281.45"
+    },
+    {
+      "date": "2026-08-05",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-08-05",
+          "date": "2026-08-05",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-4_2026-08-05",
+          "date": "2026-08-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "5000.00",
+      "runningBalance": "42281.45"
+    },
+    {
+      "date": "2026-08-06",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-08-06",
+          "date": "2026-08-06",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-5_2026-08-06",
+          "date": "2026-08-06",
+          "description": "Recurring 5",
+          "amount": "-70.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-196.00",
+      "runningBalance": "42085.45"
+    },
+    {
+      "date": "2026-08-07",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-08-07",
+          "date": "2026-08-07",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-6_2026-08-07",
+          "date": "2026-08-07",
+          "description": "Recurring 6",
+          "amount": "-77.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-210.00",
+      "runningBalance": "41875.45"
+    },
+    {
+      "date": "2026-08-08",
+      "transactions": [
+        {
+          "id": "recurring_series-7_2026-08-08",
+          "date": "2026-08-08",
+          "description": "Recurring 7",
+          "amount": "-84.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-84.00",
+      "runningBalance": "41791.45"
+    },
+    {
+      "date": "2026-08-09",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "41791.45"
+    },
+    {
+      "date": "2026-08-10",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "41791.45"
+    },
+    {
+      "date": "2026-08-11",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "41791.45"
+    },
+    {
+      "date": "2026-08-12",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-08-12",
+          "date": "2026-08-12",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "44291.45"
+    },
+    {
+      "date": "2026-08-13",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-08-13",
+          "date": "2026-08-13",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "44165.45"
+    },
+    {
+      "date": "2026-08-14",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-08-14",
+          "date": "2026-08-14",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "44032.45"
+    },
+    {
+      "date": "2026-08-15",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-08-15",
+          "date": "2026-08-15",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "46532.45"
+    },
+    {
+      "date": "2026-08-16",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-08-16",
+          "date": "2026-08-16",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "46434.45"
+    },
+    {
+      "date": "2026-08-17",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-08-17",
+          "date": "2026-08-17",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "46329.45"
+    },
+    {
+      "date": "2026-08-18",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-08-18",
+          "date": "2026-08-18",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "46217.45"
+    },
+    {
+      "date": "2026-08-19",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-08-19",
+          "date": "2026-08-19",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "48717.45"
+    },
+    {
+      "date": "2026-08-20",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-08-20",
+          "date": "2026-08-20",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "48591.45"
+    },
+    {
+      "date": "2026-08-21",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-08-21",
+          "date": "2026-08-21",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "48458.45"
+    },
+    {
+      "date": "2026-08-22",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "48458.45"
+    },
+    {
+      "date": "2026-08-23",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "48458.45"
+    },
+    {
+      "date": "2026-08-24",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "48458.45"
+    },
+    {
+      "date": "2026-08-25",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "48458.45"
+    },
+    {
+      "date": "2026-08-26",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-08-26",
+          "date": "2026-08-26",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "50958.45"
+    },
+    {
+      "date": "2026-08-27",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-08-27",
+          "date": "2026-08-27",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "50832.45"
+    },
+    {
+      "date": "2026-08-28",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-08-28",
+          "date": "2026-08-28",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "50699.45"
+    },
+    {
+      "date": "2026-08-29",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-08-29",
+          "date": "2026-08-29",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "53199.45"
+    },
+    {
+      "date": "2026-08-30",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-08-30",
+          "date": "2026-08-30",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "53101.45"
+    },
+    {
+      "date": "2026-08-31",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-08-31",
+          "date": "2026-08-31",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "52996.45"
+    },
+    {
+      "date": "2026-09-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-09-01",
+          "date": "2026-09-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-11_2026-09-01",
+          "date": "2026-09-01",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2388.00",
+      "runningBalance": "55384.45"
+    },
+    {
+      "date": "2026-09-02",
+      "transactions": [
+        {
+          "id": "recurring_series-1_2026-09-02",
+          "date": "2026-09-02",
+          "description": "Recurring 1",
+          "amount": "-42.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-12_2026-09-02",
+          "date": "2026-09-02",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2458.00",
+      "runningBalance": "57842.45"
+    },
+    {
+      "date": "2026-09-03",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-09-03",
+          "date": "2026-09-03",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-2_2026-09-03",
+          "date": "2026-09-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-175.00",
+      "runningBalance": "57667.45"
+    },
+    {
+      "date": "2026-09-04",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-09-04",
+          "date": "2026-09-04",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-3_2026-09-04",
+          "date": "2026-09-04",
+          "description": "Recurring 3",
+          "amount": "-56.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-189.00",
+      "runningBalance": "57478.45"
+    },
+    {
+      "date": "2026-09-05",
+      "transactions": [
+        {
+          "id": "recurring_series-4_2026-09-05",
+          "date": "2026-09-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "59978.45"
+    },
+    {
+      "date": "2026-09-06",
+      "transactions": [
+        {
+          "id": "recurring_series-5_2026-09-06",
+          "date": "2026-09-06",
+          "description": "Recurring 5",
+          "amount": "-70.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-70.00",
+      "runningBalance": "59908.45"
+    },
+    {
+      "date": "2026-09-07",
+      "transactions": [
+        {
+          "id": "recurring_series-6_2026-09-07",
+          "date": "2026-09-07",
+          "description": "Recurring 6",
+          "amount": "-77.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-77.00",
+      "runningBalance": "59831.45"
+    },
+    {
+      "date": "2026-09-08",
+      "transactions": [
+        {
+          "id": "recurring_series-7_2026-09-08",
+          "date": "2026-09-08",
+          "description": "Recurring 7",
+          "amount": "-84.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-84.00",
+      "runningBalance": "59747.45"
+    },
+    {
+      "date": "2026-09-09",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-09-09",
+          "date": "2026-09-09",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "62247.45"
+    },
+    {
+      "date": "2026-09-10",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-09-10",
+          "date": "2026-09-10",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "62121.45"
+    },
+    {
+      "date": "2026-09-11",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-09-11",
+          "date": "2026-09-11",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "61988.45"
+    },
+    {
+      "date": "2026-09-12",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-09-12",
+          "date": "2026-09-12",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "64488.45"
+    },
+    {
+      "date": "2026-09-13",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-09-13",
+          "date": "2026-09-13",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "64390.45"
+    },
+    {
+      "date": "2026-09-14",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-09-14",
+          "date": "2026-09-14",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "64285.45"
+    },
+    {
+      "date": "2026-09-15",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-09-15",
+          "date": "2026-09-15",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "64173.45"
+    },
+    {
+      "date": "2026-09-16",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-09-16",
+          "date": "2026-09-16",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "66673.45"
+    },
+    {
+      "date": "2026-09-17",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-09-17",
+          "date": "2026-09-17",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "66547.45"
+    },
+    {
+      "date": "2026-09-18",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-09-18",
+          "date": "2026-09-18",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "66414.45"
+    },
+    {
+      "date": "2026-09-19",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "66414.45"
+    },
+    {
+      "date": "2026-09-20",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "66414.45"
+    },
+    {
+      "date": "2026-09-21",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "66414.45"
+    },
+    {
+      "date": "2026-09-22",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "66414.45"
+    },
+    {
+      "date": "2026-09-23",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-09-23",
+          "date": "2026-09-23",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "68914.45"
+    },
+    {
+      "date": "2026-09-24",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-09-24",
+          "date": "2026-09-24",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "68788.45"
+    },
+    {
+      "date": "2026-09-25",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-09-25",
+          "date": "2026-09-25",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "68655.45"
+    },
+    {
+      "date": "2026-09-26",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-09-26",
+          "date": "2026-09-26",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "71155.45"
+    },
+    {
+      "date": "2026-09-27",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-09-27",
+          "date": "2026-09-27",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "71057.45"
+    },
+    {
+      "date": "2026-09-28",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-09-28",
+          "date": "2026-09-28",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "70952.45"
+    },
+    {
+      "date": "2026-09-29",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-09-29",
+          "date": "2026-09-29",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "70840.45"
+    },
+    {
+      "date": "2026-09-30",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-09-30",
+          "date": "2026-09-30",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "73340.45"
+    },
+    {
+      "date": "2026-10-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-10-01",
+          "date": "2026-10-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-13_2026-10-01",
+          "date": "2026-10-01",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2374.00",
+      "runningBalance": "75714.45"
+    },
+    {
+      "date": "2026-10-02",
+      "transactions": [
+        {
+          "id": "recurring_series-1_2026-10-02",
+          "date": "2026-10-02",
+          "description": "Recurring 1",
+          "amount": "-42.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-14_2026-10-02",
+          "date": "2026-10-02",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-175.00",
+      "runningBalance": "75539.45"
+    },
+    {
+      "date": "2026-10-03",
+      "transactions": [
+        {
+          "id": "recurring_series-2_2026-10-03",
+          "date": "2026-10-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-49.00",
+      "runningBalance": "75490.45"
+    },
+    {
+      "date": "2026-10-04",
+      "transactions": [
+        {
+          "id": "recurring_series-3_2026-10-04",
+          "date": "2026-10-04",
+          "description": "Recurring 3",
+          "amount": "-56.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-56.00",
+      "runningBalance": "75434.45"
+    },
+    {
+      "date": "2026-10-05",
+      "transactions": [
+        {
+          "id": "recurring_series-4_2026-10-05",
+          "date": "2026-10-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "77934.45"
+    },
+    {
+      "date": "2026-10-06",
+      "transactions": [
+        {
+          "id": "recurring_series-5_2026-10-06",
+          "date": "2026-10-06",
+          "description": "Recurring 5",
+          "amount": "-70.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-70.00",
+      "runningBalance": "77864.45"
+    },
+    {
+      "date": "2026-10-07",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-10-07",
+          "date": "2026-10-07",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-6_2026-10-07",
+          "date": "2026-10-07",
+          "description": "Recurring 6",
+          "amount": "-77.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2423.00",
+      "runningBalance": "80287.45"
+    },
+    {
+      "date": "2026-10-08",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-10-08",
+          "date": "2026-10-08",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-7_2026-10-08",
+          "date": "2026-10-08",
+          "description": "Recurring 7",
+          "amount": "-84.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-210.00",
+      "runningBalance": "80077.45"
+    },
+    {
+      "date": "2026-10-09",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-10-09",
+          "date": "2026-10-09",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "79944.45"
+    },
+    {
+      "date": "2026-10-10",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-10-10",
+          "date": "2026-10-10",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "82444.45"
+    },
+    {
+      "date": "2026-10-11",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-10-11",
+          "date": "2026-10-11",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "82346.45"
+    },
+    {
+      "date": "2026-10-12",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-10-12",
+          "date": "2026-10-12",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "82241.45"
+    },
+    {
+      "date": "2026-10-13",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-10-13",
+          "date": "2026-10-13",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "82129.45"
+    },
+    {
+      "date": "2026-10-14",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-10-14",
+          "date": "2026-10-14",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "84629.45"
+    },
+    {
+      "date": "2026-10-15",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-10-15",
+          "date": "2026-10-15",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "84503.45"
+    },
+    {
+      "date": "2026-10-16",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-10-16",
+          "date": "2026-10-16",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "84370.45"
+    },
+    {
+      "date": "2026-10-17",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "84370.45"
+    },
+    {
+      "date": "2026-10-18",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "84370.45"
+    },
+    {
+      "date": "2026-10-19",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "84370.45"
+    },
+    {
+      "date": "2026-10-20",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "84370.45"
+    },
+    {
+      "date": "2026-10-21",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-10-21",
+          "date": "2026-10-21",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "86870.45"
+    },
+    {
+      "date": "2026-10-22",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-10-22",
+          "date": "2026-10-22",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "86744.45"
+    },
+    {
+      "date": "2026-10-23",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-10-23",
+          "date": "2026-10-23",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "86611.45"
+    },
+    {
+      "date": "2026-10-24",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-10-24",
+          "date": "2026-10-24",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "89111.45"
+    },
+    {
+      "date": "2026-10-25",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-10-25",
+          "date": "2026-10-25",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "89013.45"
+    },
+    {
+      "date": "2026-10-26",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-10-26",
+          "date": "2026-10-26",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "88908.45"
+    },
+    {
+      "date": "2026-10-27",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-10-27",
+          "date": "2026-10-27",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "88796.45"
+    },
+    {
+      "date": "2026-10-28",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-10-28",
+          "date": "2026-10-28",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "91296.45"
+    },
+    {
+      "date": "2026-10-29",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-10-29",
+          "date": "2026-10-29",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "91170.45"
+    },
+    {
+      "date": "2026-10-30",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-10-30",
+          "date": "2026-10-30",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "91037.45"
+    },
+    {
+      "date": "2026-10-31",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "91037.45"
+    },
+    {
+      "date": "2026-11-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-11-01",
+          "date": "2026-11-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "93537.45"
+    },
+    {
+      "date": "2026-11-02",
+      "transactions": [
+        {
+          "id": "recurring_series-1_2026-11-02",
+          "date": "2026-11-02",
+          "description": "Recurring 1",
+          "amount": "-42.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-42.00",
+      "runningBalance": "93495.45"
+    },
+    {
+      "date": "2026-11-03",
+      "transactions": [
+        {
+          "id": "recurring_series-2_2026-11-03",
+          "date": "2026-11-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-49.00",
+      "runningBalance": "93446.45"
+    },
+    {
+      "date": "2026-11-04",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-11-04",
+          "date": "2026-11-04",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-3_2026-11-04",
+          "date": "2026-11-04",
+          "description": "Recurring 3",
+          "amount": "-56.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2444.00",
+      "runningBalance": "95890.45"
+    },
+    {
+      "date": "2026-11-05",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-11-05",
+          "date": "2026-11-05",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-4_2026-11-05",
+          "date": "2026-11-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2374.00",
+      "runningBalance": "98264.45"
+    },
+    {
+      "date": "2026-11-06",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-11-06",
+          "date": "2026-11-06",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-5_2026-11-06",
+          "date": "2026-11-06",
+          "description": "Recurring 5",
+          "amount": "-70.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-203.00",
+      "runningBalance": "98061.45"
+    },
+    {
+      "date": "2026-11-07",
+      "transactions": [
+        {
+          "id": "recurring_series-6_2026-11-07",
+          "date": "2026-11-07",
+          "description": "Recurring 6",
+          "amount": "-77.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-8_2026-11-07",
+          "date": "2026-11-07",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2423.00",
+      "runningBalance": "100484.45"
+    },
+    {
+      "date": "2026-11-08",
+      "transactions": [
+        {
+          "id": "recurring_series-7_2026-11-08",
+          "date": "2026-11-08",
+          "description": "Recurring 7",
+          "amount": "-84.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-9_2026-11-08",
+          "date": "2026-11-08",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-182.00",
+      "runningBalance": "100302.45"
+    },
+    {
+      "date": "2026-11-09",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-11-09",
+          "date": "2026-11-09",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "100197.45"
+    },
+    {
+      "date": "2026-11-10",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-11-10",
+          "date": "2026-11-10",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "100085.45"
+    },
+    {
+      "date": "2026-11-11",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-11-11",
+          "date": "2026-11-11",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "102585.45"
+    },
+    {
+      "date": "2026-11-12",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-11-12",
+          "date": "2026-11-12",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "102459.45"
+    },
+    {
+      "date": "2026-11-13",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-11-13",
+          "date": "2026-11-13",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "102326.45"
+    },
+    {
+      "date": "2026-11-14",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "102326.45"
+    },
+    {
+      "date": "2026-11-15",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "102326.45"
+    },
+    {
+      "date": "2026-11-16",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "102326.45"
+    },
+    {
+      "date": "2026-11-17",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "102326.45"
+    },
+    {
+      "date": "2026-11-18",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-11-18",
+          "date": "2026-11-18",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "104826.45"
+    },
+    {
+      "date": "2026-11-19",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-11-19",
+          "date": "2026-11-19",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "104700.45"
+    },
+    {
+      "date": "2026-11-20",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-11-20",
+          "date": "2026-11-20",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "104567.45"
+    },
+    {
+      "date": "2026-11-21",
+      "transactions": [
+        {
+          "id": "recurring_series-8_2026-11-21",
+          "date": "2026-11-21",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "107067.45"
+    },
+    {
+      "date": "2026-11-22",
+      "transactions": [
+        {
+          "id": "recurring_series-9_2026-11-22",
+          "date": "2026-11-22",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-98.00",
+      "runningBalance": "106969.45"
+    },
+    {
+      "date": "2026-11-23",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-11-23",
+          "date": "2026-11-23",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-105.00",
+      "runningBalance": "106864.45"
+    },
+    {
+      "date": "2026-11-24",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-11-24",
+          "date": "2026-11-24",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-112.00",
+      "runningBalance": "106752.45"
+    },
+    {
+      "date": "2026-11-25",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-11-25",
+          "date": "2026-11-25",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "109252.45"
+    },
+    {
+      "date": "2026-11-26",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-11-26",
+          "date": "2026-11-26",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "109126.45"
+    },
+    {
+      "date": "2026-11-27",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-11-27",
+          "date": "2026-11-27",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "108993.45"
+    },
+    {
+      "date": "2026-11-28",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "108993.45"
+    },
+    {
+      "date": "2026-11-29",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "108993.45"
+    },
+    {
+      "date": "2026-11-30",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "108993.45"
+    },
+    {
+      "date": "2026-12-01",
+      "transactions": [
+        {
+          "id": "recurring_series-0_2026-12-01",
+          "date": "2026-12-01",
+          "description": "Recurring 0",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "111493.45"
+    },
+    {
+      "date": "2026-12-02",
+      "transactions": [
+        {
+          "id": "recurring_series-1_2026-12-02",
+          "date": "2026-12-02",
+          "description": "Recurring 1",
+          "amount": "-42.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-12_2026-12-02",
+          "date": "2026-12-02",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2458.00",
+      "runningBalance": "113951.45"
+    },
+    {
+      "date": "2026-12-03",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-12-03",
+          "date": "2026-12-03",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-2_2026-12-03",
+          "date": "2026-12-03",
+          "description": "Recurring 2",
+          "amount": "-49.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-175.00",
+      "runningBalance": "113776.45"
+    },
+    {
+      "date": "2026-12-04",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-12-04",
+          "date": "2026-12-04",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-3_2026-12-04",
+          "date": "2026-12-04",
+          "description": "Recurring 3",
+          "amount": "-56.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-189.00",
+      "runningBalance": "113587.45"
+    },
+    {
+      "date": "2026-12-05",
+      "transactions": [
+        {
+          "id": "recurring_series-4_2026-12-05",
+          "date": "2026-12-05",
+          "description": "Recurring 4",
+          "amount": "2500.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-8_2026-12-05",
+          "date": "2026-12-05",
+          "description": "Recurring 8",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "5000.00",
+      "runningBalance": "118587.45"
+    },
+    {
+      "date": "2026-12-06",
+      "transactions": [
+        {
+          "id": "recurring_series-5_2026-12-06",
+          "date": "2026-12-06",
+          "description": "Recurring 5",
+          "amount": "-70.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-9_2026-12-06",
+          "date": "2026-12-06",
+          "description": "Recurring 9",
+          "amount": "-98.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-168.00",
+      "runningBalance": "118419.45"
+    },
+    {
+      "date": "2026-12-07",
+      "transactions": [
+        {
+          "id": "recurring_series-10_2026-12-07",
+          "date": "2026-12-07",
+          "description": "Recurring 10",
+          "amount": "-105.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-6_2026-12-07",
+          "date": "2026-12-07",
+          "description": "Recurring 6",
+          "amount": "-77.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-182.00",
+      "runningBalance": "118237.45"
+    },
+    {
+      "date": "2026-12-08",
+      "transactions": [
+        {
+          "id": "recurring_series-11_2026-12-08",
+          "date": "2026-12-08",
+          "description": "Recurring 11",
+          "amount": "-112.00",
+          "source": "forecast"
+        },
+        {
+          "id": "recurring_series-7_2026-12-08",
+          "date": "2026-12-08",
+          "description": "Recurring 7",
+          "amount": "-84.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-196.00",
+      "runningBalance": "118041.45"
+    },
+    {
+      "date": "2026-12-09",
+      "transactions": [
+        {
+          "id": "recurring_series-12_2026-12-09",
+          "date": "2026-12-09",
+          "description": "Recurring 12",
+          "amount": "2500.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "2500.00",
+      "runningBalance": "120541.45"
+    },
+    {
+      "date": "2026-12-10",
+      "transactions": [
+        {
+          "id": "recurring_series-13_2026-12-10",
+          "date": "2026-12-10",
+          "description": "Recurring 13",
+          "amount": "-126.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-126.00",
+      "runningBalance": "120415.45"
+    },
+    {
+      "date": "2026-12-11",
+      "transactions": [
+        {
+          "id": "recurring_series-14_2026-12-11",
+          "date": "2026-12-11",
+          "description": "Recurring 14",
+          "amount": "-133.00",
+          "source": "forecast"
+        }
+      ],
+      "dailyNet": "-133.00",
+      "runningBalance": "120282.45"
+    },
+    {
+      "date": "2026-12-12",
+      "transactions": [],
+      "dailyNet": "0.00",
+      "runningBalance": "120282.45"
+    }
+  ],
+  "advanced": [
+    null,
+    "2026-07-02",
+    "2026-06-03",
+    "2026-07-04",
+    null,
+    "2026-07-06",
+    "2026-07-07",
+    "2026-07-08",
+    null,
+    "2026-06-21",
+    "2026-06-22",
+    "2026-06-23",
+    null,
+    "2026-06-11",
+    "2026-05-08",
+    null
+  ]
+}
