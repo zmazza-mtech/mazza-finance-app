@@ -7,8 +7,10 @@
  * the only way to assert that an export survives a re-import.
  *
  * It is deliberately not exported from `src`: a reader nothing in production
- * calls would be dead code there, and a second parser in the codebase is a
- * second opinion waiting to disagree with the browser's.
+ * calls would be dead code there. The browser's reader lives in
+ * `frontend/src/lib/csv.ts` and is the one that matters; this one exists to
+ * check `toCsv`'s output independently of it, and the round-trip tests are what
+ * keep the two opinions from drifting apart.
  */
 
 /** Rows of fields, header included, from an RFC 4180 document. */

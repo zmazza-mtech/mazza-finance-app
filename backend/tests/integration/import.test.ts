@@ -294,10 +294,13 @@ describe('POST /import/csv — size limits', () => {
  * merely visible: what comes out of the export must go back in unchanged.
  *
  * The CSV is read back with the test's own reader — see `helpers/csv.ts` for
- * why there is no production one on this side. A description containing a
- * newline is deliberately not exercised here: `toCsv` quotes it correctly, but
- * the browser's importer reads line by line and cannot reassemble it, so a pass
- * here would claim a round trip the application cannot actually perform.
+ * why there is no production one on this side.
+ *
+ * That includes a description containing a newline. `toCsv` has always quoted
+ * one correctly, but the browser's importer read the file line by line and
+ * could not reassemble the record, so the case was left unasserted rather than
+ * claim a round trip the application could not perform. #40 replaced that
+ * importer with a character-wise reader, and the case is exercised below.
  */
 describe('export and re-import', () => {
   const EXPORT = '/api/v1/reports/transactions.csv';
@@ -354,6 +357,38 @@ describe('export and re-import', () => {
 
     const [restored] = await allTransactions(emptyAccount);
     expect(restored!.description).toBe(awkward);
+  });
+
+  it('carries a description containing a newline through unchanged', async () => {
+    // The case #40 was about. `toCsv` quotes the newline, and the record spans
+    // two physical lines in the file — a reader that splits on newlines first
+    // sees two broken halves and loses the transaction entirely.
+    const multiline = 'ACME CORP\nINVOICE 4471';
+    await seedTransactions(accountId, [
+      { date: '2026-08-10', description: multiline, amount: '-42.50', category: null },
+    ]);
+
+    const exported = await exportCsv(accountId);
+    // The export really does put the record across two lines, or this test
+    // would be asserting the easy case by accident.
+    expect(exported.split('\n').length).toBeGreaterThan(3);
+
+    const emptyAccount = (await seedAccount({ name: 'Restored' })).id;
+    const res = await request.post(IMPORT).send({
+      accountId: emptyAccount,
+      transactions: parseCsvRecords(exported).map((r) => ({
+        date: r['date']!,
+        description: r['description']!,
+        amount: r['amount']!,
+      })),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.imported).toBe(1);
+
+    const [restored] = await allTransactions(emptyAccount);
+    expect(restored!.description).toBe(multiline);
+    expect(String(restored!.amount)).toBe('-42.50');
   });
 
   it('keeps an amount to the cent through the round trip', async () => {
