@@ -151,7 +151,20 @@ const ImportRowSchema = z.object({
   amount: decimalAmount,
 });
 
+/**
+ * The 5,000 the Express version allowed is not completable on D1.
+ *
+ * Measured: 8 rows per INSERT before D1 rejects the statement on bound
+ * parameters, against 50 queries per Worker invocation on the free tier
+ * (#102). 5,000 rows is ~625 queries; ~380 is the real ceiling and 300
+ * leaves room for the account check and the dedup read.
+ *
+ * Capped rather than solved: SimpleFIN is the data path and #80 migrates the
+ * existing history, so the importer is a seeding route both already cover.
+ * The cap makes an oversized request fail at the boundary with a validation
+ * error instead of partway through with rows already written.
+ */
 export const ImportCsvBodySchema = z.object({
   accountId: uuid,
-  transactions: z.array(ImportRowSchema).min(1).max(5000),
+  transactions: z.array(ImportRowSchema).min(1).max(300),
 });

@@ -6,6 +6,7 @@ import recurring from './api/recurring.js';
 import forecast from './api/forecast.js';
 import reports from './api/reports.js';
 import importCsv from './api/import.js';
+import sync from './api/sync.js';
 import { applySecurityHeaders } from './lib/security-headers.js';
 import type { Env } from './env.js';
 
@@ -38,6 +39,7 @@ app.route('/api/v1/recurring', recurring);
 app.route('/api/v1/forecast', forecast);
 app.route('/api/v1/reports', reports);
 app.route('/api/v1/import', importCsv);
+app.route('/api/v1/sync', sync);
 
 app.notFound((c) => {
   if (new URL(c.req.url).pathname.startsWith('/api/')) {
