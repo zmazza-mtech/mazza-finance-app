@@ -98,3 +98,45 @@ export const CreateOverrideSchema = z.object({
   overrideAmount: decimalAmount.nullable().optional(),
   overrideName: z.string().min(1).max(255).nullable().optional(),
 });
+
+export const ForecastQuerySchema = z.object({
+  accountId: uuid,
+  startDate: dateString,
+  endDate: dateString,
+});
+
+// ---------------------------------------------------------------------------
+// Reports
+// ---------------------------------------------------------------------------
+
+export const ReportQuerySchema = z.object({
+  accountId: uuid,
+  startDate: dateString,
+  endDate: dateString,
+});
+
+/** YYYY-MM month string */
+const monthString = z.string().regex(/^\d{4}-\d{2}$/, 'Must be YYYY-MM');
+
+/** Absolute month index, for comparing two YYYY-MM strings. */
+function monthIndex(month: string): number {
+  const [year, m] = month.split('-').map(Number) as [number, number];
+  return year * 12 + (m - 1);
+}
+
+export const MonthlySummaryQuerySchema = z
+  .object({
+    accountId: uuid,
+    startMonth: monthString,
+    endMonth: monthString,
+  })
+  .refine((q) => monthIndex(q.endMonth) >= monthIndex(q.startMonth), {
+    message: 'endMonth must not precede startMonth',
+    path: ['endMonth'],
+  });
+
+export const CategoryTrendQuerySchema = z.object({
+  accountId: uuid,
+  asOf: dateString,
+  months: z.coerce.number().int().min(1).max(12),
+});

@@ -3,6 +3,8 @@ import accounts from './api/accounts.js';
 import settings from './api/settings.js';
 import transactions from './api/transactions.js';
 import recurring from './api/recurring.js';
+import forecast from './api/forecast.js';
+import reports from './api/reports.js';
 import type { Env } from './env.js';
 
 export type { Env };
@@ -19,6 +21,8 @@ app.route('/api/v1/accounts', accounts);
 app.route('/api/v1/settings', settings);
 app.route('/api/v1/transactions', transactions);
 app.route('/api/v1/recurring', recurring);
+app.route('/api/v1/forecast', forecast);
+app.route('/api/v1/reports', reports);
 
 app.notFound((c) => {
   if (new URL(c.req.url).pathname.startsWith('/api/')) {
