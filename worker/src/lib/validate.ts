@@ -140,3 +140,18 @@ export const CategoryTrendQuerySchema = z.object({
   asOf: dateString,
   months: z.coerce.number().int().min(1).max(12),
 });
+
+// ---------------------------------------------------------------------------
+// CSV import
+// ---------------------------------------------------------------------------
+
+const ImportRowSchema = z.object({
+  date: dateString,
+  description: z.string().min(1).max(255),
+  amount: decimalAmount,
+});
+
+export const ImportCsvBodySchema = z.object({
+  accountId: uuid,
+  transactions: z.array(ImportRowSchema).min(1).max(5000),
+});
