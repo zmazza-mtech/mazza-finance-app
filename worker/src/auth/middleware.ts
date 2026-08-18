@@ -68,7 +68,10 @@ export function requireAuth() {
     try {
       // Configuration is checked inside the try so a missing binding takes the
       // same path as a bad token: refused, and refused without explaining why.
-      if (!issuer || !audience) {
+      // The issuer is required; the audience is not. Some providers do not
+      // issue an `aud` claim and bind the token to the client through a
+      // per-client key set instead — see VerifyOptions.audience.
+      if (!issuer) {
         throw new Error('Auth is not configured');
       }
 
@@ -86,7 +89,7 @@ export function requireAuth() {
 
       const claims = await verifyJwt(header.slice('Bearer '.length), {
         issuer,
-        audience,
+        ...(audience ? { audience } : {}),
         jwks: keys,
       });
 

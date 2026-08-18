@@ -15,13 +15,36 @@
 export interface VerifiedClaims {
   /** The provider's opaque subject identifier. Stored as `users.auth_subject`. */
   sub: string;
+  /**
+   * Empty when the provider does not put it in the token.
+   *
+   * WorkOS omits it from the default claim set and adds it through a JWT
+   * template. Identity is the `sub` claim regardless — the email is a display
+   * attribute, never the thing a user is looked up by — so an absent one is
+   * recoverable rather than fatal.
+   */
   email: string;
   exp: number;
 }
 
 export interface VerifyOptions {
   issuer: string;
-  audience: string;
+  /**
+   * Enforced when set, and **only safe to leave unset with a client-scoped
+   * JWKS.**
+   *
+   * Not every provider issues `aud`. WorkOS access tokens carry
+   * `sub`, `sid`, `iss`, `exp`, `iat` and organization claims, and no
+   * audience — instead the key set itself is per client
+   * (`/sso/jwks/<clientId>`), so a token minted for another application is
+   * signed by a key this one never fetches. The binding is in the key rather
+   * than in a claim.
+   *
+   * Requiring `aud` unconditionally would reject every real WorkOS token;
+   * ignoring it unconditionally would drop a real check for providers that do
+   * issue one. Hence: enforced when configured.
+   */
+  audience?: string;
   jwks: { keys: JsonWebKey[] };
   /** Injected so expiry and not-before are testable without waiting. */
   now?: Date;
@@ -123,12 +146,14 @@ export async function verifyJwt(
     throw new JwtError('Unexpected issuer');
   }
 
-  const aud = payload['aud'];
-  const audienceMatches = Array.isArray(aud)
-    ? aud.includes(options.audience)
-    : aud === options.audience;
-  if (!audienceMatches) {
-    throw new JwtError('Unexpected audience');
+  if (options.audience !== undefined) {
+    const aud = payload['aud'];
+    const audienceMatches = Array.isArray(aud)
+      ? aud.includes(options.audience)
+      : aud === options.audience;
+    if (!audienceMatches) {
+      throw new JwtError('Unexpected audience');
+    }
   }
 
   const nowSec = Math.floor((options.now ?? new Date()).getTime() / 1000);

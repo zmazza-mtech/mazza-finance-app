@@ -108,7 +108,7 @@ dev), Postgres, the home server, Express, `readSecret()`. Local dev is
 | 1 | Runtime | Workers-native: Hono + D1 (owner-confirmed) | Matches the owner's fleet, truly $0, best scaling story. One-time port of 8 thin routers with the existing test suite as safety net. |
 | 2 | Serving topology | Single Worker: static assets + Hono API, same origin | Workers static assets is Cloudflare's recommended new-project path; same origin kills CORS/split-CSP complexity and is one `wrangler deploy`. |
 | 3 | Money in D1 | TEXT decimal strings; ALL arithmetic in decimal.js; SQL arithmetic on money banned | Preserves the epic #1 invariant. The one `SUM` in reports is rewritten as decimal.js summation in the service layer. New invariant: "no SQL aggregation/arithmetic on amount columns — fetch and sum with decimal.js." |
-| 4 | Auth | **Provider undecided (#76)** — passkey + email-code only, no OAuth redirects. Clerk was chosen here on the belief that passkeys were free; they cost $25/mo, so WorkOS AuthKit (passkeys free to 1M MAU) is the live alternative. The middleware is provider-agnostic either way. | Face ID is a hard requirement; Cloudflare Access is email-OTP-only. Clerk verifies JWTs statelessly in Hono middleware; free to 10k MAU. Bearer-token API = future Swift/Capacitor ready. Redirect-based providers can strand sessions in iOS standalone PWA context — hence none configured. |
+| 4 | Auth | **WorkOS AuthKit** — decided 2026-08-18. Passkey primary (Face ID), email code fallback; social available but **not** the primary path on the installed PWA, see below. Clerk was chosen originally on the belief that passkeys were free; they cost $25/mo. WorkOS is free to 1M MAU with passkeys, social, MFA and enterprise SSO included — which also gives Phase 5 an upgrade path that costs nothing until it is needed. Integration facts, verified 2026-08-18: JWKS at `https://api.workos.com/sso/jwks/<clientId>`, `iss` is `https://api.workos.com/`, **no `aud` claim** (the client binding is the per-client key set), and `email` is **not** in the default claim set — it needs a JWT template. | Face ID is a hard requirement; Cloudflare Access is email-OTP-only. Clerk verifies JWTs statelessly in Hono middleware; free to 10k MAU. Bearer-token API = future Swift/Capacitor ready. Redirect-based providers can strand sessions in iOS standalone PWA context — hence none configured. |
 | 5 | Tenancy | Household model, in the schema from migration #1; queries written scoped from day one | households / users (Clerk ID, JIT-provisioned) / household_memberships (owner\|member) / household_settings / user_settings / simplefin_connections. During the port, household resolution is a constant (the Mazza household); Phase 4 swaps in JWT-membership resolution. No retrofit pass later. |
 | 6 | Isolation upgrade path | App-level scoping now; D1-per-household noted as the future hard-isolation option | SQLite has no RLS; per-tenant DBs (D1 supports thousands) is the Cloudflare-idiomatic stronger answer if SaaS gets real. Not built now. |
 | 7 | SimpleFIN token | Encrypted D1 column (AES-256-GCM via Web Crypto, same nonce:ciphertext:tag format), single master key in Wrangler secrets, `key_version` column | One KEK outside the DB covers the DB-exfiltration threat; per-tenant DEK/KMS is overkill below ~1k tenants. |
@@ -226,11 +226,34 @@ D1-per-household isolation if warranted, Capacitor spike if native matters.
    | Clerk Pro | yes | $25/mo | no |
    | Clerk Hobby | no | $0 | no — loses Face ID |
 
-   **The middleware does not depend on the answer.** Both issue RS256 JWTs
-   verified against a JWKS, so the provider is three settings —
-   `AUTH_ISSUER`, `AUTH_AUDIENCE`, `AUTH_JWKS_URL` — not a rewrite.
-   `users.clerk_user_id` was renamed to `auth_subject` in migration 0003 for
-   the same reason.
+   **Resolved 2026-08-18: WorkOS AuthKit.** Free, passkeys included, and the
+   enterprise-SSO tier is a scale path that costs nothing until Phase 5 needs
+   it.
+
+   Two integration facts found while wiring it, either of which would have
+   rejected every real token:
+
+   - **No `aud` claim.** `AUTH_AUDIENCE` is therefore optional — enforced when
+     set, skipped when not. Safe here only because the JWKS is per client
+     (`/sso/jwks/<clientId>`), so a token minted for another application is
+     signed by a key this Worker never fetches. The binding is in the key
+     rather than in a claim.
+   - **No `email` claim by default.** It comes from a JWT template. Identity
+     is `sub` regardless, so an absent email is a display gap rather than an
+     authentication failure — but the template must be configured before
+     go-live or every user provisions with a blank address.
+
+   Configuration is `AUTH_ISSUER=https://api.workos.com/` and
+   `AUTH_JWKS_URL=https://api.workos.com/sso/jwks/<clientId>`.
+
+   **Social providers, and the PWA caveat.** AuthKit includes them free and
+   they are welcome on desktop. They are redirect-based, and an OAuth redirect
+   in an iOS standalone PWA is a documented way to lose a session: iOS opens
+   authentication in a separate Safari context and the user does not
+   reliably land back inside the installed app. That is the original reason
+   this decision said "no OAuth redirects", and it still holds. Passkey stays
+   primary on the phone; social must pass #81's on-device QA before being
+   offered as a sign-in path there.
 3. ~~D1 free-tier limits — verify row-read/write daily caps at Phase 1 start.~~
    **Answered 2026-08-17 (#75). See "D1 free-tier headroom" below.** The row
    caps are not the constraint; two other free-tier limits are, and one of
