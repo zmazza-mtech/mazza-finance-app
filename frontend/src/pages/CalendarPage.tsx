@@ -134,6 +134,7 @@ export function CalendarPage() {
         onAddTransaction={handleAddTransaction}
         requestedDate={requestedDate}
         onRequestedDateHandled={() => setRequestedDate(null)}
+        onJumpToDate={handleViewDate}
         onPrevMonth={() => setCurrentMonth((m) => addMonths(m, -1))}
         onNextMonth={() => setCurrentMonth((m) => addMonths(m, 1))}
         onToday={() => setCurrentMonth(todayIso().slice(0, 7))}

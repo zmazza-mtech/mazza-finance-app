@@ -28,6 +28,8 @@ interface CalendarTimelineProps {
    */
   requestedDate: string | null;
   onRequestedDateHandled: () => void;
+  /** Navigate to a specific day — the month and the day together. */
+  onJumpToDate: (date: string) => void;
   onAddTransaction: (data: {
     accountId: string;
     date: string;
@@ -56,6 +58,8 @@ function defaultSelection(monthDates: string[], todayDate: string, currentMonth:
  *
  * Keyboard shortcuts:
  * - Arrow keys: move the focus ring between day cells
+ * - Home / End: first / last day of the visible month, clamped to it
+ * - Page Up / Page Down: previous / next month, focus landing in the new one
  * - T: jump to today, and to today's month
  * - Enter / Space: open the add-transaction modal for the focused day
  * - /: focus the search field
@@ -77,6 +81,7 @@ export function CalendarTimeline({
   onAddTransaction,
   requestedDate,
   onRequestedDateHandled,
+  onJumpToDate,
 }: CalendarTimelineProps) {
   const monthDays = days.filter((d) => d.date.slice(0, 7) === currentMonth);
   const allIds = monthDays.map((d) => d.date);
@@ -132,6 +137,7 @@ export function CalendarTimeline({
    */
   useEffect(() => {
     if (!focusFollowsKey.current) return;
+
     focusFollowsKey.current = false;
 
     const date = rovingState.focusedId;
@@ -157,10 +163,47 @@ export function CalendarTimeline({
 
     setRovingState((prev) => ({ ...prev, focusedId: requestedDate }));
     setSelectedDate(requestedDate);
-    focusFollowsKey.current = true;
     onRequestedDateHandled();
+
+    /*
+     * Focus here rather than setting `focusFollowsKey` and leaving it to the
+     * effect above.
+     *
+     * That effect fires on `focusedId` *changing*. A month jump reloads the
+     * forecast window, which unmounts this component; it remounts with the
+     * focus already defaulted to the first of the new month — and when the
+     * requested day is that same day, `focusedId` never changes and the jump
+     * is dropped in silence. The cell is on screen by now, so focus it.
+     */
+    gridRef.current?.querySelector<HTMLElement>(`[data-date="${requestedDate}"]`)?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestedDate, currentMonth]);
+
+  /**
+   * The day a month jump should land on: the same day number in the adjacent
+   * month, or that month's last day when it is shorter. Returns null when the
+   * adjacent month is outside the loaded window.
+   *
+   * Keeping the day number is what makes Page Down repeatable — landing on the
+   * 1st every time would make the second press a no-op from the reader's point
+   * of view.
+   */
+  const monthJumpTarget = useCallback(
+    (delta: -1 | 1): string | null => {
+      const months = [...new Set(days.map((d) => d.date.slice(0, 7)))].sort();
+      const targetMonth = months[months.indexOf(currentMonth) + delta];
+      if (!targetMonth) return null;
+
+      const dates = days
+        .map((d) => d.date)
+        .filter((date) => date.startsWith(targetMonth));
+      if (dates.length === 0) return null;
+
+      const dayNumber = (rovingState.focusedId ?? '').slice(8);
+      return dates.find((date) => date.slice(8) === dayNumber) ?? dates[dates.length - 1]!;
+    },
+    [days, currentMonth, rovingState.focusedId],
+  );
 
   /** Opens the modal, remembering what to give focus back to on close. */
   const openModal = useCallback((date: string) => {
@@ -198,6 +241,36 @@ export function CalendarTimeline({
         return;
       }
 
+      /*
+       * Month jumps, routed through the parent as a date rather than a
+       * direction.
+       *
+       * A month change moves the forecast window, so the query key changes and
+       * this component unmounts while the new range loads — taking
+       * `focusFollowsKey` and the roving state with it. Setting the flag here
+       * and hoping to focus after the month renders does not survive that.
+       * Naming the target date does: it comes back as the `requestedDate`
+       * prop, which outlives the remount.
+       *
+       * preventDefault matters: unhandled, the browser scrolls the page and
+       * the grid loses the key entirely.
+       */
+      if (e.key === 'PageUp' || e.key === 'PageDown') {
+        e.preventDefault();
+
+        const target = monthJumpTarget(e.key === 'PageUp' ? -1 : 1);
+        if (target) {
+          onJumpToDate(target);
+        } else if (e.key === 'PageUp') {
+          // Past the edge of the loaded window — move the month and let the
+          // usual default selection apply.
+          onPrevMonth();
+        } else {
+          onNextMonth();
+        }
+        return;
+      }
+
       if (e.key === 'T' || e.key === 't') {
         focusFollowsKey.current = true;
         setRovingState((prev) => ({ ...prev, focusedId: todayDate }));
@@ -223,7 +296,10 @@ export function CalendarTimeline({
         }
       }
     },
-    [rovingState.focusedId, todayDate, onToday, modalDate, onSearchChange, openModal, closeModal],
+    [
+      rovingState.focusedId, todayDate, onToday, onPrevMonth, onNextMonth,
+      monthJumpTarget, onJumpToDate, modalDate, onSearchChange, openModal, closeModal,
+    ],
   );
 
   const selectedDay = days.find((d) => d.date === selectedDate) ?? null;
