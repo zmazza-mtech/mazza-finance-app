@@ -32,7 +32,7 @@ const SETTING_OWNER = {
 
 type SettingKey = keyof typeof SETTING_OWNER;
 
-const UpdateSettingSchema = z.object({ value: z.string().min(1).max(1000) });
+const UpdateSettingSchema = z.object({ value: z.string().min(1).max(255) });
 
 async function readJson(c: { req: { json: () => Promise<unknown> } }): Promise<unknown> {
   try {

@@ -64,3 +64,37 @@ export const TransactionsQuerySchema = z.object({
   sortDir: z.enum(['asc', 'desc']).optional(),
   category: CategoryEnum.optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Recurring transactions
+// ---------------------------------------------------------------------------
+
+export const FrequencyEnum = z.enum(['weekly', 'biweekly', 'monthly', 'yearly']);
+export const RecurringStatusEnum = z.enum(['active', 'disabled', 'pending_review', 'ended']);
+
+export const CreateRecurringSchema = z.object({
+  accountId: uuid,
+  name: z.string().min(1).max(255),
+  amount: decimalAmount,
+  frequency: FrequencyEnum,
+  nextDate: dateString,
+  endDate: dateString.nullable().optional(),
+  category: CategoryEnum.nullable().optional(),
+});
+
+export const UpdateRecurringSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  amount: decimalAmount.optional(),
+  frequency: FrequencyEnum.optional(),
+  nextDate: dateString.optional(),
+  endDate: dateString.nullable().optional(),
+  status: RecurringStatusEnum.optional(),
+  category: CategoryEnum.nullable().optional(),
+});
+
+export const CreateOverrideSchema = z.object({
+  overrideType: z.enum(['modified', 'deleted']),
+  overrideDate: dateString.nullable().optional(),
+  overrideAmount: decimalAmount.nullable().optional(),
+  overrideName: z.string().min(1).max(255).nullable().optional(),
+});
