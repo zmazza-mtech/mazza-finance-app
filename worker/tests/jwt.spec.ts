@@ -126,7 +126,7 @@ describe('Auth0 token shape', () => {
     // Auth0 issues aud as an array when the token also grants /userinfo.
     const token = await signJwt({
       iss: AUTH0_ISS,
-      aud: [AUTH0_AUD, `${AUTH0_ISS}userinfo`] as unknown as string,
+      aud: [AUTH0_AUD, `${AUTH0_ISS}userinfo`],
     });
     await expect(verifyJwt(token, config)).resolves.toMatchObject({ sub: 'user_abc123' });
   });
@@ -134,7 +134,7 @@ describe('Auth0 token shape', () => {
   it('rejects an aud array that does not contain it', async () => {
     const token = await signJwt({
       iss: AUTH0_ISS,
-      aud: ['https://someone-elses-api', `${AUTH0_ISS}userinfo`] as unknown as string,
+      aud: ['https://someone-elses-api', `${AUTH0_ISS}userinfo`],
     });
     await expect(verifyJwt(token, config)).rejects.toThrow(/audience/i);
   });
@@ -145,8 +145,8 @@ describe('Auth0 token shape', () => {
     const token = await signJwt({
       iss: AUTH0_ISS,
       aud: AUTH0_AUD,
-      email: undefined as unknown as string,
-      ['https://mazza.finance/email' as 'email']: 'mrs@example.com',
+      email: undefined,
+      'https://mazza.finance/email': 'mrs@example.com',
     });
 
     const claims = await verifyJwt(token, {
@@ -164,7 +164,7 @@ describe('a provider that issues no audience claim', () => {
   const noAudience = { issuer: CONFIG.issuer, jwks: TEST_JWKS, now: NOW };
 
   it('accepts a token with no aud when no audience is configured', async () => {
-    const token = await signJwt({ aud: undefined as unknown as string });
+    const token = await signJwt({ aud: undefined });
     await expect(verifyJwt(token, noAudience)).resolves.toMatchObject({ sub: 'user_abc123' });
   });
 
@@ -176,14 +176,14 @@ describe('a provider that issues no audience claim', () => {
   it('does not silently ignore a configured audience', async () => {
     // The dangerous version of this change would be to drop the check
     // wherever the claim is missing. Configured means enforced.
-    const token = await signJwt({ aud: undefined as unknown as string });
+    const token = await signJwt({ aud: undefined });
     await expect(verify(token)).rejects.toThrow(/audience/i);
   });
 
   it('carries an empty email rather than failing when the provider omits it', async () => {
     // WorkOS adds email through a JWT template. Identity is the sub claim, so
     // an absent email is a display gap, not an authentication failure.
-    const token = await signJwt({ email: undefined as unknown as string });
+    const token = await signJwt({ email: undefined });
     const claims = await verifyJwt(token, noAudience);
     expect(claims.sub).toBe('user_abc123');
     expect(claims.email).toBe('');
