@@ -8,6 +8,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { SELF } from 'cloudflare:test';
+import { authed } from './helpers/auth.js';
 
 const CADDY_CSP =
   "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; frame-ancestors 'none'";
@@ -42,7 +43,7 @@ describe('security headers', () => {
   it('sets them on an error response too', async () => {
     // A 404 or a 500 is exactly when a header is easiest to lose, because it
     // leaves by a different path than the happy one.
-    const res = await SELF.fetch('https://example.com/api/v1/nope');
+    const res = await SELF.fetch('https://example.com/api/v1/nope', authed());
     expect(res.status).toBe(404);
     expect(res.headers.get('Content-Security-Policy')).toBe(CADDY_CSP);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
@@ -57,14 +58,18 @@ describe('security headers', () => {
 });
 
 describe('SPA fallback and the API boundary', () => {
+  // Authenticated on purpose: auth runs before routing, so without a token
+  // an unknown path answers 401 rather than 404 — which is correct, and
+  // covered in auth-middleware.spec.ts. What is under test here is the shape
+  // of the 404 itself.
   it('answers an unknown /api/v1 route with the envelope, never the shell', async () => {
-    const res = await SELF.fetch('https://example.com/api/v1/nope');
+    const res = await SELF.fetch('https://example.com/api/v1/nope', authed());
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ data: null, error: 'Not found' });
   });
 
   it('answers an unknown /api route with the envelope, whatever the version', async () => {
-    const res = await SELF.fetch('https://example.com/api/v2/anything');
+    const res = await SELF.fetch('https://example.com/api/v2/anything', authed());
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ data: null, error: 'Not found' });
   });

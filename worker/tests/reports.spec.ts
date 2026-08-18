@@ -22,13 +22,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SELF, env } from 'cloudflare:test';
 import { MAZZA_HOUSEHOLD_ID } from '../src/db/household.js';
+import { authed } from './helpers/auth.js';
 
 const OTHER_HOUSEHOLD = '8e2a1f77-0c44-4f6e-9b3a-1d5c6e7f8a90';
 const OUR_ACCOUNT = '55555555-5555-4555-8555-555555555555';
 const THEIR_ACCOUNT = '66666666-6666-4666-8666-666666666666';
 
 async function api(path: string) {
-  const res = await SELF.fetch(`https://example.com/api/v1${path}`);
+  const res = await SELF.fetch(`https://example.com/api/v1${path}`, authed());
   const text = await res.text();
   const ct = res.headers.get('content-type') ?? '';
   return {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SELF, env } from 'cloudflare:test';
+import { authed } from './helpers/auth.js';
 
 declare module 'cloudflare:test' {
   interface ProvidedEnv {
@@ -16,7 +17,7 @@ describe('worker scaffold', () => {
   });
 
   it('returns the 404 envelope for unknown API routes', async () => {
-    const res = await SELF.fetch('https://example.com/api/v1/nope');
+    const res = await SELF.fetch('https://example.com/api/v1/nope', authed());
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ data: null, error: 'Not found' });
   });
