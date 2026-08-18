@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { describeSeriesCounts, nextOccurrenceAfter } from '@/lib/recurring';
+import {
+  describeSeriesCounts,
+  nextOccurrenceAfter,
+  parseForecastInstanceId,
+} from '@/lib/recurring';
 
 describe('describeSeriesCounts', () => {
   it('states both counts', () => {
@@ -65,5 +69,34 @@ describe('nextOccurrenceAfter', () => {
 
   it('does not shift a date west of Greenwich', () => {
     expect(nextOccurrenceAfter('2026-01-01', 'monthly', '2026-01-15')).toBe('2026-02-01');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseForecastInstanceId
+// ---------------------------------------------------------------------------
+
+describe('parseForecastInstanceId', () => {
+  const UUID = '3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+
+  it('splits a forecast row id back into its series and its date', () => {
+    // computeForecast builds the id as `recurring_${recurringId}_${date}`, and
+    // the day panel needs both halves to write an override for that occurrence.
+    expect(parseForecastInstanceId(`recurring_${UUID}_2026-09-15`)).toEqual({
+      recurringId: UUID,
+      originalDate: '2026-09-15',
+    });
+  });
+
+  it('returns null for an actual transaction id', () => {
+    expect(parseForecastInstanceId(UUID)).toBeNull();
+  });
+
+  it('returns null when the trailing segment is not a date', () => {
+    expect(parseForecastInstanceId(`recurring_${UUID}_september`)).toBeNull();
+  });
+
+  it('returns null for an empty id', () => {
+    expect(parseForecastInstanceId('')).toBeNull();
   });
 });

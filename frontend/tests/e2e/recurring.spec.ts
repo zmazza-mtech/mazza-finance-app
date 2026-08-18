@@ -5,7 +5,6 @@ import {
   expectedRecurringBalance,
   fixtureDate,
   formatBalance,
-  overrideInstance,
 } from './fixtures';
 import type { Page } from '@playwright/test';
 
@@ -42,7 +41,19 @@ const EDITED_PAYCHECK_DAY = '6075.00'; // 3675.00 + 2400.00
 const EDITED_FOLLOWING = '6000.00'; // 6075.00 − 75.00
 
 // --- Overriding one instance -------------------------------------------------
-const OVERRIDE_AMOUNT = '-10.00'; // this instance only; the series stays −60.00
+const OVERRIDE_MAGNITUDE = '10.00'; // this instance only; the series stays −60.00
+
+// --- Skipping one instance ---------------------------------------------------
+// With the occurrence gone the month walks as the plain seed until the series
+// charges again next month.
+const SKIPPED_SERIES_DAY = '5000.00';
+const SKIPPED_RENT_DAY = '3750.00'; // 5000.00 − 1250.00
+const SKIPPED_PAYCHECK_DAY = '6150.00'; // 3750.00 + 2400.00
+
+// --- Moving one instance -----------------------------------------------------
+const MOVED_TO_DAY = 7; // was day 5; both sit before the rent
+const MOVED_FROM_BALANCE = '5000.00'; // day 5 no longer charges
+const MOVED_TO_BALANCE = '4940.00'; // 5000.00 − 60.00, two days later
 const OVERRIDDEN_SERIES_DAY = '4990.00'; // 5000.00 − 10.00
 // The override lifts every later day by the 50.00 it did not spend, so the
 // following month opens 50.00 higher and its own instance still costs 60.00.
@@ -76,6 +87,20 @@ async function openDay(page: Page, date: string) {
 /** The panel row for a named series on the open day. */
 function panelRow(page: Page, name: string) {
   return page.getByRole('complementary').getByRole('listitem').filter({ hasText: name });
+}
+
+/** Opens the override controls on a forecast row in the day panel. */
+async function openOverrideMenu(page: Page, date: string, seriesName: string) {
+  await openDay(page, date);
+  await page.getByRole('button', { name: `Edit recurring ${seriesName}` }).click();
+}
+
+/** Re-amounts a single occurrence through the day panel. */
+async function overrideThisOccurrence(page: Page, date: string, magnitude: string) {
+  await openOverrideMenu(page, date, RECURRING.active.name);
+  await page.getByRole('menuitem', { name: 'Edit this occurrence' }).click();
+  await page.getByLabel('Amount').fill(magnitude);
+  await page.getByRole('button', { name: 'Save' }).click();
 }
 
 /**
@@ -162,13 +187,9 @@ test.describe('recurring management', () => {
       cellBalance(page, seriesDate, expectedRecurringBalance(RECURRING.active.day)),
     ).toBeVisible();
 
-    // Written through the API, not the UI — see overrideInstance and issue #26.
-    await overrideInstance(recurring.activeSeriesId, seriesDate, {
-      overrideType: 'modified',
-      overrideAmount: OVERRIDE_AMOUNT,
-    });
-    await page.reload();
-    await showMonthsAhead(page, 1);
+    // Written through the UI, which #26 made reachable. No reload: the mutation
+    // invalidates the forecast, so the balance has to settle on its own.
+    await overrideThisOccurrence(page, seriesDate, OVERRIDE_MAGNITUDE);
 
     // The overridden day carries the override's amount...
     await expect(cellBalance(page, seriesDate, OVERRIDDEN_SERIES_DAY)).toBeVisible();
@@ -188,6 +209,82 @@ test.describe('recurring management', () => {
     await expect(cellBalance(page, followingDate, FOLLOWING_AFTER_SERIES)).toBeVisible();
     await openDay(page, followingDate);
     await expect(panelRow(page, RECURRING.active.name)).toContainText('−$60.00');
+  });
+
+  test('skipping one instance drops it from the forecast', async ({ page, recurring }) => {
+    const seriesDate = fixtureDate(recurring.month, RECURRING.active.day);
+
+    await page.goto('/');
+    await showMonthsAhead(page, 1);
+    await expect(
+      cellBalance(page, seriesDate, expectedRecurringBalance(RECURRING.active.day)),
+    ).toBeVisible();
+
+    await openOverrideMenu(page, seriesDate, RECURRING.active.name);
+    await page.getByRole('menuitem', { name: 'Edit this occurrence' }).click();
+    await page.getByRole('button', { name: 'Skip this occurrence' }).click();
+
+    // The charge is gone from its day and from every day after it.
+    await expect(cellBalance(page, seriesDate, SKIPPED_SERIES_DAY)).toBeVisible();
+    await expect(
+      cellBalance(page, fixtureDate(recurring.month, RENT_DAY), SKIPPED_RENT_DAY),
+    ).toBeVisible();
+    await expect(
+      cellBalance(page, fixtureDate(recurring.month, PAYCHECK_DAY), SKIPPED_PAYCHECK_DAY),
+    ).toBeVisible();
+
+    // And the row itself is no longer in the day panel.
+    await openDay(page, seriesDate);
+    await expect(panelRow(page, RECURRING.active.name)).toHaveCount(0);
+  });
+
+  test('moving one instance charges it on the new day only', async ({ page, recurring }) => {
+    const seriesDate = fixtureDate(recurring.month, RECURRING.active.day);
+    const movedDate = fixtureDate(recurring.month, MOVED_TO_DAY);
+
+    await page.goto('/');
+    await showMonthsAhead(page, 1);
+
+    await openOverrideMenu(page, seriesDate, RECURRING.active.name);
+    await page.getByRole('menuitem', { name: 'Edit this occurrence' }).click();
+    await page.getByLabel('Date').fill(movedDate);
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(cellBalance(page, seriesDate, MOVED_FROM_BALANCE)).toBeVisible();
+    await expect(cellBalance(page, movedDate, MOVED_TO_BALANCE)).toBeVisible();
+
+    await openDay(page, movedDate);
+    await expect(panelRow(page, RECURRING.active.name)).toContainText('−$60.00');
+  });
+
+  test('"this and all future" confirms first, then edits the series', async ({
+    page,
+    recurring,
+  }) => {
+    const seriesDate = fixtureDate(recurring.month, RECURRING.active.day);
+    const followingDate = fixtureDate(recurring.followingMonth, RECURRING.active.day);
+
+    await page.goto('/');
+    await showMonthsAhead(page, 1);
+
+    await openOverrideMenu(page, seriesDate, RECURRING.active.name);
+    await page.getByRole('menuitem', { name: 'Edit this and all future occurrences' }).click();
+
+    // The confirm gate, which is the whole reason this branch is separate: it
+    // rewrites every occurrence still ahead, not just the one clicked.
+    const confirm = page.getByRole('dialog', { name: /Edit all future occurrences/ });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole('button', { name: 'Continue' }).click();
+
+    const editor = page.getByRole('dialog').filter({ hasText: 'Save Changes' });
+    await editor.getByLabel('Amount in dollars').fill(EDITED_AMOUNT);
+    await editor.getByRole('button', { name: 'Save Changes' }).click();
+
+    await expect(cellBalance(page, seriesDate, EDITED_SERIES_DAY)).toBeVisible();
+
+    // "All future", so the month after moves too.
+    await showMonthsAhead(page, 1);
+    await expect(cellBalance(page, followingDate, EDITED_FOLLOWING)).toBeVisible();
   });
 
   test('deleting a series clears its future occurrences', async ({ page, recurring }) => {

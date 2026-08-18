@@ -39,6 +39,7 @@ const baseProps = {
   // Playwright project, where a real viewport decides.
   isOpen: true,
   onClose: vi.fn(),
+  onEditRecurring: vi.fn(),
 };
 
 describe('DayPanel — heading', () => {
@@ -148,5 +149,66 @@ describe('DayPanel — add transaction', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Add transaction' }));
     expect(onAddTransaction).toHaveBeenCalledWith('2026-08-22');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Recurring instance controls (#26)
+// ---------------------------------------------------------------------------
+
+const SERIES_ID = '3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+
+function forecastRow(overrides: Partial<ForecastTransaction> = {}): ForecastTransaction {
+  return tx({
+    id: `recurring_${SERIES_ID}_2026-08-15`,
+    description: 'Internet Bill',
+    amount: '-100.00',
+    source: 'forecast',
+    ...overrides,
+  });
+}
+
+describe('DayPanel — recurring instance controls', () => {
+  it('offers an edit control on a forecast row', () => {
+    render(<DayPanel {...baseProps} day={day({ transactions: [forecastRow()] })} />);
+
+    expect(
+      screen.getByRole('button', { name: 'Edit recurring Internet Bill' }),
+    ).toBeInTheDocument();
+  });
+
+  it('offers none on an actual row, which has no series behind it', () => {
+    render(<DayPanel {...baseProps} day={day({ transactions: [tx()] })} />);
+
+    expect(screen.queryByRole('button', { name: /Edit recurring/ })).not.toBeInTheDocument();
+  });
+
+  it('offers none on a manual row', () => {
+    render(
+      <DayPanel {...baseProps} day={day({ transactions: [tx({ source: 'manual' })] })} />,
+    );
+
+    expect(screen.queryByRole('button', { name: /Edit recurring/ })).not.toBeInTheDocument();
+  });
+
+  it('hands up the series, the occurrence date and its current values', async () => {
+    const user = userEvent.setup();
+    const onEditRecurring = vi.fn();
+    render(
+      <DayPanel
+        {...baseProps}
+        day={day({ transactions: [forecastRow()] })}
+        onEditRecurring={onEditRecurring}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit recurring Internet Bill' }));
+
+    expect(onEditRecurring).toHaveBeenCalledWith({
+      recurringId: SERIES_ID,
+      originalDate: '2026-08-15',
+      name: 'Internet Bill',
+      amount: '-100.00',
+    });
   });
 });

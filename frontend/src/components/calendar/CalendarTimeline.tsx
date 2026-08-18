@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { MonthCalendarGrid } from './MonthCalendarGrid';
 import { DayPanel } from './DayPanel';
 import { TransactionModal } from './TransactionModal';
+import { RecurringInstanceEditor } from './RecurringInstanceEditor';
+import type { EditableInstance } from './OccurrenceEditModal';
 import { Icon } from '@/components/shared/Icon';
 import { createRovingState, moveFocus, keyToDirection } from '@/lib/keyboard';
 import { formatMonthTitle } from '@/lib/dates';
@@ -102,6 +104,9 @@ export function CalendarTimeline({
    * selected, or returning to the calendar would lose the reader's place.
    */
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  /** The forecast instance whose override controls are open, if any. */
+  const [editingInstance, setEditingInstance] = useState<EditableInstance | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -467,9 +472,18 @@ export function CalendarTimeline({
             onAddTransaction={openModal}
             isOpen={sheetOpen}
             onClose={() => setSheetOpen(false)}
+            onEditRecurring={setEditingInstance}
           />
         </div>
       </div>
+
+      {editingInstance && (
+        <RecurringInstanceEditor
+          instance={editingInstance}
+          accountId={accountId}
+          onClose={() => setEditingInstance(null)}
+        />
+      )}
 
       <TransactionModal
         date={modalDate ?? todayDate}

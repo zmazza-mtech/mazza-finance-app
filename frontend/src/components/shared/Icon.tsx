@@ -17,6 +17,7 @@ export type IconName =
   | 'sort-desc'
   | 'sun'
   | 'moon'
+  | 'more'
   | 'tab-calendar'
   | 'tab-activity'
   | 'tab-recurring'
@@ -41,6 +42,8 @@ const PATHS: Record<IconName, string | readonly string[]> = {
   'sort-desc': 'M12 5v14M19 12l-7 7-7-7',
   sun: 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42',
   moon: 'M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z',
+  // Three dots, drawn as zero-length segments so the round linecap makes them.
+  more: 'M5 12h.01M12 12h.01M19 12h.01',
 
   'tab-calendar': [
     'M6 5h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z',

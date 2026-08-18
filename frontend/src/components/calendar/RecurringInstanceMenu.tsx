@@ -13,9 +13,16 @@ interface RecurringInstanceMenuProps {
 }
 
 /**
- * Context menu for a recurring transaction instance.
- * "Edit this occurrence" — opens edit form directly.
- * "Edit this and all future occurrences" — shows ConfirmDialog first, THEN opens form.
+ * The choice between editing one occurrence of a recurring series and editing
+ * the series from here on.
+ *
+ * "Edit this occurrence" opens the occurrence form directly. "Edit this and all
+ * future occurrences" is gated by a ConfirmDialog first, because it rewrites
+ * the series and every occurrence still ahead of it.
+ *
+ * Presented as a centred sheet rather than the popover it was built as: the
+ * redesign replaced hover popovers with the persistent day panel, and an
+ * absolutely-positioned menu has nothing to anchor to there.
  */
 export function RecurringInstanceMenu({
   isOpen,
@@ -49,7 +56,7 @@ export function RecurringInstanceMenu({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-40 bg-scrim/50"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -57,7 +64,7 @@ export function RecurringInstanceMenu({
             ref={menuRef}
             role="menu"
             aria-label="Edit recurring transaction"
-            className="absolute z-50 min-w-[240px] rounded-md border border-cream-mid bg-surface py-1 shadow-lg"
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-cream-mid bg-surface py-1 shadow-xl"
           >
             <button
               ref={firstButtonRef}
