@@ -1,9 +1,36 @@
 import type { ApiResponse } from './types';
+import { currentToken, notifyUnauthorized } from '@/auth/tokenProvider';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 /**
+ * The `RequestInit` for a call, with auth and content type merged in.
+ *
+ * Pure and exported so the merge can be tested directly. It is worth testing:
+ * the previous version spread `options` *after* the headers it had just
+ * built, so a caller passing its own headers replaced the merged object
+ * wholesale and lost `Content-Type`. Adding `Authorization` to that merge
+ * would have dropped it too, on exactly the requests that carry a body.
+ */
+export function buildRequestInit(options: RequestInit, token: string | null): RequestInit {
+  const { headers: callerHeaders, ...rest } = options;
+
+  return {
+    ...rest,
+    headers: {
+      'Content-Type': 'application/json',
+      // Absent rather than empty when there is no token: an empty bearer
+      // invites the server to distinguish "malformed" from "absent" on
+      // something that means neither.
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(callerHeaders as Record<string, string> | undefined),
+    },
+  };
+}
+
+/**
  * Core fetch wrapper.
+ * - Attaches the Auth0 access token (#77)
  * - Parses JSON as { data, error }
  * - Throws on network errors
  * - Returns ApiResponse<T> for all responses
@@ -13,13 +40,19 @@ async function request<T>(
   options: RequestInit = {},
 ): Promise<ApiResponse<T>> {
   const url = `${BASE_URL}${path}`;
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
+  const response = await fetch(url, buildRequestInit(options, await currentToken()));
+
+  /*
+   * A 401 means the session ended, not that this request was malformed.
+   *
+   * Surfaced to the app so it can send the user to sign in, rather than
+   * letting every screen render its own "something went wrong". The response
+   * still returns normally: the caller's error handling is unchanged, and the
+   * sign-in happens alongside it rather than instead of it.
+   */
+  if (response.status === 401) {
+    notifyUnauthorized();
+  }
 
   // Every DELETE in the API answers 204, which carries no body. Parsing that as
   // JSON throws, and the throw surfaces as a failed mutation on a request the

@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from '@/auth/AuthProvider';
+import { RequireAuth } from '@/auth/RequireAuth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ToastProvider } from '@/components/shared/Toast';
@@ -77,22 +79,32 @@ export function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AccountContext.Provider value={{ selectedAccountId, setSelectedAccountId }}>
-        <ToastProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route element={<AppLayout />}>
-                <Route index element={<CalendarPage />} />
-                <Route path="transactions" element={<TransactionsPage />} />
-                <Route path="recurring" element={<RecurringPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ToastProvider>
-      </AccountContext.Provider>
-    </QueryClientProvider>
+    /*
+     * AuthProvider wraps everything, including the query client, so a token
+     * is available before the first query fires. RequireAuth sits inside it
+     * because the gate needs the Auth0 context to know whether to show the
+     * app or the sign-in screen (#77).
+     */
+    <AuthProvider>
+      <RequireAuth>
+        <QueryClientProvider client={queryClient}>
+          <AccountContext.Provider value={{ selectedAccountId, setSelectedAccountId }}>
+            <ToastProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route element={<AppLayout />}>
+                    <Route index element={<CalendarPage />} />
+                    <Route path="transactions" element={<TransactionsPage />} />
+                    <Route path="recurring" element={<RecurringPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </ToastProvider>
+          </AccountContext.Provider>
+        </QueryClientProvider>
+      </RequireAuth>
+    </AuthProvider>
   );
 }

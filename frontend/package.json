@@ -15,6 +15,7 @@
     "e2e:down": "docker compose -f ../docker-compose.e2e.yml down -v"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.24.1",
     "@tanstack/react-query": "^5.40.0",
     "decimal.js": "^10.4.3",
     "react": "^18.3.1",
