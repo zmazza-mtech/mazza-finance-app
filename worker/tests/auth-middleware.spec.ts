@@ -14,6 +14,7 @@ import { MAZZA_HOUSEHOLD_ID } from '../src/db/household.js';
 import { provisionUser } from '../src/auth/provision.js';
 import { API_ROUTES } from '../src/api/routes.js';
 import { AUTH_HEADERS } from './helpers/auth.js';
+import { defaultJwksUrl } from '../src/auth/middleware.js';
 
 beforeEach(async () => {
   await env.DB.exec('DELETE FROM household_memberships');
@@ -70,6 +71,23 @@ describe('no /api route without auth', () => {
     });
     const body = (await res.json()) as { error: string };
     expect(body.error).toBe('Unauthorized');
+  });
+});
+
+describe('the derived JWKS location', () => {
+  it("does not double the slash on an issuer that ends in one", async () => {
+    // Auth0's iss is `https://tenant.auth0.com/`. Naive concatenation gives
+    // `//.well-known/jwks.json`, which 404s. Most servers forgive it; relying
+    // on that is how a cold isolate fails at 3am.
+    expect(defaultJwksUrl('https://mazza.us.auth0.com/')).toBe(
+      'https://mazza.us.auth0.com/.well-known/jwks.json',
+    );
+  });
+
+  it('handles an issuer without a trailing slash the same way', () => {
+    expect(defaultJwksUrl('https://issuer.example.com')).toBe(
+      'https://issuer.example.com/.well-known/jwks.json',
+    );
   });
 });
 

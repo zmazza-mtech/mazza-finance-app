@@ -46,6 +46,16 @@ export interface VerifyOptions {
    */
   audience?: string;
   jwks: { keys: JsonWebKey[] };
+  /**
+   * Where to read the email from.
+   *
+   * Neither Auth0 nor WorkOS puts it in an access token by default — Auth0's
+   * carries "no information about the user except for the user ID" — so it
+   * arrives as a custom claim, and Auth0 requires custom claims to be
+   * namespaced: `https://mazza.finance/email`. A plain `email` lookup would
+   * find nothing and every user would provision blank.
+   */
+  emailClaim?: string;
   /** Injected so expiry and not-before are testable without waiting. */
   now?: Date;
 }
@@ -173,7 +183,7 @@ export async function verifyJwt(
     throw new JwtError('Token carries no subject');
   }
 
-  const email = payload['email'];
+  const email = payload[options.emailClaim ?? 'email'];
 
   return { sub, email: typeof email === 'string' ? email : '', exp };
 }

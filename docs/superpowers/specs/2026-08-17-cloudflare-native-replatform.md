@@ -226,9 +226,19 @@ D1-per-household isolation if warranted, Capacitor spike if native matters.
    | Clerk Pro | yes | $25/mo | no |
    | Clerk Hobby | no | $0 | no — loses Face ID |
 
-   **Resolved 2026-08-18: WorkOS AuthKit.** Free, passkeys included, and the
-   enterprise-SSO tier is a scale path that costs nothing until Phase 5 needs
-   it.
+   **Resolved 2026-08-18: WorkOS AuthKit.** Free to 1M MAU, passkeys and
+   social included.
+
+   *Correction to an earlier note here:* enterprise SSO is **not** free — it is
+   **$125/mo per connection**, discounting to $50 at volume. The pricing page
+   lists it among AuthKit's free-tier features while pricing connections
+   separately, which is genuinely ambiguous; treat SSO as paid until proven
+   otherwise. It is irrelevant to this household and only matters if Phase 5
+   ever sells to a company with an IdP.
+
+   Also priced, and worth knowing before assuming $0: a **custom auth domain
+   is $99/mo**. The default `api.workos.com` issuer is free, so the $0 target
+   holds only while sign-in is willing to live on WorkOS's domain.
 
    Two integration facts found while wiring it, either of which would have
    rejected every real token:

@@ -114,6 +114,49 @@ describe('time', () => {
   });
 });
 
+describe('Auth0 token shape', () => {
+  // Verified against Auth0's access-token documentation, 2026-08-18: iss ends
+  // in a slash, aud is an array, and the token carries "no information about
+  // the user except for the user ID".
+  const AUTH0_ISS = 'https://mazza.us.auth0.com/';
+  const AUTH0_AUD = 'https://api.mazza.finance';
+  const config = { issuer: AUTH0_ISS, audience: AUTH0_AUD, jwks: TEST_JWKS, now: NOW };
+
+  it('accepts an aud array containing the API identifier', async () => {
+    // Auth0 issues aud as an array when the token also grants /userinfo.
+    const token = await signJwt({
+      iss: AUTH0_ISS,
+      aud: [AUTH0_AUD, `${AUTH0_ISS}userinfo`] as unknown as string,
+    });
+    await expect(verifyJwt(token, config)).resolves.toMatchObject({ sub: 'user_abc123' });
+  });
+
+  it('rejects an aud array that does not contain it', async () => {
+    const token = await signJwt({
+      iss: AUTH0_ISS,
+      aud: ['https://someone-elses-api', `${AUTH0_ISS}userinfo`] as unknown as string,
+    });
+    await expect(verifyJwt(token, config)).rejects.toThrow(/audience/i);
+  });
+
+  it('reads the email from a namespaced custom claim', async () => {
+    // Auth0 requires custom claims to be namespaced, so a plain `email`
+    // lookup finds nothing and every user provisions blank.
+    const token = await signJwt({
+      iss: AUTH0_ISS,
+      aud: AUTH0_AUD,
+      email: undefined as unknown as string,
+      ['https://mazza.finance/email' as 'email']: 'mrs@example.com',
+    });
+
+    const claims = await verifyJwt(token, {
+      ...config,
+      emailClaim: 'https://mazza.finance/email',
+    });
+    expect(claims.email).toBe('mrs@example.com');
+  });
+});
+
 describe('a provider that issues no audience claim', () => {
   // WorkOS access tokens carry sub, sid, iss, exp, iat and organization
   // claims — and no aud. Requiring one unconditionally would reject every
