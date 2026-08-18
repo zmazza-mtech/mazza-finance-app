@@ -114,6 +114,82 @@ describe('time', () => {
   });
 });
 
+describe('Auth0 token shape', () => {
+  // Verified against Auth0's access-token documentation, 2026-08-18: iss ends
+  // in a slash, aud is an array, and the token carries "no information about
+  // the user except for the user ID".
+  const AUTH0_ISS = 'https://mazza.us.auth0.com/';
+  const AUTH0_AUD = 'https://api.mazza.finance';
+  const config = { issuer: AUTH0_ISS, audience: AUTH0_AUD, jwks: TEST_JWKS, now: NOW };
+
+  it('accepts an aud array containing the API identifier', async () => {
+    // Auth0 issues aud as an array when the token also grants /userinfo.
+    const token = await signJwt({
+      iss: AUTH0_ISS,
+      aud: [AUTH0_AUD, `${AUTH0_ISS}userinfo`],
+    });
+    await expect(verifyJwt(token, config)).resolves.toMatchObject({ sub: 'user_abc123' });
+  });
+
+  it('rejects an aud array that does not contain it', async () => {
+    const token = await signJwt({
+      iss: AUTH0_ISS,
+      aud: ['https://someone-elses-api', `${AUTH0_ISS}userinfo`],
+    });
+    await expect(verifyJwt(token, config)).rejects.toThrow(/audience/i);
+  });
+
+  it('reads the email from a namespaced custom claim', async () => {
+    // Auth0 requires custom claims to be namespaced, so a plain `email`
+    // lookup finds nothing and every user provisions blank.
+    const token = await signJwt({
+      iss: AUTH0_ISS,
+      aud: AUTH0_AUD,
+      email: undefined,
+      'https://mazza.finance/email': 'mrs@example.com',
+    });
+
+    const claims = await verifyJwt(token, {
+      ...config,
+      emailClaim: 'https://mazza.finance/email',
+    });
+    expect(claims.email).toBe('mrs@example.com');
+  });
+});
+
+describe('a provider that issues no audience claim', () => {
+  // WorkOS access tokens carry sub, sid, iss, exp, iat and organization
+  // claims — and no aud. Requiring one unconditionally would reject every
+  // real token; the client binding lives in the per-client key set instead.
+  const noAudience = { issuer: CONFIG.issuer, jwks: TEST_JWKS, now: NOW };
+
+  it('accepts a token with no aud when no audience is configured', async () => {
+    const token = await signJwt({ aud: undefined });
+    await expect(verifyJwt(token, noAudience)).resolves.toMatchObject({ sub: 'user_abc123' });
+  });
+
+  it('still enforces the issuer, which is the check that remains', async () => {
+    const token = await signJwt({ iss: 'https://evil.example.com' });
+    await expect(verifyJwt(token, noAudience)).rejects.toThrow(/issuer/i);
+  });
+
+  it('does not silently ignore a configured audience', async () => {
+    // The dangerous version of this change would be to drop the check
+    // wherever the claim is missing. Configured means enforced.
+    const token = await signJwt({ aud: undefined });
+    await expect(verify(token)).rejects.toThrow(/audience/i);
+  });
+
+  it('carries an empty email rather than failing when the provider omits it', async () => {
+    // WorkOS adds email through a JWT template. Identity is the sub claim, so
+    // an absent email is a display gap, not an authentication failure.
+    const token = await signJwt({ email: undefined });
+    const claims = await verifyJwt(token, noAudience);
+    expect(claims.sub).toBe('user_abc123');
+    expect(claims.email).toBe('');
+  });
+});
+
 describe('issuer and audience', () => {
   it('rejects a token from a different issuer', async () => {
     const token = await signJwt({ iss: 'https://evil.example.com' });

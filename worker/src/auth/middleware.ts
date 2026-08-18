@@ -30,6 +30,17 @@ const PUBLIC_PATHS = new Set(['/api/v1/health']);
 let jwksCache: { url: string; keys: { keys: JsonWebKey[] }; fetchedAt: number } | null = null;
 const JWKS_TTL_MS = 10 * 60 * 1000;
 
+/**
+ * The conventional JWKS location for an issuer.
+ *
+ * The trailing slash matters: Auth0's `iss` is `https://tenant.auth0.com/`
+ * *with* one, and naive concatenation produces a double slash that 404s. Most
+ * servers forgive it; relying on that is how a cold isolate fails at 3am.
+ */
+function defaultJwksUrl(issuer: string): string {
+  return `${issuer.replace(/\/+$/, '')}/.well-known/jwks.json`;
+}
+
 async function loadJwks(url: string, now: number): Promise<{ keys: JsonWebKey[] }> {
   if (jwksCache && jwksCache.url === url && now - jwksCache.fetchedAt < JWKS_TTL_MS) {
     return jwksCache.keys;
@@ -52,6 +63,8 @@ declare module 'hono' {
   }
 }
 
+export { defaultJwksUrl };
+
 export function requireAuth() {
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
     if (PUBLIC_PATHS.has(new URL(c.req.url).pathname)) return next();
@@ -68,7 +81,10 @@ export function requireAuth() {
     try {
       // Configuration is checked inside the try so a missing binding takes the
       // same path as a bad token: refused, and refused without explaining why.
-      if (!issuer || !audience) {
+      // The issuer is required; the audience is not. Some providers do not
+      // issue an `aud` claim and bind the token to the client through a
+      // per-client key set instead — see VerifyOptions.audience.
+      if (!issuer) {
         throw new Error('Auth is not configured');
       }
 
@@ -82,11 +98,12 @@ export function requireAuth() {
        */
       const keys = c.env.AUTH_JWKS
         ? (JSON.parse(c.env.AUTH_JWKS) as { keys: JsonWebKey[] })
-        : await loadJwks(jwksUrl ?? `${issuer}/.well-known/jwks.json`, Date.now());
+        : await loadJwks(jwksUrl ?? defaultJwksUrl(issuer), Date.now());
 
       const claims = await verifyJwt(header.slice('Bearer '.length), {
         issuer,
-        audience,
+        ...(audience ? { audience } : {}),
+        ...(c.env.AUTH_EMAIL_CLAIM ? { emailClaim: c.env.AUTH_EMAIL_CLAIM } : {}),
         jwks: keys,
       });
 

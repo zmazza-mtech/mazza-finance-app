@@ -64,10 +64,19 @@ export interface ClaimOverrides {
   sub?: string;
   email?: string;
   iss?: string;
-  aud?: string;
+  /** An array where the provider issues one — Auth0 does. */
+  aud?: string | string[];
   exp?: number;
   nbf?: number;
   iat?: number;
+  /**
+   * Any further claim, by name.
+   *
+   * Namespaced custom claims are the normal way providers carry anything
+   * beyond the standard set — Auth0 requires the namespace — so they belong
+   * in the type rather than being cast around at each call site.
+   */
+  [claim: string]: unknown;
 }
 
 /** Signs a real JWT with the fixed key — real RS256, real signature. */

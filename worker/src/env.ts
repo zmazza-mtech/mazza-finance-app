@@ -19,6 +19,14 @@ export interface Env {
   /** Defaults to `${AUTH_ISSUER}/.well-known/jwks.json` when unset. */
   AUTH_JWKS_URL?: string;
   /**
+   * The claim carrying the user's email.
+   *
+   * Auth0 and WorkOS both omit it from access tokens by default, and Auth0
+   * requires a custom claim to be namespaced — `https://mazza.finance/email`.
+   * Defaults to `email`.
+   */
+  AUTH_EMAIL_CLAIM?: string;
+  /**
    * A pinned JWKS as JSON, used instead of fetching one.
    *
    * For a deployment that would rather not make an outbound call on a cold
