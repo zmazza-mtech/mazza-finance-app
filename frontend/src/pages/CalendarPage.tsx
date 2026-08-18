@@ -1,6 +1,8 @@
 import { useContext, useMemo, useState } from 'react';
 import { CalendarTimeline } from '@/components/calendar/CalendarTimeline';
 import { ProjectionPanel } from '@/components/calendar/ProjectionPanel';
+import { BalanceAlertBanner } from '@/components/layout/BalanceAlertBanner';
+import { useToast } from '@/components/shared/Toast';
 import { useForecast, useAddTransaction } from '@/hooks/useForecast';
 import { useThresholds } from '@/hooks/useSettings';
 import { useCategoryTrend } from '@/hooks/useReports';
@@ -16,6 +18,11 @@ export function CalendarPage() {
   const { selectedAccountId } = useContext(AccountContext);
   const [currentMonth, setCurrentMonth] = useState(() => todayIso().slice(0, 7));
   const [searchQuery, setSearchQuery] = useState('');
+
+  /** A day the balance banner asked the calendar to show. Cleared once honoured. */
+  const [requestedDate, setRequestedDate] = useState<string | null>(null);
+
+  const { showToast } = useToast();
 
   const startDate = firstDayOfMonth(addMonths(currentMonth, -3));
   const endDate = lastDayOfMonth(addMonths(currentMonth, 3));
@@ -55,10 +62,23 @@ export function CalendarPage() {
     amount: string;
   }) {
     addTransaction.mutate(data, {
-      onError: () => {
-        // TODO: surface toast notification
+      onError: (error) => {
+        // The optimistic row has already rolled back off the calendar. Without
+        // this the user is left believing they recorded a transaction that was
+        // never persisted, and every forecast after it is wrong.
+        showToast(
+          `Could not add "${data.description}" — ${
+            error instanceof Error ? error.message : 'the change was not saved'
+          }.`,
+        );
       },
     });
+  }
+
+  /** The banner's "View" link: move to the day's month, then to the day itself. */
+  function handleViewDate(date: string) {
+    setCurrentMonth(date.slice(0, 7));
+    setRequestedDate(date);
   }
 
   if (!selectedAccountId) {
@@ -87,6 +107,13 @@ export function CalendarPage() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-6">
+      <BalanceAlertBanner
+        forecastDays={forecastDays}
+        greenThreshold={greenThreshold}
+        criticalThreshold={criticalThreshold}
+        onViewDate={handleViewDate}
+      />
+
       <ProjectionPanel
         days={monthDays}
         todayDate={todayIso()}
@@ -105,6 +132,8 @@ export function CalendarPage() {
         matchingDates={matchingDates}
         onSearchChange={setSearchQuery}
         onAddTransaction={handleAddTransaction}
+        requestedDate={requestedDate}
+        onRequestedDateHandled={() => setRequestedDate(null)}
         onPrevMonth={() => setCurrentMonth((m) => addMonths(m, -1))}
         onNextMonth={() => setCurrentMonth((m) => addMonths(m, 1))}
         onToday={() => setCurrentMonth(todayIso().slice(0, 7))}

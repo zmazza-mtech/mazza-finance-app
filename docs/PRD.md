@@ -1042,8 +1042,18 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 - [ ] First-run and empty states (setup prompt, loading skeleton, empty day cells)
 
 **Balance Health Banner**
-- [ ] `BalanceAlertBanner` — collapsible bar below nav, pushes content
-- [ ] Scan forecast for first day in yellow/red within 30 days; "View" link scrolls to date
+- [x] `BalanceAlertBanner` — collapsible bar at the top of the calendar page, pushes content
+- [x] Scan forecast for first day in yellow/red within 30 days; "View" link goes to that date
+
+  Mounted on the calendar page rather than in the app shell below the nav. The
+  banner is about the forecast, and the calendar is the only screen that holds
+  it — placing it in the layout would mean a second forecast query over a
+  different date window than the calendar's, and a warning shown on Settings
+  with nothing behind it to act on.
+
+  "Scrolls to date" predates the redesign, which replaced the scrolling timeline
+  with a month grid and day panel. The equivalent, and what is implemented, is:
+  move to the day's month, select it, and put DOM focus on its cell.
 - [ ] Dismiss (×) button; 7-day re-appearance logic
 - [ ] Stale-data warning when last sync > 2 hours
 

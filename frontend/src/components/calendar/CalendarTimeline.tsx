@@ -20,6 +20,14 @@ interface CalendarTimelineProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
+  /**
+   * A day to jump to, set by something outside the calendar — the balance alert
+   * banner's "View" link. The parent moves the month and sets this together;
+   * clearing it via `onRequestedDateHandled` is what lets the same date be
+   * asked for twice in a row.
+   */
+  requestedDate: string | null;
+  onRequestedDateHandled: () => void;
   onAddTransaction: (data: {
     accountId: string;
     date: string;
@@ -67,6 +75,8 @@ export function CalendarTimeline({
   onNextMonth,
   onToday,
   onAddTransaction,
+  requestedDate,
+  onRequestedDateHandled,
 }: CalendarTimelineProps) {
   const monthDays = days.filter((d) => d.date.slice(0, 7) === currentMonth);
   const allIds = monthDays.map((d) => d.date);
@@ -128,6 +138,29 @@ export function CalendarTimeline({
     if (!date) return;
     gridRef.current?.querySelector<HTMLElement>(`[data-date="${date}"]`)?.focus();
   }, [rovingState.focusedId, currentMonth]);
+
+  /*
+   * Honour a jump requested from outside the calendar.
+   *
+   * Declared after the focus effect on purpose. Both run in the commit that
+   * changes the month, and the focus effect consumes `focusFollowsKey` — if it
+   * ran second it would consume the flag while `focusedId` still held the old
+   * day, moving focus to the wrong cell and swallowing the jump.
+   *
+   * A date outside the visible month is left alone rather than clearing the
+   * request: the parent sets the month and the date together, so by the time
+   * this runs the month has already caught up.
+   */
+  useEffect(() => {
+    if (!requestedDate) return;
+    if (!allIds.includes(requestedDate)) return;
+
+    setRovingState((prev) => ({ ...prev, focusedId: requestedDate }));
+    setSelectedDate(requestedDate);
+    focusFollowsKey.current = true;
+    onRequestedDateHandled();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedDate, currentMonth]);
 
   /** Opens the modal, remembering what to give focus back to on close. */
   const openModal = useCallback((date: string) => {
