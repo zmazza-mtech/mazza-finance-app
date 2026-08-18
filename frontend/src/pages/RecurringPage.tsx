@@ -145,7 +145,7 @@ export function RecurringPage() {
               setEditTarget(null);
               setIsCreatingNew(true);
             }}
-            className="hit-target rounded-full bg-copper px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-dark hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
+            className="hit-target rounded-full bg-copper-dark px-[18px] py-[11px] text-sm font-semibold text-cream transition-all duration-150 ease-out hover:-translate-y-px hover:bg-copper-deep hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-sage"
           >
             Add manually
           </button>

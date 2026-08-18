@@ -34,7 +34,7 @@ export function PendingReviewSection({
         <h2 className="font-display text-xl text-bark-dark">Needs your review</h2>
         <span
           aria-label={`${items.length} items pending review`}
-          className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-copper px-1.5 font-mono text-xs text-cream"
+          className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-copper-dark px-1.5 font-mono text-xs text-cream"
         >
           {items.length}
         </span>
