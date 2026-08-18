@@ -11,6 +11,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { SELF, env } from 'cloudflare:test';
 import { getDb } from '../src/db/client.js';
 import { MAZZA_HOUSEHOLD_ID } from '../src/db/household.js';
+import { authed } from './helpers/auth.js';
 import { storeAccessUrl } from '../src/services/simplefin-connection.js';
 import { DAILY_SYNC_LIMIT } from '../src/services/sync-guard.js';
 
@@ -18,7 +19,7 @@ const OTHER_HOUSEHOLD = '8e2a1f77-0c44-4f6e-9b3a-1d5c6e7f8a90';
 const ACCESS_URL = 'https://user:pass@bridge.simplefin.org/simplefin';
 
 async function api(path: string, init?: RequestInit) {
-  const res = await SELF.fetch(`https://example.com/api/v1${path}`, init);
+  const res = await SELF.fetch(`https://example.com/api/v1${path}`, authed(init));
   const text = await res.text();
   return { res, body: text ? (JSON.parse(text) as { data: any; error: any }) : null };
 }

@@ -43,8 +43,15 @@ export const households = sqliteTable('households', {
 
 export const users = sqliteTable('users', {
   id: id(),
-  // JIT-provisioned from the verified Clerk JWT on first authenticated request.
-  clerkUserId: text('clerk_user_id').notNull().unique(),
+  /*
+   * The `sub` claim of a verified JWT — the identity provider's opaque
+   * subject identifier, JIT-provisioned on first authenticated request.
+   *
+   * Deliberately not named for a vendor (#76): the provider choice is open
+   * between Clerk and WorkOS, and both issue a standard `sub`. Renamed from
+   * `clerk_user_id` in migration 0003.
+   */
+  authSubject: text('auth_subject').notNull().unique(),
   email: text('email').notNull(),
   createdAt: createdAt(),
 });

@@ -1,0 +1,145 @@
+/**
+ * JWT verification (#76).
+ *
+ * Exercised against real RS256 keys and real signatures — `tests/helpers/jwt.ts`
+ * generates an actual keypair with Web Crypto and signs actual tokens. A
+ * verifier tested against a stub agrees with the stub; this one has to agree
+ * with the mathematics.
+ *
+ * Deliberately provider-agnostic. Clerk and WorkOS both issue standard RS256
+ * with a JWKS, and the choice between them is open (#76), so issuer, audience
+ * and keys are configuration rather than assumptions.
+ */
+import { describe, it, expect, beforeAll } from 'vitest';
+import { verifyJwt } from '../src/auth/jwt.js';
+import { signJwt, foreignSigningKey, TEST_JWKS, TEST_KID } from './helpers/jwt.js';
+
+const NOW = new Date('2026-08-18T12:00:00.000Z');
+const CONFIG = { issuer: 'https://issuer.example.com', audience: 'mazza-finance' };
+
+let foreignKey: CryptoKey;
+
+beforeAll(async () => {
+  foreignKey = await foreignSigningKey();
+});
+
+async function verify(token: string, at: Date = NOW) {
+  return verifyJwt(token, { ...CONFIG, jwks: TEST_JWKS, now: at });
+}
+
+describe('a valid token', () => {
+  it('returns the subject and email', async () => {
+    const claims = await verify(await signJwt());
+    expect(claims).toMatchObject({ sub: 'user_abc123', email: 'mrs@example.com' });
+  });
+});
+
+describe('signature', () => {
+  it('rejects a token signed by a different key', async () => {
+    // The whole point. Anyone can write the claims; only the issuer can sign.
+    //
+    // Signed with the wrong private key but claiming the *right* kid, so the
+    // check under test is the signature rather than the key lookup — an
+    // attacker with a stolen kid is the case that matters.
+    const token = await signJwt({}, { kid: TEST_KID }, foreignKey);
+    await expect(verify(token)).rejects.toThrow(/signature/i);
+  });
+
+  it('rejects a token whose payload was edited after signing', async () => {
+    const token = await signJwt();
+    const [header, , signature] = token.split('.');
+    const tampered = `${header}.${btoa(JSON.stringify({ sub: 'someone_else' }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')}.${signature}`;
+
+    await expect(verify(tampered)).rejects.toThrow();
+  });
+
+  it('rejects alg:none, rather than trusting an unsigned token', async () => {
+    // The classic JWT break: claim there is no algorithm and hope the
+    // verifier agrees. It must not.
+    const header = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    const payload = btoa(JSON.stringify({ sub: 'attacker', iss: CONFIG.issuer }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    await expect(verify(`${header}.${payload}.`)).rejects.toThrow(/alg/i);
+  });
+
+  it('rejects an HS256 token, so a public key cannot be used as a shared secret', async () => {
+    // The other classic: downgrade RS256 to HS256 and sign with the public
+    // key, which is not secret.
+    const token = await signJwt({}, { alg: 'HS256' });
+    await expect(verify(token)).rejects.toThrow(/alg/i);
+  });
+
+  it('rejects a token whose kid matches no key', async () => {
+    const token = await signJwt({}, { kid: 'unknown-key' });
+    await expect(verify(token)).rejects.toThrow(/key/i);
+  });
+});
+
+describe('time', () => {
+  it('rejects an expired token', async () => {
+    // Past expiry *and* past the 60s skew allowance — a second past exp is
+    // deliberately still accepted, which the skew test below pins.
+    const token = await signJwt();
+    const later = new Date(NOW.getTime() + (3600 + 61) * 1000);
+    await expect(verify(token, later)).rejects.toThrow(/expired/i);
+  });
+
+  it('accepts a token one second before it expires', async () => {
+    const token = await signJwt();
+    const justBefore = new Date(NOW.getTime() + 3599 * 1000);
+    await expect(verify(token, justBefore)).resolves.toBeTruthy();
+  });
+
+  it('rejects a token that is not valid yet', async () => {
+    const nowSec = Math.floor(NOW.getTime() / 1000);
+    const token = await signJwt({ nbf: nowSec + 600 });
+    await expect(verify(token)).rejects.toThrow(/not yet valid/i);
+  });
+
+  it('allows a little clock skew rather than failing on a second', async () => {
+    // Two machines' clocks differ. Rejecting on a one-second drift produces
+    // sign-in failures nobody can reproduce.
+    const token = await signJwt();
+    const barelyPast = new Date(NOW.getTime() + (3600 + 20) * 1000);
+    await expect(verify(token, barelyPast)).resolves.toBeTruthy();
+  });
+});
+
+describe('issuer and audience', () => {
+  it('rejects a token from a different issuer', async () => {
+    const token = await signJwt({ iss: 'https://evil.example.com' });
+    await expect(verify(token)).rejects.toThrow(/issuer/i);
+  });
+
+  it('rejects a token minted for a different audience', async () => {
+    // A valid token for someone else's app is not a token for this one.
+    const token = await signJwt({ aud: 'some-other-app' });
+    await expect(verify(token)).rejects.toThrow(/audience/i);
+  });
+});
+
+describe('malformed input', () => {
+  it.each([
+    ['empty', ''],
+    ['one segment', 'abc'],
+    ['two segments', 'abc.def'],
+    ['not base64', '!!!.???.###'],
+  ])('rejects %s rather than throwing something unreadable', async (_label, token) => {
+    await expect(verify(token)).rejects.toThrow();
+  });
+
+  it('rejects a token with no subject', async () => {
+    // Without a sub there is nobody to provision or scope to.
+    const token = await signJwt({ sub: '' });
+    await expect(verify(token)).rejects.toThrow(/subject/i);
+  });
+});

@@ -1,0 +1,12 @@
+-- `users.clerk_user_id` becomes `users.auth_subject` (#76).
+--
+-- The column holds the `sub` claim of a verified JWT — the identity provider's
+-- opaque subject identifier. Naming it for one vendor was a bet, and the bet
+-- is now live: Clerk charges $25/mo for production passkeys, and Face ID is a
+-- stated hard requirement, so WorkOS AuthKit (passkeys free to 1M MAU) is
+-- under consideration for the same job.
+--
+-- Both issue standard RS256 JWTs with a `sub` claim, so the column's meaning
+-- does not change with the vendor — only its name did. There is no production
+-- data yet, which makes this the cheapest it will ever be.
+ALTER TABLE `users` RENAME COLUMN `clerk_user_id` TO `auth_subject`;

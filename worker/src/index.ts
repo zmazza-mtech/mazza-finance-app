@@ -8,6 +8,7 @@ import reports from './api/reports.js';
 import importCsv from './api/import.js';
 import sync from './api/sync.js';
 import { applySecurityHeaders } from './lib/security-headers.js';
+import { requireAuth } from './auth/middleware.js';
 import type { Env } from './env.js';
 
 export type { Env };
@@ -29,6 +30,15 @@ app.use('*', async (c, next) => {
 // Same `{ data, error }` envelope as the Express backend — the frontend
 // client is unchanged by the port.
 app.get('/api/v1/health', (c) => c.json({ data: { status: 'ok' }, error: null }));
+
+/*
+ * No /api route without auth (#76).
+ *
+ * Mounted once across the whole prefix rather than per-router, so a route
+ * added later inherits the gate instead of having to remember it. The health
+ * check is the one exemption, listed inside the middleware.
+ */
+app.use('/api/v1/*', requireAuth());
 
 // Routers, mounted under the same prefix the Express app used so the frontend
 // client's base URL is unchanged by the port (#68).

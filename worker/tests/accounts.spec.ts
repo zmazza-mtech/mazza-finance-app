@@ -10,12 +10,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SELF, env } from 'cloudflare:test';
 import { MAZZA_HOUSEHOLD_ID } from '../src/db/household.js';
+import { authed } from './helpers/auth.js';
 
 const OTHER_HOUSEHOLD = '8e2a1f77-0c44-4f6e-9b3a-1d5c6e7f8a90';
 const BASE = 'https://example.com/api/v1/accounts';
 
 async function api(path: string, init?: RequestInit) {
-  const res = await SELF.fetch(`https://example.com/api/v1${path}`, init);
+  const res = await SELF.fetch(`https://example.com/api/v1${path}`, authed(init));
   return { res, body: (await res.json()) as { data: any; error: any } };
 }
 
