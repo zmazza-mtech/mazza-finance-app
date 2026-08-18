@@ -19,14 +19,28 @@ import {
   type Frequency,
 } from '../../backend/src/services/forecast.js';
 
-// Free-tier budget is 10ms CPU per invocation. Measured 2026-08-17 on the
-// unoptimized pipeline: avg ~106ms, over budget by ~10x, dominated by the
-// per-day filter over all transactions in computeForecast and the full
-// instances x actuals scan in matchInstancesToActuals, both quadratic. The
-// performance pass in #67 indexes both by date; this asserts the budget
-// itself rather than a regression ceiling, because a pass that lands inside
-// the budget and then drifts back out of it has failed.
+/*
+ * The free-tier budget is 10ms CPU per invocation. This asserts a regression
+ * ceiling, not that budget — and the distinction matters.
+ *
+ * The performance pass in #67 took the same load from ~32ms to ~2ms on a
+ * developer Mac. A GitHub Actions runner measures the same code at ~14ms.
+ * Neither machine is Cloudflare's, so neither number answers the question the
+ * budget asks; a test asserting `avg < 10` is asserting something about the
+ * hardware it happens to be running on, and it failed CI for exactly that
+ * reason.
+ *
+ * So: the ceiling is set well above the slowest machine that runs this suite,
+ * which is what makes it a regression detector rather than a coin flip. The
+ * average is always logged, so a real slowdown is visible in the run output
+ * even while the assertion has room.
+ *
+ * Whether the pipeline actually fits 10ms on Workers can only be answered on
+ * Workers, after #79 deploys. Until then #67's result is "16x faster and
+ * probably inside budget", not "inside budget".
+ */
 const CPU_BUDGET_MS = 10;
+const REGRESSION_CEILING_MS = 60;
 
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -120,6 +134,9 @@ describe('forecast CPU under workerd', () => {
     );
 
     expect(max, 'clock did not advance — measurement invalid').toBeGreaterThan(0);
-    expect(avg).toBeLessThan(CPU_BUDGET_MS);
+    expect(
+      avg,
+      `avg ${avg.toFixed(2)}ms — regression ceiling ${REGRESSION_CEILING_MS}ms, free-tier budget ${CPU_BUDGET_MS}ms (verify on Workers, #105)`,
+    ).toBeLessThan(REGRESSION_CEILING_MS);
   });
 });
