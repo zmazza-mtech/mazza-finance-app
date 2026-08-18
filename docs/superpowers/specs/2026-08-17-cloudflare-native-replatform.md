@@ -207,4 +207,64 @@ D1-per-household isolation if warranted, Capacitor spike if native matters.
    name is chosen now.
 2. Clerk free-tier check — verify passkey GA status/limits at Phase 2 start
    (WorkOS, free to 1M MAU, is the fallback).
-3. D1 free-tier limits — verify row-read/write daily caps at Phase 1 start.
+3. ~~D1 free-tier limits — verify row-read/write daily caps at Phase 1 start.~~
+   **Answered 2026-08-17 (#75). See "D1 free-tier headroom" below.** The row
+   caps are not the constraint; two other free-tier limits are, and one of
+   them contradicts an assumption this spec made.
+
+## D1 free-tier headroom
+
+Read from Cloudflare's D1 pricing and limits pages on **2026-08-17**. Re-check
+before go-live — these move.
+
+| Limit | Free | Paid | Verdict |
+|---|---|---|---|
+| Rows read / day | 5,000,000 | 25bn/mo included | ample |
+| Rows written / day | 100,000 | 50m/mo included | ample |
+| Storage / account | 5 GB | 1 TB | ample |
+| Max database size | **500 MB** | 10 GB | ample |
+| **Queries per Worker invocation** | **50** | 1,000 | **design constraint** |
+| **Time Travel retention** | **7 days** | 30 days | **contradicts decision 13** |
+| Max query duration | 30s | 30s | not reached |
+
+### Rows: not the constraint
+
+Counting is by rows *scanned*, not returned, so the index matters more than the
+result size. `idx_transactions_account_date` on `(account_id, date)` already
+covers the forecast's window query, so a forecast read scans roughly what it
+returns.
+
+A deliberately heavy day, using the bench household (16 series, 400 actuals
+over 45 days, a 226-day window) and assuming 40 forecast page loads, 24
+SimpleFIN syncs — the daily ceiling — and a full 12-month report run:
+
+| Operation | x/day | rows scanned each | total |
+|---|---|---|---|
+| Forecast load (accounts + series + overrides + windowed transactions) | 40 | ~1,500 | 60,000 |
+| SimpleFIN sync (indexed dedup by `simplefin_id`, then insert) | 24 | ~500 | 12,000 |
+| 12-month report / Sankey (full-year scan) | 10 | ~5,000 | 50,000 |
+| **Total reads** | | | **~122,000 — 2.4% of 5,000,000** |
+
+Writes are smaller still: a sync inserts tens of rows, and even counting the
+extra written row per indexed column that D1 charges, a heavy day is low
+thousands against 100,000. **Two orders of magnitude of headroom on both.** The
+trigger point for Workers Paid is not row volume.
+
+### The two limits that do bite
+
+**Queries per Worker invocation is 50 on Free, not 1,000.** This is a hard
+design constraint on the port (#68), not a capacity question: any endpoint that
+issues a query per series would exceed it on a household with 50 series. Every
+ported route must batch — one query per table per request, filtered by
+`household_id`, never a query inside a loop over series or accounts. Written
+down here because it is invisible until the request that crosses it fails in
+production.
+
+**Time Travel on Free retains 7 days, not 30.** Decision 13 and the closure of
+issue #11 both rest on "30-day PITR", which is the Paid number. With the
+interim `pg_dump` (#66) deliberately skipped, the actual recovery window
+between now and the nightly R2 export (#42) landing is **7 days**. That is
+still real point-in-time recovery and it is probably enough — but it is a
+quarter of what was assumed, so #42 should land early in Phase 2 rather than
+late, and the assumption is corrected here rather than discovered during a
+restore.
