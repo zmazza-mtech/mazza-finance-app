@@ -17,17 +17,19 @@ import { accounts, transactions } from '../db/schema.js';
 import { currentHouseholdId } from '../db/household.js';
 import { ok, fail, serverError } from '../lib/envelope.js';
 import { ImportCsvBodySchema } from '../lib/validate.js';
+import { rowsPerInsert, TRANSACTION_COLUMNS } from '../db/limits.js';
 import { categorize } from '../../../backend/src/services/categorize.js';
 import type { Env } from '../env.js';
 
 /**
- * Rows per INSERT.
+ * Rows per INSERT, derived from the table's width rather than measured once.
  *
- * Measured against a real D1 binding: 8 rows succeed on this table and 20 do
- * not. Kept at the measured ceiling rather than guessed, and named so that a
- * column added to `transactions` is an obvious reason to re-measure.
+ * 8 rows passed while this insert bound 12 columns and failed the moment a
+ * wider shape bound 13 — which is exactly the trap a magic number sets. The
+ * ceiling now falls out of the column count, so adding a column lowers it
+ * automatically instead of silently in production.
  */
-const INSERT_CHUNK = 8;
+const INSERT_CHUNK = rowsPerInsert(TRANSACTION_COLUMNS);
 
 /**
  * Normalize an amount to 2 decimal places for dedup comparison only.

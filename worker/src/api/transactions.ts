@@ -40,14 +40,7 @@ const SORT_COLUMNS = {
   category: transactions.category,
 } as const;
 
-/**
- * How many ids one UPDATE ... WHERE id IN (...) carries.
- *
- * D1 binds at most 100 parameters per query, and the category and the
- * timestamp take two of them. 90 leaves room without being tuned to the
- * limit. A 60-row correction is therefore one query, not sixty.
- */
-const ID_BATCH = 90;
+import { ID_BATCH } from '../db/limits.js';
 
 async function readJson(c: { req: { json: () => Promise<unknown> } }): Promise<unknown> {
   try {
