@@ -102,6 +102,39 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+  worker:
+    name: worker tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # No Postgres service: the suite runs in workerd against D1, which
+    # `@cloudflare/vitest-pool-workers` provisions in-process from the
+    # bindings in wrangler.toml. Nothing here reaches the network.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Install
+        working-directory: worker
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: worker
+        run: npx tsc --noEmit
+
+      # Includes the decision 9 CPU gate, which asserts the forecast pipeline
+      # stays inside the 10ms free-tier budget. It imports the forecast
+      # service from backend/src, so this job covers that code under workerd
+      # as well as the worker's own.
+      - name: Test
+        working-directory: worker
+        run: npm test
+
   e2e:
     name: e2e
     runs-on: ubuntu-latest
