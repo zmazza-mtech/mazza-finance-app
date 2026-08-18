@@ -1,16 +1,20 @@
 import { Hono } from 'hono';
+import accounts from './api/accounts.js';
+import settings from './api/settings.js';
+import type { Env } from './env.js';
 
-export interface Env {
-  DB: D1Database;
-  ASSETS: Fetcher;
-  ENCRYPTION_KEY: string;
-}
+export type { Env };
 
 const app = new Hono<{ Bindings: Env }>();
 
 // Same `{ data, error }` envelope as the Express backend — the frontend
 // client is unchanged by the port.
 app.get('/api/v1/health', (c) => c.json({ data: { status: 'ok' }, error: null }));
+
+// Routers, mounted under the same prefix the Express app used so the frontend
+// client's base URL is unchanged by the port (#68).
+app.route('/api/v1/accounts', accounts);
+app.route('/api/v1/settings', settings);
 
 app.notFound((c) => {
   if (new URL(c.req.url).pathname.startsWith('/api/')) {
