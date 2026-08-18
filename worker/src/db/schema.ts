@@ -255,6 +255,12 @@ export const recurringOverrides = sqliteTable(
   },
   (t) => ({
     idxOverridesRecurring: index('idx_overrides_recurring').on(t.recurringTransactionId),
+    // One override per occurrence. The upsert in the recurring router has
+    // always assumed this; migration 0002 is where it became true (#100).
+    uqOverrideOccurrence: uniqueIndex('uq_override_occurrence').on(
+      t.recurringTransactionId,
+      t.originalDate
+    ),
     overrideTypeCheck: check('override_type_check', sql`${t.overrideType} IN ('modified', 'deleted')`),
   })
 );

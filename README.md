@@ -6,6 +6,64 @@ forecasted transactions with a running balance.
 
 ---
 
+## The Cloudflare Worker (in progress)
+
+The app is being replatformed onto a single Cloudflare Worker that serves both
+the Vite build and the Hono API from one origin — which is what removes CORS,
+the split-origin CSP, Caddy, Compose and Postgres. See
+[`docs/superpowers/specs/2026-08-17-cloudflare-native-replatform.md`](docs/superpowers/specs/2026-08-17-cloudflare-native-replatform.md)
+and the tracking epic, issue #63.
+
+Until the Phase 2 cutover, **both stacks exist**. The Docker Compose stack
+below is still the one running the household's money. The Worker is where new
+work lands.
+
+### Local loop
+
+```bash
+# 1. Build the SPA. wrangler serves ../frontend/dist as static assets.
+cd frontend && npm run build
+
+# 2. Serve the SPA and the API together, on one origin.
+cd ../worker && npx wrangler dev
+```
+
+`wrangler dev` provisions D1 locally through Miniflare, so nothing needs
+Docker and nothing needs a database password. Apply the migrations to the
+local database once:
+
+```bash
+cd worker && npx wrangler d1 migrations apply mazza-finance --local
+```
+
+`frontend/.env.production` sets `VITE_API_BASE_URL=/api/v1`, a relative path,
+which is what makes the SPA call its own origin. The Compose build passes the
+variable as a build arg and an actual environment variable wins over the
+file, so the old stack is unaffected.
+
+Routing is decided in `worker/wrangler.toml`: `run_worker_first = ["/api/*"]`
+sends every API request to the Worker before the asset server sees it, and
+`not_found_handling = "single-page-application"` returns the SPA shell for a
+client-side route. An unknown `/api/*` path returns the `{ data, error }` 404
+envelope rather than the shell — asserted in `worker/tests/security-headers.spec.ts`.
+
+The security headers the Caddyfile enforces are set by the Worker itself
+(`worker/src/lib/security-headers.ts`), verbatim, so retiring Caddy does not
+quietly drop the CSP.
+
+### Worker tests
+
+```bash
+cd worker && npm test
+```
+
+Runs in `workerd` against real D1 bindings via
+`@cloudflare/vitest-pool-workers`, applying the real migration chain first —
+no mocks, and no hand-built test schema that could let a broken migration
+pass.
+
+---
+
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose v2)

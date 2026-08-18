@@ -1,16 +1,43 @@
 import { Hono } from 'hono';
+import accounts from './api/accounts.js';
+import settings from './api/settings.js';
+import transactions from './api/transactions.js';
+import recurring from './api/recurring.js';
+import forecast from './api/forecast.js';
+import reports from './api/reports.js';
+import importCsv from './api/import.js';
+import { applySecurityHeaders } from './lib/security-headers.js';
+import type { Env } from './env.js';
 
-export interface Env {
-  DB: D1Database;
-  ASSETS: Fetcher;
-  ENCRYPTION_KEY: string;
-}
+export type { Env };
 
 const app = new Hono<{ Bindings: Env }>();
+
+/*
+ * Security headers on everything, including errors and the SPA shell.
+ *
+ * Declared before the routes so it wraps them: Hono middleware runs around
+ * the handler, so the `await next()` below returns with the response the
+ * route (or the error handler) produced.
+ */
+app.use('*', async (c, next) => {
+  await next();
+  if (c.res) applySecurityHeaders(c.res);
+});
 
 // Same `{ data, error }` envelope as the Express backend — the frontend
 // client is unchanged by the port.
 app.get('/api/v1/health', (c) => c.json({ data: { status: 'ok' }, error: null }));
+
+// Routers, mounted under the same prefix the Express app used so the frontend
+// client's base URL is unchanged by the port (#68).
+app.route('/api/v1/accounts', accounts);
+app.route('/api/v1/settings', settings);
+app.route('/api/v1/transactions', transactions);
+app.route('/api/v1/recurring', recurring);
+app.route('/api/v1/forecast', forecast);
+app.route('/api/v1/reports', reports);
+app.route('/api/v1/import', importCsv);
 
 app.notFound((c) => {
   if (new URL(c.req.url).pathname.startsWith('/api/')) {
