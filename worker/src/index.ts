@@ -6,11 +6,24 @@ import recurring from './api/recurring.js';
 import forecast from './api/forecast.js';
 import reports from './api/reports.js';
 import importCsv from './api/import.js';
+import { applySecurityHeaders } from './lib/security-headers.js';
 import type { Env } from './env.js';
 
 export type { Env };
 
 const app = new Hono<{ Bindings: Env }>();
+
+/*
+ * Security headers on everything, including errors and the SPA shell.
+ *
+ * Declared before the routes so it wraps them: Hono middleware runs around
+ * the handler, so the `await next()` below returns with the response the
+ * route (or the error handler) produced.
+ */
+app.use('*', async (c, next) => {
+  await next();
+  if (c.res) applySecurityHeaders(c.res);
+});
 
 // Same `{ data, error }` envelope as the Express backend — the frontend
 // client is unchanged by the port.
