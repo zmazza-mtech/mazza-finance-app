@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787004639003,
+      "tag": "0000_mixed_gateway",
+      "breakpoints": true
+    }
+  ]
+}

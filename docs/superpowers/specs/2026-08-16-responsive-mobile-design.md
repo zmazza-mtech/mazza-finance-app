@@ -36,6 +36,13 @@ Settled before this spec was written; everything below depends on them.
    caching. Safe-area insets are still handled so the tab bar clears the home
    indicator. A service worker would interact badly with Caddy basic auth, and
    stale financial data is worse than no data.
+
+   **Superseded, 2026-08-17.** The Caddy-Basic-Auth premise this decision
+   rested on is gone: the app is replatforming to Cloudflare Workers with
+   app-layer auth (see `2026-08-17-cloudflare-native-replatform.md`). The app
+   *will* become an installable PWA. The principle survives the conclusion:
+   the service worker precaches the app shell only and never caches `/api`
+   responses — financial data is never served stale from cache.
 4. **CSS by default; JS branching at five enumerated seams.** See "The seam
    rule" below.
 5. **Verification is a Playwright mobile project plus unit tests.** No visual
