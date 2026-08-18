@@ -19,18 +19,14 @@ import {
   type Frequency,
 } from '../../backend/src/services/forecast.js';
 
-// Free-tier budget is 10ms CPU per invocation. Measured 2026-08-17 on this
-// unoptimized pipeline: avg ~106ms (min 102, max 118) — over budget by ~10×,
-// dominated by the per-day filter over all transactions in computeForecast
-// and per-series Decimal-heavy matching in reconcileInstances, both
-// quadratic. Verdict recorded under decision 9 of the replatform spec:
-// Phase 1 includes a forecast performance pass (group transactions by date,
-// index actuals in reconciliation, reuse Decimal instances) with Workers
-// Paid ($5/mo, 30s CPU) as the fallback if the pass cannot reach budget.
-// The assertion below is a regression ceiling, not the budget: tighten it
-// to CPU_BUDGET_MS when the performance pass lands.
+// Free-tier budget is 10ms CPU per invocation. Measured 2026-08-17 on the
+// unoptimized pipeline: avg ~106ms, over budget by ~10x, dominated by the
+// per-day filter over all transactions in computeForecast and the full
+// instances x actuals scan in matchInstancesToActuals, both quadratic. The
+// performance pass in #67 indexes both by date; this asserts the budget
+// itself rather than a regression ceiling, because a pass that lands inside
+// the budget and then drifts back out of it has failed.
 const CPU_BUDGET_MS = 10;
-const REGRESSION_CEILING_MS = 400;
 
 function iso(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -124,6 +120,6 @@ describe('forecast CPU under workerd', () => {
     );
 
     expect(max, 'clock did not advance — measurement invalid').toBeGreaterThan(0);
-    expect(avg).toBeLessThan(REGRESSION_CEILING_MS);
+    expect(avg).toBeLessThan(CPU_BUDGET_MS);
   });
 });
