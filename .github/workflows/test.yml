@@ -11,10 +11,15 @@ on:
   push:
   pull_request:
 
-# A second push to the same branch makes the first run's answer irrelevant.
+# A second push to the same branch makes the first run's answer irrelevant, so
+# that run is cancelled. A pull request run is not cancelled, because the thing
+# that re-triggers it is usually not a new commit from the author — it is `main`
+# advancing underneath, which recreates every open PR's merge ref. Cancelling
+# there threw away answers that were still valid, and left PRs blocked on a
+# cancelled required check that had to be re-run by hand (#101).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 permissions:
   contents: read
