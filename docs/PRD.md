@@ -115,20 +115,33 @@ is defined by daily usefulness and accuracy of the forecast.
 - Dark mode and light mode with a persistent toggle in the navigation header
 - Support multiple checking and savings accounts with a single-select account dropdown on the
   calendar view
-- Containerized, self-hosted deployment via Docker Compose
-- Lightweight access protection via Caddy HTTP Basic Auth
+- ~~Containerized, self-hosted deployment via Docker Compose~~ — **reversed.**
+  Deployed to Cloudflare Workers; see the addendum
+- ~~Lightweight access protection via Caddy HTTP Basic Auth~~ — **reversed.**
+  Replaced by JWT bearer auth on every route
 
 ### Non-Goals (explicitly out of scope for MVP)
 
-- Mobile native apps (iOS/Android)
-- Application-layer authentication with sessions, JWT, or user accounts
+> **Four of these were reversed by the premise change of 2026-08-17.** See the
+> addendum at the end of this document; the strikethroughs below point to it
+> rather than being edited away, so the original scope stays legible.
+
+- ~~Mobile native apps (iOS/Android)~~ — still out of scope as *native*, but
+  the app is now an installable PWA with Face ID, and the API is bearer-token
+  shaped so a Swift or Capacitor client is possible later
+- ~~Application-layer authentication with sessions, JWT, or user accounts~~ —
+  **reversed.** JWT bearer auth on every `/api` route, with user accounts and
+  household membership
 - Credit card balance forecasting on the calendar (credit cards are connected via SimpleFIN for
   data completeness but excluded from the calendar view)
 - Reconciliation mismatch indicator (Phase 2)
 - P&L reporting or spending category analysis (Phase 2)
-- Data export — CSV, PDF, or otherwise (Phase 2)
+- ~~Data export — CSV, PDF, or otherwise (Phase 2)~~ — **shipped.** CSV export
+  of transactions and the category summary
 - Push or pop-up browser notifications
-- Offline mode
+- ~~Offline mode~~ — **partially reversed.** The PWA precaches the app shell so
+  it opens without a network, but `/api` is network-only: stale money is worse
+  than no money
 
 ---
 
@@ -1226,3 +1239,62 @@ CADDY_BASIC_AUTH_HASH=<bcrypt hash from caddy hash-password>
 ---
 
 *End of PRD v1.1*
+
+---
+
+## Addendum — premise change, 2026-08-17
+
+This document was written for a self-hosted app on a home server, reached over
+the LAN, protected by HTTP Basic Auth, with a single implicit user. That
+premise no longer holds, and enough of §4 depends on it that the change is
+recorded here rather than edited invisibly through the body.
+
+Full reasoning: [`docs/superpowers/specs/2026-08-17-cloudflare-native-replatform.md`](superpowers/specs/2026-08-17-cloudflare-native-replatform.md).
+Tracking epic: issue #63.
+
+### What changed, and why
+
+**The primary user is Mrs. Mazza on her iPhone.** Everything below follows
+from taking that seriously rather than treating the phone as a small desktop.
+
+| Was | Is | Why |
+|---|---|---|
+| Docker Compose on a home server | Cloudflare Workers | A home server is a single point of failure the household cannot repair, and it is unreachable away from the house |
+| PostgreSQL 16 | Cloudflare D1 | Follows the runtime |
+| Caddy HTTP Basic Auth | JWT bearer auth, every route | Basic Auth cannot do Face ID, and a shared password is not a user |
+| Single implicit user | Households with members | Two people, one forecast; and the schema carries it from migration 0000 so there is no retrofit |
+| Browser page | Installable PWA with Face ID | The phone is the product surface |
+| No data export | CSV export | Shipped ahead of the replatform |
+
+### What did not change
+
+The things this document is actually about are untouched: the calendar and its
+running balance, recurring detection and reconciliation, the SimpleFIN
+integration and its 24-poll ceiling, the balance-health thresholds, and
+decimal.js for every cent of arithmetic. §5 through §12 stand as written except
+where §5.4 and §7 were amended for auto-reconciliation (#43).
+
+### New invariants
+
+1. **No SQL aggregation or arithmetic on amount columns.** D1 stores money as
+   TEXT and SQLite coerces it to a float to add it.
+2. **No `/api` route without auth.** Proven by a route-enumerating test, not by
+   review.
+3. **Every query is household-scoped**, and another household's row is reported
+   as absent rather than forbidden.
+4. **The SimpleFIN budget is per household**, and a refused sync spends none of
+   it.
+
+### Retired invariants
+
+The container-hardening rules — non-root user, `cap_drop: ALL`, no published
+Postgres port, memory and CPU limits — retire with the containers. The
+Docker-secret convention for the SimpleFIN access URL retires with Compose; the
+URL is now an AES-256-GCM encrypted D1 column with its key in Wrangler secrets.
+
+### Cost
+
+The target is **$0/month plus the domain**. Where something argues for
+spending, it is recorded in the spec with its reasoning rather than absorbed
+quietly. Two candidates have been resolved without spending; two are open
+(#105, #76).
