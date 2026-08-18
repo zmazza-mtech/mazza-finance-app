@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import accounts from './api/accounts.js';
 import settings from './api/settings.js';
+import transactions from './api/transactions.js';
 import type { Env } from './env.js';
 
 export type { Env };
@@ -15,6 +16,7 @@ app.get('/api/v1/health', (c) => c.json({ data: { status: 'ok' }, error: null })
 // client's base URL is unchanged by the port (#68).
 app.route('/api/v1/accounts', accounts);
 app.route('/api/v1/settings', settings);
+app.route('/api/v1/transactions', transactions);
 
 app.notFound((c) => {
   if (new URL(c.req.url).pathname.startsWith('/api/')) {
